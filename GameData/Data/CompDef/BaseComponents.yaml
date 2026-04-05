@@ -1,0 +1,420 @@
+﻿components:
+    SectorComponent:
+        ID: 0
+        Name: "Sector"
+        Description: "Allows access to the sector system."
+    RNGComponent:
+        ID: 1
+        Name: "RNG"
+        Description: "Generates a random number."
+    SpriteRendererComponent:
+        ID: 2
+        Name: "Sprite Renderer"
+        Description: "Basic component for sprite rendering."
+        Settings:
+            SpriteName:
+                Name: "Sprite Name"
+                Description: "Selects the sprite to be rendered."
+                Type: "String"
+                Internal: "spriteName"
+            Scale:
+                Name: "Scale"
+                Description: "Scales the sprite."
+                Type: "Float"
+                Internal: "scale"
+            IsAtlas:
+                Name: "Is Atlas"
+                Description: "Decides wether the image passed will be interpreted as an atlas."
+                Type: "Bool"
+                Internal: "isAtlas"
+            AtlasFrame:
+                Name: "Atlas Frame"
+                Description: "Decides wether the image passed will be interpreted as an atlas."
+                Type: "Number"
+                Internal: "atlasFrame" 
+    DebugRendererComponent:
+        ID: 3
+        Name: "Debug Renderer"
+        Description: "Renders a debug view used for development."
+    CameraComponent:
+        ID: 4
+        Name: "Camera"
+        Description: "Camera used for rendering."
+        Settings:
+            BackColor:
+                Name: "Background Color"
+                Description: "Sets the GL clear color."
+                Type: "Color"
+                Internal: backColor
+            Offset:
+                Name: "Offset"
+                Description: "Offsets the camera."
+                Type: "Vector2"
+                Internal: offset
+    DynamicBody:
+        ID: 5
+        Name: "Dynamic Body"
+        Description: "A movable physics object."
+        Settings:
+            Gravity:
+                Name: "Gravity"
+                Description: "Gavity applied to the object."
+                Type: "Float"
+                Internal: gravity
+            Damping:
+                Name: "Damping"
+                Description: "Damping slows the body down."
+                Type: "Float"
+                Internal: damping
+            Mass:
+                Name: "Mass"
+                Description: "Mass of the body."
+                Type: "Float"
+                Internal: mass
+            Freeze:
+                Name: "Freze on Spawn"
+                Description: "If true, then the body will spawn as frozen."
+                Type: "Bool"
+                Internal: freeze
+            StartAcceleration:
+                Name: "Start Acceleration"
+                Description: "Starting acceleration of the body."
+                Type: "Vector2"
+                Internal: startaccel
+            Restitution:
+                Name: "Restitution"
+                Description: "Restitution of the body."
+                Type: "Float"
+                Internal: restitution
+    StaticBody:
+        ID: 6
+        Name: "Static Body"
+        Description: "An unmovable physics body."
+        Settings:
+            Restitution:
+                Name: "Restitution"
+                Description: "Restitution of the body."
+                Type: "Float"
+                Internal: restitution
+    InputComponent:
+        ID: 7
+        Name: "Input"
+        Description: "Used for input, every Entity spawns with this component by default."
+    AnimationRendererComponent:
+        ID: 8
+        Name: "Animation Renderer"
+        Description: "Renders an animation from a sprite atlas."
+        Settings:
+            AtlasName:
+                Name: "Atlas Name"
+                Description: "Selects the atlas used by the animation."
+                Type: "String"
+                Internal: "atlasName"
+            Offset:
+                Name: "Offset"
+                Description: "Offset of the sprite"
+                Type: "Vector2"
+                Internal: "offset"
+            Scale:
+                Name: "Scale"
+                Description: "Scales the sprite."
+                Type: "Float"
+                Internal: "scale"
+            StartAnimArch:
+                Name: "Start Archtype"
+                Description: "Selects the archetype for the animation to be played."
+                Type: "String"
+                Internal: "startAnimArch"
+            StartAnimSubt:
+                Name: "Start Subtype"
+                Description: "Selects the subtype for the animation to be played."
+                Type: "String"
+                Internal: "startAnimSubt"
+            StartAnimName:
+                Name: "Start Animation"
+                Description: "Selects the start animation. If none is selected, then it will just render the first frame of the atlas."
+                Type: "String"
+                Internal: "startAnimName"
+    AudioComponent:
+        ID: 9
+        Name: "Audio Player"
+        Description: "Plays an audio file. Used for both sound effects and music."
+        Settings:
+            AudioName: 
+                Name: "Audio Name"
+                Description: "Audio to be loaded. If left empty, it will not play any audio."
+                Type: "String"
+                Internal: "audioName"
+            Loop:
+                Name: "Loop"
+                Description: "If true, the audio will play again after its finished."
+                Type: "Bool"
+                Internal: "loop"
+            PlayOnAwake:
+                Name: "Play On Awake"
+                Description: "If true, the audio will play immediately after its loaded."
+                Type: "Bool"
+                Internal: "playOnAwake"
+    CircleAreaComponent:
+        ID: 10
+        Name: "Circular Area"
+        Description: "Defines a circular shape for a Simulatable Object."
+        Settings:
+            AreaRadius:
+                Name: "Circle Radius"
+                Description: "Radius of the circle."
+                Type: "Float"
+                Internal: areaRadius
+            Offset:
+                Name: "Offset"
+                Description: "Offsets the circle."
+                Type: "Vector2"
+                Internal: offset
+    RectAreaComponent:
+        ID: 11
+        Name: "Rectanglular Area"
+        Description: "Defines a rectanglular shape for a Simulatable Object."
+        Settings:
+            AreaSize:
+                Name: "Ractangle Size"
+                Description: "Size of the rectangle. (from center)"
+                Type: "Vector2"
+                Internal: areaSize
+            Offset:
+                Name: "Offset"
+                Description: "Offsets the rectangle."
+                Type: "Vector2"
+                Internal: offset
+            IsTrigger:
+                Name: "Is Trigger"
+                Description: "If true, the body will not collidable and will not collide."
+                Type: "Bool"
+                Internal: istrigger
+    BoundaryAreaComponent:
+        ID: 12
+        Name: "Boundary Area"
+        Description: "Defines a boundary that no dynamic object can pass."
+        Settings:
+            AreaAxis:
+                Name: "Area Axis"
+                Description: "Axis for the world boundary."
+                Type: "String"
+                Internal: areaAxis
+            Offset:
+                Name: "Offset"
+                Description: "Offsets the boundary."
+                Type: "Vector2"
+                Internal: offset
+    CylinderAreaComponent:
+        ID: 13
+        Name: "Cylindrical Area"
+        Description: "Defines a cylindrical shape for a Simulatable Object."
+        Settings:
+            AreaRadius:
+                Name: "Cylinder Radius"
+                Description: "Radius of the cylinder."
+                Type: "Float"
+                Internal: areaSize
+            AreaMidHeight:
+                Name: "Cylinder Mid Height"
+                Description: "Height of the inner rectangle of the cylinder."
+                Type: "Float"
+                Internal: areaMidHeight
+            Offset:
+                Name: "Offset"
+                Description: "Offsets the cylinder."
+                Type: "Vector2"
+                Internal: offset
+
+    EditorTester:
+        ID: 512
+        Name: "Editor Tester"
+        Description: "Purely for testing the editor, game will crash if this loads!"
+        Settings:
+            NumTest:
+                Name: "Number"
+                Description: ""
+                Type: "Number"
+                Internal: ntest
+            FloatTest:
+                Name: "Float"
+                Description: ""
+                Type: "Float"
+                Internal: ftest
+            BoolTest:
+                Name: "Bool"
+                Description: ""
+                Type: "Bool"
+                Internal: btest
+            StrTest:
+                Name: "String"
+                Description: ""
+                Type: "String"
+                Internal: stest
+            Vector2Test:
+                Name: "Vector2"
+                Description: ""
+                Type: "Vector2"
+                Internal: vtest
+            ColorTest:
+                Name: "Color"
+                Description: ""
+                Type: "Color"
+                Internal: ctest
+
+#### Game Components ####
+    WorldSelector:
+        ID: 1024
+        Name: "World Selector"
+        Description: "Provides a widget to open any world in the game"
+    PlayerMovement:
+        ID: 1025
+        Name: "Player Movement"
+        Description: "Central Component for all things movement."
+        Settings:
+            WalkSpeed:
+                Name: "Walk Speed"
+                Description: "Speed while walking."
+                Type: "Float"
+                Internal: walkspeed
+            RunSpeed:
+                Name: "Running Speed"
+                Description: "Speed while running."
+                Type: "Float"
+                Internal: runspeed
+            WalkBegin:
+                Name: "Walk Begin"
+                Description: "Time to go from standstill to walking."
+                Type: "Float"
+                Internal: walkbegin
+            WalkDecay:
+                Name: "Walk Decay"
+                Description: "Time to go from walking to a standstill."
+                Type: "Float"
+                Internal: walkdecay
+            WalkToRun:
+                Name: "Walk to Run"
+                Description: "Time to go from walking to running."
+                Type: "Float"
+                Internal: walktorun
+            RunBegin:
+                Name: "Running Begin"
+                Description: "Time to go from standstill to running."
+                Type: "Float"
+                Internal: runbegin
+            RunDecay:
+                Name: "Running Decay"
+                Description: "Time to go from running to a standstill."
+                Type: "Float"
+                Internal: rundecay
+            RunToWalk:
+                Name: "Run to Walk"
+                Description: "Time to go from running to walking."
+                Type: "Float"
+                Internal: runtowalk
+    CameraMover:
+        ID: 1026
+        Name: "Camera Mover"
+        Description: "Moves the camera in respect to the hotspots."
+        Settings:
+            StopRadius:
+                Name: "Stop Radius"
+                Description: "If inside the radius of the mean point, the camera will stop moving."
+                Type: "Float"
+                Internal: stopradius
+    CameraHotspot:
+        ID: 1027
+        Name: "Camera Hotspot"
+        Description: "Hotspot for the camera to follow."
+        Settings:
+            Strength:
+                Name: "Hotspot Strength"
+                Description: "How strongly is the camera attracted to the hotspot."
+                Type: "Float"
+                Internal: strength
+            SuperSpot:
+                Name: "Super Hotspot"
+                Description: "If true, the camera will only follow this hotspot."
+                Type: "Bool"
+                Internal: super
+    PlayerMovementAnimator:
+        ID: 1028
+        Name: "Player Animator"
+        Description: "Responsible for selecting the proper player animation."
+        Settings:
+            ChangeOfEvent:
+                Name: "Change of Event"
+                Description: "Change that a random event occurs during a loop animation."
+                Type: "Float"
+                Internal: chance
+    PlayerAttack:
+        ID: 1029
+        Name: "Player Attack"
+        Description: "Responsible for player attack logic."
+    EnemyCore:
+        ID: 1030
+        Name: "Enemy Core"
+        Description: "Deprecated, do not use!"
+    PlayerCore:
+        ID: 1031
+        Name: "Player Core"
+        Description: "Core component of the player, foreign entities/systems should interface this instead of other components."
+        Settings:
+            Offset:
+                Name: "Center Offset"
+                Description: "By default, the center is top left, this shifts it to the center."
+                Type: "Vector2"
+                Internal: offset
+    PlayerDebugDrawer:
+        ID: 1032
+        Name: "Player Debug Drawer"
+        Description: "Draws debug info for the player."
+    Health:
+        ID: 1033
+        Name: "Health"
+        Description: "Give any Entity health."
+        Settings:
+            MaxHealth:
+                Name: "Max Health"
+                Description: "Maximum health of the entity."
+                Type: "Number"
+                Internal: "maxhealth"
+            StartingHealth:
+                Name: "Starting Health"
+                Description: "Staring health health of the entity, cannot be higher than Max Health or zero."
+                Type: "Number"
+                Internal: "starthealth"
+    NPCSpawner:
+        ID: 1034
+        Name: "NPCSpawner"
+        Description: "Component for managing the NPC Spawner widget for debugging"
+    NPCCore:
+        ID: 1035
+        Name: "NPC Core"
+        Description: "Core component for making anything an NPC."
+        Settings:
+            Name:
+                Name: "Name"
+                Description: "Name of the NPC"
+                Type: "String"
+                Internal: name
+            Alignment:
+                Name: "Alignment"
+                Description: "Alignment of the NPC"
+                Type: "Number"
+                Internal: alignment
+            NPCType:
+                Name: "NPCType"
+                Description: "Type of the NPC"
+                Type: "Number"
+                Internal: type
+            NPCType:
+                Name: "Variant"
+                Description: "Variant"
+                Type: "Number"
+                Internal: variant
+            Offset:
+                Name: "Center Offset"
+                Description: "By default, the center is top left, this shifts it to the center."
+                Type: "Vector2"
+                Internal: offset

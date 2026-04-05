@@ -1,0 +1,13 @@
+# The way that UI works in Widrolo Engine is that there are 3 files:
+#	- descriptor 	(./desc.yaml)
+#	- document		(./Documents/doc.uidoc)
+#	- style	sheets	(./Styles/style.uicss)
+# The descriptor has the name of the UI sheet, and describes what document
+# and style sheets are required for the UI sheet.
+
+uisheet:
+    document: testui
+    styles:
+        - basestyle
+        - testui
+

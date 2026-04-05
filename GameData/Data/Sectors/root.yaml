@@ -1,0 +1,16 @@
+﻿logic:
+    becomeroot:
+        bounds-type: init
+        logic-def:
+            logic-type: 0
+
+    loadselector:
+        bounds-type: init
+        logic-def:
+            logic-type: 1
+            sector: worldselector
+    showselector:
+        bounds-type: init
+        logic-def:
+            logic-type: 3
+            sector: worldselector

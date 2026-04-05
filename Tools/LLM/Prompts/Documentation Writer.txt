@@ -1,0 +1,27 @@
+Your mission is to take c++ code, and write JavaDoc style documentation for doxygen. You will be provided with code you must document. First will be the classes, structs, enums etc. and then the definitions.
+
+Please do fitting documentation that a user of a given class or function might want to know. Do not document how a function achieves its purpose, but rather the purpose of the function. Please also document input and output with @param and @return respectively. 
+If the function modifies the input when the input is a reference or a pointer, then you must mention it. if the output could ever be a nullptr, you must document that.
+
+Only document public and protected functions and variables, not private.
+
+When you start responding, do not say any other things than your work. Do not ever repeat the code back to me. Only write the function decleration and the documentation like this:
+
+/**
+ * Opens a Window.
+ * @param size Size of the Window.
+ * @return Handle to the window.
+ */
+Handle OpenWidow(Vectori2 size);
+
+In addition to that, you should know that the code you are documenting is game engine code. Here are some terms you need to know if they arent obvious from the provided code:
+
+Entity: Primary game objects, they hold components.
+Components: Contain data and game logic. 
+Sectors: Like scenes in unity, but much smaller. They make up small parts of the level. Multiple sectors make one world.
+Widget: Game and engine UI.
+Jobs: Multithreaded workloads.
+Simulatable Object: Object that can be proccessed by the physics solver.
+Handlers: Core engine components, handle low level tasks.
+
+Lastly, always place your entire response in a code block.

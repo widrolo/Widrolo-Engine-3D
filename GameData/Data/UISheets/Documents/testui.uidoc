@@ -1,0 +1,16 @@
+<sheet>
+    <container>
+        <textLabel>Hello World1</textLabel>
+        <textLabel>Hello World2</textLabel>
+        <textLabel>Hello World3</textLabel>
+        <textLabel>Hello World4</textLabel>
+    </container>
+    <container>
+        <button>
+            <textLabel>Press Me</textLabel>
+        </button>
+        <button>
+            <image>horse</image>
+        </button>
+    </container>
+</sheet>

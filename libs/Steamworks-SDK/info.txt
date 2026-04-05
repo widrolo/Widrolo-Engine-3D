@@ -1,0 +1,46 @@
+Steam is optional btw, you can disable all Steam code by setting the STEAM define in EngineDefines.h to 0. 
+
+Basically, Valve, per the Valve Corporation Steamworks SDK Access Agreement (https://partner.steamgames.com/documentation/sdk_access_agreement) in 1.1b, only allows the library files to be shared around. So youre going to have to get the SDK yourself.
+
+Here is a guide to enable Steam in the engine:
+
+1. Get the SDK.
+
+Go here[, log in, agree to the Access Agreement] and download the Steamworks SDK:
+
+https://partner.steamgames.com/downloads/list
+
+2. Unzip the SDK.
+
+If you need a guide here, then i pray for you.
+
+3. Copy over the crucial parts of the SDK:
+
+Copy: "Steakworks SDK XXX/public/steam"
+To: "Widrolo-Engine/libs/Steamworks-SDK/include"
+
+Copy: "Steakworks SDK XXX/redistributable_bin/win64"
+To: "Widrolo-Engine/libs/Steamworks-SDK/lib"
+Here you only need to copy over steam_api64.lib
+
+If any errors occur then it shouldn't be hard to fix. If its not a linker/file not found error, and your version is far away from the version i use (1.59), then contact me.
+
+Lastly, in premake5.lua you need to uncomment "-- links ("steam_api64")"
+
+4. Get the Steam Web API Key
+
+Go here[, log in, agree to the EULA] and get a key:
+
+https://steamcommunity.com/dev/apikey
+
+5. Do not distribute it in any way
+
+The engine by default checks for an environment variable. So dont put in in the source code, in any comment, in any file, in any twitter #coderlife photo; dont put it anywhere.
+
+As i said, the engine uses an environment variable to get the key. Make a new environment variable called STEAM_WEB_API_KEY, with the value being the key. Thats all, the engine will load it.
+
+While it allows you to do that, dont ship the game like that. First of all, the user doesn't have a STEAM_WEB_API_KEY variable, and dont ship it in the game being a variable, the compiler will just put in in the game and data miners WILL retrieve it. For that reason you can either not use the feature, or setup a web server that passes through the necessary information, with the key being privately stored on the server.
+
+6. App ID
+
+If you go about shipping the game, then change (in your build folder) steam_appid.txt content to your app id. By default the engine uses id 480 which is Spacewar (yes the game that you use for piracy).
