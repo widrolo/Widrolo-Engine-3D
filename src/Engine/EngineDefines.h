@@ -16,7 +16,7 @@
 #define GPU_GNM 5 // use this when compiling for targets "Playstation5", "Playstation6"
 #define GPU_NVM 6 // use this when compiling for targets "NintendoS1", "NintendoS2", "NintendoS3"
 
-#define GPU_BACKEND GPU_OPENGL
+#define GPU_BACKEND GPU_VULKAN
 
 struct EngineSettings
 {
@@ -124,8 +124,8 @@ struct EngineSettings
 #error "Define a GPU backend before compilation!"
 #endif
 
-#if GPU_BACKEND == GPU_VULKAN
-#error "Vulkan backend is not yet supported!"
+#if GPU_BACKEND == GPU_OPENGL
+#error "OpenGL is deprecated!"
 #endif
 
 #if GPU_BACKEND == GPU_METAL

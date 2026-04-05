@@ -29,7 +29,6 @@ namespace WEngine
 	class RNGHandler;
 	class AudioHandler;
 	class WidgetHandler;
-	class UIHandler;
 	class JobHandler;
 
 	class SteamStore;
@@ -55,7 +54,6 @@ namespace WEngine
 		_GLOBAL_ RNGHandler* rngHandler;
 		_GLOBAL_ AudioHandler* audioHandler;
 		_GLOBAL_ WidgetHandler* widgetHandler;
-		_GLOBAL_ UIHandler* uiHandler;
 		_GLOBAL_ JobHandler* jobHandler;
 
 		_GLOBAL_ bool* isGameRunning; // Setting this to false will stop the game
@@ -70,7 +68,6 @@ namespace WEngine
 		static RNGHandler* GetRNGHandler() { return rngHandler; }
 		static AudioHandler* GetAudioHandler() { return audioHandler; }
 		static WidgetHandler* GetWidgetHandler() { return widgetHandler; }
-		static UIHandler* GetUiHandler() { return uiHandler; }
 		static JobHandler* GetJobHandler() { return jobHandler; }
 
 		static SteamStore* GetSteamStore() { return steamStore; }

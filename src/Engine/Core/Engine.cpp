@@ -13,7 +13,6 @@
 #include <Engine/Core/Handlers/RNGHandler.h>
 #include <Engine/Core/Handlers/AudioHandler.h>
 #include <Engine/Core/Handlers/WidgetHandler.h>
-#include <Engine/Core/Handlers/UIHandler.h>
 #include <Engine/Core/Handlers/JobHandler.h>
 
 #include <Engine/Stores/Steam/SteamStore.h>
@@ -117,7 +116,6 @@ void Engine::InitHandlers()
 	StartHandlerSingle<RNGHandler>(&CoreSystems::rngHandler, "RNG Handler");
 	StartHandlerSingle<AudioHandler>(&CoreSystems::audioHandler, "Audio Handler");
 	StartHandlerSingle<WidgetHandler>(&CoreSystems::widgetHandler, "Widget Handler");
-	StartHandlerSingle<UIHandler>(&CoreSystems::uiHandler, "UI Handler");
 	StartHandlerSingle<JobHandler>(&CoreSystems::jobHandler, "Job Handler");
 
 	m_rootSector = new Sector("root");

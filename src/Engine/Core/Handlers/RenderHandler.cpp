@@ -166,7 +166,11 @@ void RenderHandler::InitSDL()
 	SDL_DisplayID display = SDL_GetPrimaryDisplay();
 	m_displayMode = const_cast<SDL_DisplayMode*>(SDL_GetCurrentDisplayMode(display));
 
-	Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS;
+	Uint32 windowFlags = SDL_WINDOW_BORDERLESS;
+#if GPU_BACKEND == GPU_VULKAN
+	windowFlags |= SDL_WINDOW_VULKAN;
+#endif
+
 
 	if (m_displayMode != nullptr)
 	{

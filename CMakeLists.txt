@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-project(Project_Kaunas)
+project(Widrolo_Engine_3D)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Packaging" CACHE STRING "" FORCE)
 set(CMAKE_CXX_STANDARD 23)
@@ -13,7 +13,7 @@ set(GLM_PATH        "${CMAKE_SOURCE_DIR}/libs/glm-1.0.1")
 set(TINYXML2_PATH   "${CMAKE_SOURCE_DIR}/libs/tinyxml2-11.0.0")
 
 # thank god for CLion
-add_executable(Project_Kaunas
+add_executable(Widrolo_Engine_3D
         src/Engine/Components/Physics/DynamicBody.cpp
         src/Engine/Components/Physics/DynamicBody.h
         src/Engine/Components/Physics/StaticBody.cpp
@@ -182,8 +182,6 @@ add_executable(Project_Kaunas
         src/Engine/UI/Elements/Sliders/Slider.h
         src/Engine/UI/Elements/Toggles/Checkbox.cpp
         src/Engine/UI/Elements/Toggles/Checkbox.h
-        src/Engine/Core/Handlers/UIHandler.cpp
-        src/Engine/Core/Handlers/UIHandler.h
         src/Engine/WTL/queue.h
         src/Engine/Types/Rendering/Color.cpp
         src/Engine/UI/UIParser.cpp
@@ -310,13 +308,13 @@ add_executable(Project_Kaunas
         src/Engine/Types/AI/Behaviour/Control/BranchNode.h
 )
 
-set_target_properties(Project_Kaunas PROPERTIES
+set_target_properties(Widrolo_Engine_3D PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin/${CMAKE_SYSTEM_NAME}-x64"
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin/${CMAKE_SYSTEM_NAME}-x64"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin/${CMAKE_SYSTEM_NAME}-x64"
 )
 
-target_include_directories(Project_Kaunas PRIVATE
+target_include_directories(Widrolo_Engine_3D PRIVATE
         src
         ${SDL_PATH}/include
         ${STEAMWORKS_PATH}/include
@@ -328,7 +326,7 @@ target_include_directories(Project_Kaunas PRIVATE
 )
 
 # ---- Common defines ----
-target_compile_definitions(Project_Kaunas PRIVATE
+target_compile_definitions(Widrolo_Engine_3D PRIVATE
         _CRT_SECURE_NO_WARNINGS
         YAML_CPP_STATIC_DEFINE
 )
@@ -336,20 +334,20 @@ target_compile_definitions(Project_Kaunas PRIVATE
 #add_compile_options(-fsized-deallocation)
 
 if(MSVC)
-    target_compile_options(Project_Kaunas PRIVATE /MP /wd4005)
+    target_compile_options(Widrolo_Engine_3D PRIVATE /MP /wd4005)
 endif()
 
 if(WIN32)
     message(STATUS Detected Windows)
-    target_compile_definitions(Project_Kaunas PRIVATE WE_Windows)
+    target_compile_definitions(Widrolo_Engine_3D PRIVATE WE_Windows)
 
-    target_link_libraries(Project_Kaunas PRIVATE
+    target_link_libraries(Widrolo_Engine_3D PRIVATE
             ${STEAMWORKS_PATH}/lib/steam_api64.lib
             ${SDL_PATH}/lib/SDL3.lib
             ${CURL_PATH}/lib/libcurl.lib
     )
 
-    target_link_libraries(Project_Kaunas PRIVATE
+    target_link_libraries(Widrolo_Engine_3D PRIVATE
             $<$<CONFIG:Debug>:${YAMLCPP_PATH}/lib/yaml-cppd.lib>
             $<$<CONFIG:Release>:${YAMLCPP_PATH}/lib/yaml-cpp.lib>
             $<$<CONFIG:Packaging>:${YAMLCPP_PATH}/lib/yaml-cpp.lib>
@@ -359,12 +357,12 @@ if(WIN32)
     )
 
     # Config-specific link rules
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Project_Kaunas)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Widrolo_Engine_3D)
 
 else() # really should be elseif(linux), but it doesnt work...
     message(STATUS Detected Linux)
-    target_compile_definitions(Project_Kaunas PRIVATE WE_Linux)
-    target_link_libraries(Project_Kaunas PRIVATE
+    target_compile_definitions(Widrolo_Engine_3D PRIVATE WE_Linux)
+    target_link_libraries(Widrolo_Engine_3D PRIVATE
             ${SDL_PATH}/lib/libSDL3.a
             #${CURL_PATH}/lib/libcurl.a
             ${YAMLCPP_PATH}/lib/libyaml-cpp.a
@@ -373,24 +371,25 @@ else() # really should be elseif(linux), but it doesnt work...
             GL
             dl
             pthread
+            vulkan
     )
 endif()
 
-set_property(TARGET Project_Kaunas APPEND PROPERTY
+set_property(TARGET Widrolo_Engine_3D APPEND PROPERTY
         COMPILE_DEFINITIONS $<$<CONFIG:Debug>:DEBUG>
 )
 
 # RelCanditate
-set_property(TARGET Project_Kaunas APPEND PROPERTY
+set_property(TARGET Widrolo_Engine_3D APPEND PROPERTY
         COMPILE_DEFINITIONS $<$<CONFIG:Release>:NDEBUG;RC>
 )
 
 # Packaging
-set_property(TARGET Project_Kaunas APPEND PROPERTY
+set_property(TARGET Widrolo_Engine_3D APPEND PROPERTY
         COMPILE_DEFINITIONS $<$<CONFIG:Packaging>:NDEBUG;PACKAGE>
 )
 
-set_target_properties(Project_Kaunas PROPERTIES
+set_target_properties(Widrolo_Engine_3D PROPERTIES
         WIN32_EXECUTABLE $<$<CONFIG:Packaging>:TRUE>
-        OUTPUT_NAME "$<$<CONFIG:Debug>:Project_Kaunas-Dev>$<$<CONFIG:Release>:Project_Kaunas-RC>$<$<CONFIG:Packaging>:Project_Kaunas-Package>"
+        OUTPUT_NAME "$<$<CONFIG:Debug>:Widrolo_Engine_3D-Dev>$<$<CONFIG:Release>:Widrolo_Engine_3D-RC>$<$<CONFIG:Packaging>:Widrolo_Engine_3D-Package>"
 )
