@@ -15,7 +15,9 @@ public:
     static void ReportExternalFree(uint64 size) noexcept;
 
     static void* Allocate(uint64 size);
+    static void* AllocateAligned(uint64 size, uint64 alignment);
     static void* Reallocate(void* ptr, uint64 size);
+    static void* ReallocateAligned(void* ptr, uint64 size, uint64 alignment);
     static void Free(void* ptr) noexcept;
 
     template<class T, typename... Args>

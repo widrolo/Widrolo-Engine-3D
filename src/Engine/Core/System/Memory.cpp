@@ -31,6 +31,16 @@ void* WAllocator::Allocate(uint64 size)
     return p;
 }
 
+void* WAllocator::AllocateAligned(uint64 size, uint64 alignment)
+{
+    void* p = std::aligned_alloc(alignment, size);
+    if (!p) throw std::bad_alloc();
+
+    MemoryUsed() += size;
+    MemorySizes()[p] = size;
+    return p;
+}
+
 void* WAllocator::Reallocate(void* ptr, uint64 size)
 {
     auto& sizes = MemorySizes();
@@ -45,6 +55,30 @@ void* WAllocator::Reallocate(void* ptr, uint64 size)
 
     void* newPtr = std::realloc(ptr, size);
     if (!newPtr) throw std::bad_alloc();
+
+    sizes.erase(ptr);
+    sizes[newPtr] = size;
+
+    MemoryUsed() += (size - oldSize);
+    return newPtr;
+}
+
+void * WAllocator::ReallocateAligned(void *ptr, uint64 size, uint64 alignment)
+{
+    auto& sizes = MemorySizes();
+    uint64 oldSize = sizes[ptr];
+
+    if (size < oldSize)
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Bad Reallocation: new size is smaller than old size!");
+        throw std::bad_alloc();
+    }
+
+    void* newPtr = std::aligned_alloc(alignment, size);
+    if (!newPtr) throw std::bad_alloc();
+
+    std::memcpy(newPtr, ptr, size);
 
     sizes.erase(ptr);
     sizes[newPtr] = size;

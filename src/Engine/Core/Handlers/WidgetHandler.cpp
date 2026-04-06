@@ -52,7 +52,7 @@ void WidgetHandler::InitSystemWidgets()
 
 void WidgetHandler::DrawWidgets()
 {
-
+    return;
     const auto input = CoreSystems::GetInputHandler();
 
     const auto& stat = m_systemWidgets[(uint16)SysWidgetTypes::Statistics];
