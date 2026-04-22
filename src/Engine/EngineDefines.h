@@ -31,7 +31,7 @@ struct EngineSettings
 	 *	The game engine will always scale it to the window size.
 	 */
 	//_GLOBAL_CONST_ WEngine::Vector2 resolution{ 960.0f, 540.0f }; // No Idea why constexpr is not working here
-	_GLOBAL_CONST_ WEngine::Vector2 resolution{ 960.0f, 540.0f }; // No Idea why constexpr is not working here
+	_GLOBAL_CONST_ WEngine::Vector2 resolution{ 1920.0f, 1080.0f }; // No Idea why constexpr is not working here
 
 	/**
 	 *  This sets the dead zone for any controller joystick excluding steering accessories.

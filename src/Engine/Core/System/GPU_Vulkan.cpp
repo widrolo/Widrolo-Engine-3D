@@ -76,9 +76,16 @@ VkPhysicalDevice gpuPhysicalDevice = VK_NULL_HANDLE;
 VkDevice gpuDevice = VK_NULL_HANDLE;
 
 VkSurfaceKHR screen = VK_NULL_HANDLE;
+VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+wtl::vector<VkImage> swapchainImages;
+uint32 swapchainCurrentImage = 0;
+VkSemaphore imageAvailableSem = VK_NULL_HANDLE;
+VkSemaphore renderFinishedSem = VK_NULL_HANDLE;
+VkFence endOfFrameFence = VK_NULL_HANDLE;
 
 uint32 queueFamilyCount = 0;
 wtl::vector<QueueFamily> queueFamilies;
+VkQueue primaryDrawQueue = VK_NULL_HANDLE;
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -232,7 +239,7 @@ wtl::vector<VkDeviceQueueCreateInfo> FindDeviceQueues()
     for (int i = 0; i < queueFamilyCount; i++)
     {
         const auto& properties = families[i].queueFamilyProperties;
-        queueFamilies[i].familyIndex = 1;
+        queueFamilies[i].familyIndex = i;
         queueFamilies[i].queues.resize(properties.queueCount);
         queueFamilies[i].purpose = properties.queueFlags;
 
@@ -244,6 +251,7 @@ wtl::vector<VkDeviceQueueCreateInfo> FindDeviceQueues()
         queuePriorities[0] = 1.0f;
 
 
+
         VkDeviceQueueCreateInfo queueInfo{};
         queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueInfo.queueFamilyIndex = i;
@@ -252,14 +260,29 @@ wtl::vector<VkDeviceQueueCreateInfo> FindDeviceQueues()
         infos[i] = queueInfo;
     }
 
+    for (auto& familiy : queueFamilies)
+    {
+        if (familiy.purpose & (uint8)QueuePurpose::Drawing)
+        {
+            primaryDrawQueue = familiy.queues[0];
+            break;
+        }
+    }
+
     return infos;
 }
 
 void SetupDeviceQueues()
 {
-    VkDeviceQueueInfo2 info{};
-    info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-    info.flags = VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT;
+    for (int i = 0; i < queueFamilyCount; i++)
+    {
+        if (queueFamilies[i].purpose & (uint8)QueuePurpose::Drawing)
+        {
+            vkGetDeviceQueue(gpuDevice, i, 0, &queueFamilies[i].queues[0]);
+            primaryDrawQueue = queueFamilies[i].queues[0];
+            break;
+        }
+    }
 }
 
 bool SetupGraphicsDevice()
@@ -322,6 +345,52 @@ bool SetupGraphicsDevice()
     return true;
 }
 
+bool SetupSwapchain()
+{
+    VkSurfaceCapabilitiesKHR capabilities{};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpuPhysicalDevice, screen, &capabilities);
+
+    uint32 fmtCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(gpuPhysicalDevice, screen, &fmtCount, nullptr);
+    std::vector<VkSurfaceFormatKHR> formats(fmtCount);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(gpuPhysicalDevice, screen, &fmtCount, formats.data());
+
+
+    VkSwapchainCreateInfoKHR info{};
+    info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    info.surface = screen;
+    info.minImageCount = capabilities.minImageCount;
+
+    info.imageFormat = VK_FORMAT_B8G8R8A8_SRGB;
+    info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    info.imageExtent = capabilities.currentExtent;
+    info.imageArrayLayers = 1;
+    info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+    info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    info.oldSwapchain = VK_NULL_HANDLE;
+
+    auto res = vkCreateSwapchainKHR(gpuDevice, &info, allocator, &swapchain);
+
+    VkSemaphoreCreateInfo semInfo{};
+    semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    vkCreateSemaphore(gpuDevice, &semInfo, allocator, &imageAvailableSem);
+    vkCreateSemaphore(gpuDevice, &semInfo, allocator, &renderFinishedSem);
+
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    vkCreateFence(gpuDevice, &fenceInfo, allocator, &endOfFrameFence);
+
+    uint32 swapchainImageCount;
+    vkGetSwapchainImagesKHR(gpuDevice, swapchain, &swapchainImageCount, nullptr);
+    swapchainImages.resize(swapchainImageCount);
+    vkGetSwapchainImagesKHR(gpuDevice, swapchain, &swapchainImageCount, swapchainImages.data());
+
+    return ParseVkResult(res);
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------ [GPU INTERFACE IMPLEMENTATION] ------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
@@ -349,6 +418,9 @@ bool GPU::SETTING_InitGPUApi(SDL_Window *window)
         WEngine::WLog::ConsoleLog(std::format("Failed to create a Vulkan surface for the screen, {}", SDL_GetError()));
         return false;
     }
+
+    if (!SetupSwapchain())
+        return false;
 
     return true;
 }
@@ -443,7 +515,9 @@ WEngine::Nullable<WEngine::Vector2> GPU::GetTextureSize(WEngine::Texture texture
 
 void GPU::DRAWCALL_ClearScreen(WEngine::Color clearColor)
 {
-
+    WEngine::WLog::ConsoleLog("About to get some new images!");
+    vkAcquireNextImageKHR(gpuDevice, swapchain, max_uint64, imageAvailableSem, VK_NULL_HANDLE, &swapchainCurrentImage);
+    WEngine::WLog::ConsoleLog(std::format("Got some: {}!", swapchainCurrentImage));
 }
 
 void GPU::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings &settings)
@@ -469,7 +543,32 @@ void GPU::DRAWCALL_DrawImGui()
 
 void GPU::DRAWCALL_SwapBuffers(SDL_Window *window)
 {
+    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &imageAvailableSem;
+    submitInfo.pWaitDstStageMask = &waitStage;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &renderFinishedSem;
+    submitInfo.commandBufferCount = 0;
+
+    vkQueueSubmit(primaryDrawQueue, 1, &submitInfo, endOfFrameFence);
+
+    vkWaitForFences(gpuDevice, 1, &endOfFrameFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(gpuDevice, 1, &endOfFrameFence);
+
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &renderFinishedSem;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &swapchain;
+    presentInfo.pImageIndices = &swapchainCurrentImage;
+    presentInfo.pResults = nullptr;
+
+    vkQueuePresentKHR(primaryDrawQueue, &presentInfo);
 }
 
 uint64 GPU::GetVramUsage()
