@@ -18,14 +18,8 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Components/Physics/DynamicBody.h
         src/Engine/Components/Physics/StaticBody.cpp
         src/Engine/Components/Physics/StaticBody.h
-        src/Engine/Components/Rendering/AnimationRendererComponent.cpp
-        src/Engine/Components/Rendering/AnimationRendererComponent.h
         src/Engine/Components/Rendering/CameraComponent.cpp
         src/Engine/Components/Rendering/CameraComponent.h
-        src/Engine/Components/Rendering/DebugRendererComponent.cpp
-        src/Engine/Components/Rendering/DebugRendererComponent.h
-        src/Engine/Components/Rendering/SpriteRendererComponent.cpp
-        src/Engine/Components/Rendering/SpriteRendererComponent.h
         src/Engine/Components/AudioComponent.cpp
         src/Engine/Components/AudioComponent.h
         src/Engine/Components/Component.cpp

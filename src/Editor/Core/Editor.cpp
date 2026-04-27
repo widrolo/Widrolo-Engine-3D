@@ -106,8 +106,6 @@ void Editor::Run()
 {
 	std::chrono::steady_clock::time_point lastUpdate;
 
-	EditorSystems::GetRenderHandler()->InitFallbackShaders();
-
 	bool imguiDemo = true;
 	const uint64 cap = static_cast<uint64>((1.0f / EngineSettings::maxFrameRate) * 1000000); // shut up damn compiler!!
 

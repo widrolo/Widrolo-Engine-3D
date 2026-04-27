@@ -1,5 +1,6 @@
 #include "Widget.h"
 
+#include <cmath>
 #include <iostream>
 
 #include "Engine/Types/CoreSystems.h"
@@ -41,13 +42,7 @@ void Widget::RenderInternal()
 
 void Widget::SetPosition(const Vector2 &position)
 {
-	Vector2 internal = CoreSystems::GetRenderHandler()->GetInternalResolution();
-	Vector2 window = CoreSystems::GetRenderHandler()->GetWindowResolution();
-
-	float32 yOffset = window.y - internal.y;
-
-	ImGui::SetWindowPos({position.x, position.y + yOffset});
-
+	ImGui::SetWindowPos({position.x, position.y});
 }
 void Widget::SetSize(const Vector2 &size)
 {

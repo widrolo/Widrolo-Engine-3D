@@ -176,7 +176,6 @@ void Engine::Run()
 	StopWatch uptime;
 
 	m_rootSector->Start();
-	CoreSystems::GetRenderHandler()->InitFallbackShaders();
 	uptime.Reset();
 	m_physicsTickTimer = 0.0f;
 	m_game->PreGameLoop();

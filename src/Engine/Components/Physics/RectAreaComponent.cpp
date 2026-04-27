@@ -97,7 +97,7 @@ void RectAreaComponent::Draw()
     mission.lines = lines;
     mission.color = Color::Green;
 
-    CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
+    //CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
 }
 
 void RectAreaComponent::Init()

@@ -99,8 +99,13 @@ VkFence endOfFrameFence = VK_NULL_HANDLE;
 
 uint32 queueFamilyCount = 0;
 wtl::vector<QueueFamily> queueFamilies;
+uint32 primaryDrawQueueFamilyIndex = 0;
 VkQueue primaryDrawQueue = VK_NULL_HANDLE;
 
+// These are just for prototyping
+
+VkCommandPool testPool;
+VkCommandBuffer testBuf;
 
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------ [GPU API HELPERS] -------------------------------------------------
@@ -266,8 +271,6 @@ wtl::vector<VkDeviceQueueCreateInfo> FindDeviceQueues()
             queuePriorities[i] = 0.0f;
         queuePriorities[0] = 1.0f;
 
-
-
         VkDeviceQueueCreateInfo queueInfo{};
         queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueInfo.queueFamilyIndex = i;
@@ -276,13 +279,16 @@ wtl::vector<VkDeviceQueueCreateInfo> FindDeviceQueues()
         infos[i] = queueInfo;
     }
 
+    uint32 count = 0; // piss and shit code
     for (auto& familiy : queueFamilies)
     {
         if (familiy.purpose & (uint8)QueuePurpose::Drawing)
         {
             primaryDrawQueue = familiy.queues[0];
+            primaryDrawQueueFamilyIndex = count;
             break;
         }
+        count++;
     }
 
     return infos;
@@ -568,6 +574,47 @@ VkImageView CreateImageView(VkImage image, ImageBufferType imageType)
     return imageView;
 }
 
+VkCommandPool CreateCommandPool()
+{
+    VkCommandPool commandPool;
+
+    VkCommandPoolCreateInfo commandPoolInfo{};
+    commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    commandPoolInfo.queueFamilyIndex = primaryDrawQueueFamilyIndex;
+
+    auto res = vkCreateCommandPool(gpuDevice, &commandPoolInfo, allocator, &commandPool);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleWarning();
+        WEngine::WLog::ConsoleLog("Unable to create command buffer!");
+        return VK_NULL_HANDLE;
+    }
+    return commandPool;
+}
+
+VkCommandBuffer CreateCommandBuffer(VkCommandPool cmdPool)
+{
+    VkCommandBuffer cmdBuff;
+
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = cmdPool;
+    allocInfo.commandBufferCount = 1;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+    auto res = vkAllocateCommandBuffers(gpuDevice, &allocInfo, &cmdBuff);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleWarning();
+        WEngine::WLog::ConsoleLog("Unable to create command buffer!");
+        return VK_NULL_HANDLE;
+    }
+
+    return cmdBuff;
+}
+
 // ------------------------------------------------ [HELPER FUNCTIONS] ------------------------------------------------
 
 uint64 GetSizeOfImageInBytes(WEngine::Vector2 imageSize, uint8 channelCount)
@@ -606,14 +653,8 @@ bool GPU::SETTING_InitGPUApi(SDL_Window *window)
     if (!SetupSwapchain())
         return false;
 
-    //auto buffer = CreateBuffer(64, BufferType::Uniform);
-    //auto memory = AllocateVideoMemory(64, buffer);
-    //vkBindBufferMemory(gpuDevice, buffer, memory, 0);
-
-    auto image = CreateImage(ImageBufferType::Storage, {1024, 1024});
-    auto memory = AllocateVideoMemory(GetSizeOfImageInBytes({1024, 1024}, 4), image);
-    vkBindImageMemory(gpuDevice, image, memory, 0);
-    auto imageView = CreateImageView(image, ImageBufferType::Storage);
+    testPool = CreateCommandPool();
+    testBuf = CreateCommandBuffer(testPool);
 
     return true;
 }
@@ -650,6 +691,16 @@ void GPU::SETTING_ToggleDepthTest(bool enabled)
 void GPU::SETTING_ToggleWireFrame(bool enabled)
 {
 
+}
+
+void GPU::SETTING_BeginNewFrame()
+{
+    WEngine::WLog::ConsoleLog("New frame, yay!");
+    vkWaitForFences(gpuDevice, 1, &endOfFrameFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(gpuDevice, 1, &endOfFrameFence);
+    WEngine::WLog::ConsoleLog("About to get some new images!");
+    vkAcquireNextImageKHR(gpuDevice, swapchain, max_uint64, imageAvailableSem, VK_NULL_HANDLE, &swapchainCurrentImage);
+    WEngine::WLog::ConsoleLog(std::format("Got some: {}!", swapchainCurrentImage));
 }
 
 WEngine::Nullable<WEngine::Shader> GPU::ALLOC_CompileShader(const std::string &name)
@@ -709,12 +760,7 @@ WEngine::Nullable<WEngine::Vector2> GPU::GetTextureSize(WEngine::Texture texture
 
 void GPU::DRAWCALL_ClearScreen(WEngine::Color clearColor)
 {
-    WEngine::WLog::ConsoleLog("New frame, yay!");
-    vkWaitForFences(gpuDevice, 1, &endOfFrameFence, VK_TRUE, UINT64_MAX);
-    vkResetFences(gpuDevice, 1, &endOfFrameFence);
-    WEngine::WLog::ConsoleLog("About to get some new images!");
-    vkAcquireNextImageKHR(gpuDevice, swapchain, max_uint64, imageAvailableSem, VK_NULL_HANDLE, &swapchainCurrentImage);
-    WEngine::WLog::ConsoleLog(std::format("Got some: {}!", swapchainCurrentImage));
+
 }
 
 void GPU::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings &settings)
@@ -740,6 +786,7 @@ void GPU::DRAWCALL_DrawImGui()
 
 void GPU::DRAWCALL_SwapBuffers(SDL_Window *window)
 {
+    // just for now
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     VkSubmitInfo submitInfo{};

@@ -47,7 +47,7 @@ void CameraComponent::Awake(ComponentArgs ca)
 
 void CameraComponent::Start()
 {
-	CoreSystems::GetRenderHandler()->SetNewCamera(this);
+	//CoreSystems::GetRenderHandler()->SetNewCamera(this);
 }
 
 void CameraComponent::Tick(float32 dt)
@@ -57,8 +57,8 @@ void CameraComponent::Tick(float32 dt)
 
 void CameraComponent::UnloadComponent()
 {
-	if (CoreSystems::GetRenderHandler()->GetCurrentCamera() == this)
-		CoreSystems::GetRenderHandler()->SetNewCamera(nullptr);
+	//if (CoreSystems::GetRenderHandler()->GetCurrentCamera() == this)
+	//	CoreSystems::GetRenderHandler()->SetNewCamera(nullptr);
 }
 
 Color CameraComponent::GetBackColor()

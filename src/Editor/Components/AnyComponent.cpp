@@ -246,7 +246,7 @@ void AnyComponent::GFX_Game_DrawSprite()
         mission.shaderSettings.push_back({WEngine::ShaderSettingType::Vec2, WEngine::Vector2(-1, -1), "u_flip"});
         mission.shaderSettings.push_back({WEngine::ShaderSettingType::Texture, sprite.GetTexture(), "u_texture"});
 
-        WEngine::CoreSystems::GetRenderHandler()->AddToRenderQueue(mission);
+        //WEngine::CoreSystems::GetRenderHandler()->AddToRenderQueue(mission);
     }
     else
     {
@@ -272,7 +272,7 @@ void AnyComponent::GFX_Game_DrawSprite()
         mission.shaderSettings.push_back({WEngine::ShaderSettingType::Vec4, uvCoords, "u_AtlasUV"});
         mission.shaderSettings.push_back({WEngine::ShaderSettingType::Texture, atlas.GetTexture(), "u_texture"});
 
-        WEngine::CoreSystems::GetRenderHandler()->AddToRenderQueue(mission);
+        //WEngine::CoreSystems::GetRenderHandler()->AddToRenderQueue(mission);
     }
 }
 
@@ -326,7 +326,7 @@ void AnyComponent::GFX_Game_DrawAnim()
     animMission.shaderSettings.push_back({WEngine::ShaderSettingType::Vec4, uvCoords, "u_AtlasUV"});
     animMission.shaderSettings.push_back({WEngine::ShaderSettingType::Texture, atlas.GetTexture(), "u_texture"});
 
-    WEngine::CoreSystems::GetRenderHandler()->AddToRenderQueue(animMission);
+    //WEngine::CoreSystems::GetRenderHandler()->AddToRenderQueue(animMission);
 }
 
 void AnyComponent::GFX_Dbg_CircleArea()
@@ -358,7 +358,7 @@ void AnyComponent::GFX_Dbg_CircleArea()
     mission.lines = lines;
     mission.color = WEngine::Color::Green;
 
-    WEngine::CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
+    //WEngine::CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
 }
 
 void AnyComponent::GFX_Dbg_RectArea()
@@ -390,5 +390,5 @@ void AnyComponent::GFX_Dbg_RectArea()
     mission.lines = lines;
     mission.color = WEngine::Color::Green;
 
-    WEngine::CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
+    //WEngine::CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
 }

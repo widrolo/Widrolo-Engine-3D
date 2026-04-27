@@ -70,6 +70,8 @@ public:
      */
     static void SETTING_ToggleWireFrame(bool enabled);
 
+    static void SETTING_BeginNewFrame();
+
     // ----------------------- Shaders -----------------------
     /**
      * This retrieves and compiles a shader.
