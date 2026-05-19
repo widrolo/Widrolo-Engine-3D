@@ -110,8 +110,8 @@ void StartHandlerSingle(T** container, std::string name)
 void Engine::InitHandlers()
 {
 	StartHandlerSingle<InputHandler>(&CoreSystems::inputHandler, "Input Handler");
-	StartHandlerSingle<RenderHandler>(&CoreSystems::renderHandler, "Render Handler");
 	StartHandlerSingle<AssetRepo>(&CoreSystems::assetRepo, "Asset Repo");
+	StartHandlerSingle<RenderHandler>(&CoreSystems::renderHandler, "Render Handler");
 	StartHandlerSingle<PhysicsHandler>(&CoreSystems::physicsHandler, "Physics Handler");
 	StartHandlerSingle<RNGHandler>(&CoreSystems::rngHandler, "RNG Handler");
 	StartHandlerSingle<AudioHandler>(&CoreSystems::audioHandler, "Audio Handler");

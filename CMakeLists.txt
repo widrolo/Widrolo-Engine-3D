@@ -294,6 +294,7 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Types/AI/Behaviour/Control/BranchNode.h
         src/Engine/Core/System/GPUSettings.h
         src/Engine/imgui/backends/imgui_impl_vulkan.cpp
+        src/Engine/Types/Rendering/VertextData.h
 )
 
 set_target_properties(Widrolo_Engine_3D PROPERTIES

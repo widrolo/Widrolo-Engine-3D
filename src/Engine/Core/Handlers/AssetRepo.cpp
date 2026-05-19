@@ -97,6 +97,41 @@ void AssetRepo::GetAsset<UISheetAssetMission>(UISheetAssetMission& mission)
 	}
 }
 
+template<>
+void AssetRepo::GetAsset<SpirVAssetMission>(SpirVAssetMission& mission)
+{
+	std::string path = GetDataPath() + EngineSettings::shaderPath + mission.name;
+	switch (mission.shaderType)
+	{
+		case SpirVAssetMission::VertexShader:
+			path += "Vertex";
+			break;
+		case SpirVAssetMission::FragmentShader:
+			path += "Fragment";
+			break;
+		case SpirVAssetMission::GeometryShader:
+			path += "Geometry";
+			break;
+	}
+	path += ".spv";
+	std::ifstream file(path, std::ios::binary | std::ios::in | std::ios::ate);
+
+	if (!file.is_open())
+	{
+		WLog::SetConsoleError();
+		WLog::ConsoleLog(std::format("Failed to open Spir-V shader:\n\t{}", path));
+		mission.shaderSize = 0;
+		return;
+	}
+
+	mission.shaderSize = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	mission.shaderCode = new uint32[mission.shaderSize / sizeof(uint32)];
+	file.read(reinterpret_cast<char*>(mission.shaderCode), mission.shaderSize);
+	file.close();
+}
+
 AudioClip* AssetRepo::LoadAudioWAV(const std::string& name)
 {
 	AudioClip clip{};

@@ -27,9 +27,18 @@ class GPU
 public:
     static bool SETTING_InitGPUApi(SDL_Window* window);
     static void SETTING_ConfigureImGui(SDL_Window* window);
-    static void SETTING_BeginNewFrame(WEngine::Color clearColor);
+    static void SETTING_BeginNewFrame();
+    static void SETTING_SetViewportSize(WEngine::Vector3 size);
+
+    static WEngine::Nullable<WEngine::Shader> GetShader(const std::string& shaderName);
+
+    // ----------------------- Shaders -----------------------
+
+    static WEngine::Nullable<WEngine::Shader> ALLOC_CompileShader(const std::string& shaderName);
 
     // ----------------------- Drawing -----------------------
+
+    static void DRAWCALL_ClearFrame(WEngine::Color clearColor);
 
     static void DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings& settings);
 

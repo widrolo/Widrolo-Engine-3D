@@ -37,8 +37,8 @@ RenderHandler::RenderHandler()
 
 void RenderHandler::BeginFrame()
 {
-	GPU::DRAWCALL_ResetImGui();
-	GPU::SETTING_BeginNewFrame(Color::White);
+	GPU::SETTING_BeginNewFrame();
+	GPU::DRAWCALL_ClearFrame(Color{2, 2, 2, 255});
 }
 
 void RenderHandler::RenderFrame()

@@ -1,12 +1,12 @@
 #pragma once
-#include <vector>
+#include "Engine/WTL/vector.h"
 
 namespace WEngine
 {
+    struct VertexData;
+
     struct ModelInfo
     {
-        // these two are linked, mens that vertex n has the UV coords n.
-        std::vector<Vector2> vertices;
-        std::vector<Vector2> uvCoords;
+        wtl::vector<VertexData> vertices;
     };
 }

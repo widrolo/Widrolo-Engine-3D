@@ -14,7 +14,7 @@ namespace WEngine
 
 	private:
 		Vector2 m_windowResolution;
-		SDL_DisplayMode* m_displayMode = new SDL_DisplayMode();
+		SDL_DisplayMode* m_displayMode = nullptr;
 		SDL_Window* m_window = nullptr;
 
 	public:

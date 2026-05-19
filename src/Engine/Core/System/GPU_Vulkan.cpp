@@ -1,9 +1,6 @@
 #include <Engine/EngineDefines.h>
 #if GPU_BACKEND == GPU_VULKAN
 
-#include <complex>
-#include <memory>
-
 #include "GPU.h"
 
 #include <Engine/EngineDefines.h>
@@ -18,6 +15,11 @@
 #include "GPUSettings.h"
 #include "Engine/Util/BitwiseMacros.h"
 #include "Engine/Util/Log.h"
+
+#include <Engine/Types/Rendering/VertextData.h>
+
+#include "Engine/Core/Handlers/AssetRepo.h"
+#include "Engine/Types/CoreSystems.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------- [ MEMORY ] ---------------------------------------------------
@@ -76,6 +78,17 @@ enum class ImageBufferType
     Input
 };
 
+struct Vulkan_Shader
+{
+    VkShaderModule vertexShader;
+    VkShaderModule fragmentShader;
+    VkShaderModule geometryShader;
+
+    bool vertexPresent : 1;
+    bool fragmentPresent : 1;
+    bool geometryPresent : 1;
+};
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------ [GPU API VARIABLES] -----------------------------------------------
@@ -106,11 +119,17 @@ wtl::vector<QueueFamily> queueFamilies;
 uint32 primaryDrawQueueFamilyIndex = 0;
 VkQueue primaryDrawQueue = VK_NULL_HANDLE;
 
+VkPipelineLayout pipelineLayout;
+
 // These are just for prototyping
 
 VkCommandPool testPool;
 wtl::vector<VkCommandBuffer> testBufs;
 VkRenderPass testPass;
+VkPipeline testPipeline;
+
+wtl::vector<Vulkan_Shader> loadedShaders;
+std::unordered_map<std::string, WEngine::Shader> loadedShadersHandles;
 
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------ [GPU API HELPERS] -------------------------------------------------
@@ -124,7 +143,15 @@ bool ParseVkResult(VkResult result)
 
     WEngine::WLog::SetConsoleError();
     WEngine::WLog::ConsoleLog("[GPU ERROR] VkResult was not success!");
-    return false;
+    switch (GPUSettingsVulkan::invalidResultAction)
+    {
+        case GPUSettingsVulkan::InvalidResultAction::LetGo:
+            return false;
+        case GPUSettingsVulkan::InvalidResultAction::Stall:
+            while (true);
+        case GPUSettingsVulkan::InvalidResultAction::Abort:
+            abort();
+    }
 }
 
 VkBool32 ValidationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes,
@@ -462,6 +489,20 @@ bool SetupSwapchain()
     return ParseVkResult(res);
 }
 
+bool SetupPipelineLayout()
+{
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    auto resLayout = vkCreatePipelineLayout(gpuDevice, &pipelineLayoutInfo, allocator, &pipelineLayout);
+    if (!ParseVkResult(resLayout))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Unable to create pipeline layout!");
+        return false;
+    }
+    return true;
+}
+
 // ------------------------------------------------- [MEM FUNCTIONS] --------------------------------------------------
 
 // This function does not always allocate the exact amount of video memory as passed in, as Vulkan
@@ -642,6 +683,8 @@ VkCommandPool CreateCommandPool()
     return commandPool;
 }
 
+// -------------------------------------------------- [RENDER SETUP] --------------------------------------------------
+
 VkCommandBuffer CreateCommandBuffer(VkCommandPool cmdPool)
 {
     VkCommandBuffer cmdBuff;
@@ -713,6 +756,141 @@ VkRenderPass CreateBasicRenderPass()
     return renderPass;
 }
 
+VkShaderModule CompileShader(const WEngine::SpirVAssetMission& spirvAssetMission)
+{
+    VkShaderModule module;
+    VkShaderModuleCreateInfo shaderModuleInfo{};
+    shaderModuleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    shaderModuleInfo.codeSize = spirvAssetMission.shaderSize;
+    shaderModuleInfo.pCode = spirvAssetMission.shaderCode;
+
+    auto res = vkCreateShaderModule(gpuDevice, &shaderModuleInfo, allocator, &module);
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleWarning();
+        WEngine::WLog::ConsoleLog("Unable to create shader module!");
+        return VK_NULL_HANDLE;
+    }
+    return module;
+}
+
+VkPipeline CreateBasicPipeline(VkRenderPass renderPass)
+{
+    VkPipeline pipeline;
+
+
+    // ----------------------------------------------- [INPUT ASSEMBLY] -----------------------------------------------
+
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
+    inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    // --------------------------------------------- [VERTEX DEFINITION] ----------------------------------------------
+
+    VkVertexInputBindingDescription bindingDescription{};
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(WEngine::VertexData);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    // [0] = Position (Vector3)     |     [1] = UV (Vector2)
+    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT; // Khronos had a meth party while making this one
+    attributeDescriptions[0].offset = offsetof(WEngine::VertexData, position);
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT; // Khronos had a meth party while making this one
+    attributeDescriptions[1].offset = offsetof(WEngine::VertexData, uvCoord);
+
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+    // ------------------------------------------ [RASTERIZER AND RENDERING] ------------------------------------------
+
+    VkPipelineRasterizationStateCreateInfo rasterInfo{};
+    rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterInfo.lineWidth = 1.0f;
+
+    VkPipelineColorBlendAttachmentState blendState{};
+    blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+    VkPipelineColorBlendStateCreateInfo blendInfo{};
+    blendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    blendInfo.attachmentCount = 1;
+    blendInfo.pAttachments = &blendState;
+
+    VkPipelineViewportStateCreateInfo viewInfo{};
+    viewInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewInfo.viewportCount = 1;
+    viewInfo.scissorCount = 1;
+
+    VkPipelineDepthStencilStateCreateInfo depthStencilInfo{};
+    depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
+    VkPipelineMultisampleStateCreateInfo multisampleInfo{};
+    multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+    std::array<VkDynamicState, 2> dynamics{};
+    dynamics[0] = VK_DYNAMIC_STATE_VIEWPORT;
+    dynamics[1] = VK_DYNAMIC_STATE_SCISSOR;
+
+    VkPipelineDynamicStateCreateInfo dynamicInfo{};
+    dynamicInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicInfo.dynamicStateCount = dynamics.size();
+    dynamicInfo.pDynamicStates = dynamics.data();
+
+    // -------------------------------------------------- [SHADERS] ---------------------------------------------------
+
+    // Sperm Vee
+    WEngine::SpirVAssetMission vertexShaderCode{};
+    vertexShaderCode.shaderType = WEngine::SpirVAssetMission::VertexShader;
+    vertexShaderCode.name = "triangle";
+    WEngine::SpirVAssetMission fragmentShaderCode{};
+    fragmentShaderCode.shaderType = WEngine::SpirVAssetMission::FragmentShader;
+    fragmentShaderCode.name = "triangle";
+    WEngine::CoreSystems::GetAssetRepo()->GetAsset(vertexShaderCode);
+    WEngine::CoreSystems::GetAssetRepo()->GetAsset(fragmentShaderCode);
+
+    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages{};
+
+    shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+    shaderStages[0].pName = "main";
+    shaderStages[0].module = CompileShader(vertexShaderCode);
+    shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    shaderStages[1].pName = "main";
+    shaderStages[1].module = CompileShader(fragmentShaderCode);
+
+    VkGraphicsPipelineCreateInfo pipeInfo{};
+    pipeInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipeInfo.pInputAssemblyState = &inputAssemblyInfo;
+    pipeInfo.pVertexInputState = &vertexInputInfo;
+    pipeInfo.pRasterizationState = &rasterInfo;
+    pipeInfo.pColorBlendState = &blendInfo;
+    pipeInfo.pViewportState = &viewInfo;
+    pipeInfo.pDepthStencilState = &depthStencilInfo;
+    pipeInfo.pMultisampleState = &multisampleInfo;
+    pipeInfo.pDynamicState = &dynamicInfo;
+    pipeInfo.stageCount = shaderStages.size();
+    pipeInfo.pStages = shaderStages.data();
+    pipeInfo.renderPass = renderPass;
+    pipeInfo.layout = pipelineLayout;
+
+    vkCreateGraphicsPipelines(gpuDevice, VK_NULL_HANDLE, 1, &pipeInfo, allocator, &pipeline);
+    return pipeline;
+}
+
+
 // ------------------------------------------------ [HELPER FUNCTIONS] ------------------------------------------------
 
 uint64 GetSizeOfImageInBytes(WEngine::Vector2 imageSize, uint8 channelCount)
@@ -746,11 +924,15 @@ bool GPU::SETTING_InitGPUApi(SDL_Window *window)
     if (!SetupSwapchain())
         return false;
 
+    if (!SetupPipelineLayout())
+        return false;
+
     testBufs.resize(swapchainImages.size());
     testPool = CreateCommandPool();
     for (uint32 i = 0; i < swapchainImages.size(); i++)
         testBufs[i] = CreateCommandBuffer(testPool);
     testPass = CreateBasicRenderPass();
+    testPipeline = CreateBasicPipeline(testPass);
 
     SetupSwapchainFramebuffers();
 
@@ -766,13 +948,14 @@ void GPU::SETTING_ConfigureImGui(SDL_Window *window)
     initInfo.PhysicalDevice = gpuPhysicalDevice;
     initInfo.Device = gpuDevice;
     initInfo.Allocator = allocator;
+    initInfo.QueueFamily = primaryDrawQueueFamilyIndex;
     initInfo.Queue = primaryDrawQueue;
 
     //ImGui_ImplVulkan_Init(&initInfo);
 }
 
 
-void GPU::SETTING_BeginNewFrame(WEngine::Color clearColor)
+void GPU::SETTING_BeginNewFrame()
 {
     vkWaitForFences(gpuDevice, 1, &endOfFrameFences[currentFrame], VK_TRUE, UINT64_MAX);
     vkResetFences(gpuDevice, 1, &endOfFrameFences[currentFrame]);
@@ -786,7 +969,45 @@ void GPU::SETTING_BeginNewFrame(WEngine::Color clearColor)
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     vkBeginCommandBuffer(testBufs[currentFrame], &beginInfo);
+}
 
+void GPU::SETTING_SetViewportSize(WEngine::Vector3 size)
+{
+    VkViewport viewport{};
+    viewport.width = size.x;
+    viewport.height = size.y;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(testBufs[currentFrame], 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.extent.width = size.x;
+    scissor.extent.height = size.y;
+    vkCmdSetScissor(testBufs[currentFrame], 0, 1, &scissor);
+}
+
+WEngine::Nullable<WEngine::Shader> GPU::GetShader(const std::string &shaderName)
+{
+    if (loadedShadersHandles.contains(shaderName))
+        return WEngine::Nullable<WEngine::Shader>(loadedShadersHandles[shaderName]);
+    return WEngine::Nullable<WEngine::Shader>();
+}
+
+WEngine::Nullable<WEngine::Shader> GPU::ALLOC_CompileShader(const std::string& shaderName)
+{
+    auto check = GetShader(shaderName);
+
+    if (check.HasValue())
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog(std::format("Shader already {} compiled", shaderName));
+        return check;
+    }
+}
+
+
+void GPU::DRAWCALL_ClearFrame(WEngine::Color clearColor)
+{
     VkClearValue clearCol{};
     WEngine::Colorf col(clearColor);
     clearCol = { col.red, col.green, col.blue, col.alpha };
@@ -802,11 +1023,7 @@ void GPU::SETTING_BeginNewFrame(WEngine::Color clearColor)
     renderPassInfo.framebuffer = swapchainFramebuffers[swapchainCurrentImage];
 
     vkCmdBeginRenderPass(testBufs[currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdEndRenderPass(testBufs[currentFrame]);
-    vkEndCommandBuffer(testBufs[currentFrame]);
 }
-
 
 void GPU::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings &settings)
 {
@@ -815,7 +1032,7 @@ void GPU::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const
 
 void GPU::DRAWCALL_ResetImGui()
 {
-
+    ImGui_ImplVulkan_NewFrame();
 }
 
 void GPU::DRAWCALL_DrawImGui()
@@ -825,6 +1042,11 @@ void GPU::DRAWCALL_DrawImGui()
 
 void GPU::DRAWCALL_SwapBuffers(SDL_Window *window)
 {
+    vkCmdEndRenderPass(testBufs[currentFrame]);
+    auto res = vkEndCommandBuffer(testBufs[currentFrame]);
+    if (!ParseVkResult(res))
+        WEngine::WLog::ConsoleLog("Something went wrong after ending the command buffer!");
+
     // just for now
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 

@@ -27,6 +27,21 @@ namespace WEngine
 	};
 
 	/**
+	  * Represents a mission to load a shader asset.
+	  */
+	struct SpirVAssetMission : public AssetMissionBase
+	{
+		enum SpirVMissionShaderType
+		{
+			VertexShader,
+			FragmentShader,
+			GeometryShader,
+		} shaderType;
+		uint64 shaderSize;
+		uint32* shaderCode;
+	};
+
+	/**
 	 * Represents a mission to load a YAML asset.
 	 */
 	struct YamlAssetMission : public AssetMissionBase
