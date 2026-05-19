@@ -10,9 +10,9 @@
 #include <yaml-cpp/yaml.h>
 #include <tinyxml2/tinyxml2.h>
 
-#include "Engine/Core/System/Iris.h"
 #include "Engine/imgui/imgui.h"
-#include "Engine/Util/Conversions.h"
+#include <shaderc/shaderc.hpp>
+
 
 using namespace WEngine;
 
@@ -100,36 +100,12 @@ void AssetRepo::GetAsset<UISheetAssetMission>(UISheetAssetMission& mission)
 template<>
 void AssetRepo::GetAsset<SpirVAssetMission>(SpirVAssetMission& mission)
 {
-	std::string path = GetDataPath() + EngineSettings::shaderPath + mission.name;
-	switch (mission.shaderType)
-	{
-		case SpirVAssetMission::VertexShader:
-			path += "Vertex";
-			break;
-		case SpirVAssetMission::FragmentShader:
-			path += "Fragment";
-			break;
-		case SpirVAssetMission::GeometryShader:
-			path += "Geometry";
-			break;
-	}
-	path += ".spv";
-	std::ifstream file(path, std::ios::binary | std::ios::in | std::ios::ate);
+#ifdef PACKAGE
+	LoadSpirVFromSpv(mission);
+#else
+	LoadSpirVFromGlsl(mission);
+#endif
 
-	if (!file.is_open())
-	{
-		WLog::SetConsoleError();
-		WLog::ConsoleLog(std::format("Failed to open Spir-V shader:\n\t{}", path));
-		mission.shaderSize = 0;
-		return;
-	}
-
-	mission.shaderSize = file.tellg();
-	file.seekg(0, std::ios::beg);
-
-	mission.shaderCode = new uint32[mission.shaderSize / sizeof(uint32)];
-	file.read(reinterpret_cast<char*>(mission.shaderCode), mission.shaderSize);
-	file.close();
 }
 
 AudioClip* AssetRepo::LoadAudioWAV(const std::string& name)
@@ -172,4 +148,94 @@ std::string AssetRepo::LoadTextFile(const std::string& path)
 	file.close();
 
 	return buffer.str();
+}
+
+void AssetRepo::LoadSpirVFromGlsl(SpirVAssetMission &mission)
+{
+	std::string path = GetDataPath() + EngineSettings::shaderPath + mission.name;
+	shaderc_shader_kind kind = shaderc_glsl_infer_from_source; // just to shut up the compiler.
+	switch (mission.shaderType)
+	{
+		case SpirVAssetMission::VertexShader:
+			path += "Vertex";
+			kind = shaderc_glsl_vertex_shader;
+			break;
+		case SpirVAssetMission::FragmentShader:
+			path += "Fragment";
+			kind = shaderc_glsl_fragment_shader;
+			break;
+		case SpirVAssetMission::GeometryShader:
+			path += "Geometry";
+			kind = shaderc_glsl_geometry_shader;
+			break;
+	}
+
+	path += ".glsl";
+
+	auto shaderCode = LoadTextFile(path);
+
+	shaderc::Compiler compiler;
+	shaderc::CompileOptions options;
+
+	options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+#ifdef DEBUG
+	options.SetOptimizationLevel(shaderc_optimization_level_zero);
+	options.SetGenerateDebugInfo();
+#elif
+	options.SetOptimizationLevel(shaderc_optimization_level_performance);
+#endif
+
+	auto res = compiler.CompileGlslToSpv(
+		shaderCode,
+		kind,
+		"what.txt",
+		options
+	);
+
+	if (res.GetCompilationStatus() != shaderc_compilation_status_success)
+	{
+		WLog::SetConsoleError();
+		WLog::ConsoleLog(std::format("Failed to compile shader from GLSL to Spir-V:\n\t{}\n\t{}", path, res.GetErrorMessage()));
+		return;
+	}
+
+	size_t wordCount = res.cend() - res.cbegin();
+	mission.shaderCode = wNewArr(uint32, wordCount);
+	std::copy(res.cbegin(), res.cend(), mission.shaderCode);
+	mission.shaderSize = wordCount * sizeof(uint32);
+}
+
+void AssetRepo::LoadSpirVFromSpv(SpirVAssetMission &mission)
+{
+	std::string path = GetDataPath() + EngineSettings::shaderPath + mission.name;
+	switch (mission.shaderType)
+	{
+		case SpirVAssetMission::VertexShader:
+			path += "Vertex";
+			break;
+		case SpirVAssetMission::FragmentShader:
+			path += "Fragment";
+			break;
+		case SpirVAssetMission::GeometryShader:
+			path += "Geometry";
+			break;
+	}
+	path += ".spv";
+	std::ifstream file(path, std::ios::binary | std::ios::in | std::ios::ate);
+
+	if (!file.is_open())
+	{
+		WLog::SetConsoleError();
+		WLog::ConsoleLog(std::format("Failed to open Spir-V shader:\n\t{}", path));
+		mission.shaderSize = 0;
+		return;
+	}
+
+	mission.shaderSize = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	mission.shaderCode = new uint32[mission.shaderSize / sizeof(uint32)];
+	file.read(reinterpret_cast<char*>(mission.shaderCode), mission.shaderSize);
+	file.close();
 }

@@ -55,5 +55,5 @@ private:
 };
 
 #define wNew(size) WAllocator::Allocate(size);
-#define wNewArr(type, count) WAllocator::Allocate(size + sizeof(type));
+#define wNewArr(type, count) (type*)WAllocator::Allocate(count * sizeof(type));
 #define wFree(ptr) WAllocator::Free(ptr);

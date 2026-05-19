@@ -47,7 +47,10 @@ struct EngineSettings
 	 *  refresh rate of the monitor.
 	 */
 	_GLOBAL_CEX_ bool enableVSync = true;
-	/** Caps the frame rate. */
+	/**
+	 * Caps the frame rate.
+	 * @note this should never be higher than 5000. Otherwise, semaphores bug out on Vulkan.
+	 */
 	_GLOBAL_CEX_ float64 maxFrameRate = 120.0f;
 	/**
 	 *  This dictates how many pixels make up one metre. It's a relic from the past, where

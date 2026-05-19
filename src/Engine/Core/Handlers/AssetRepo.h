@@ -45,6 +45,9 @@ namespace WEngine
 
 		AudioClip* LoadAudioWAV(const std::string& name);
 		std::string LoadTextFile(const std::string& path);
+
+		void LoadSpirVFromGlsl(SpirVAssetMission& mission);
+		void LoadSpirVFromSpv(SpirVAssetMission& mission);
 	};
 };
 

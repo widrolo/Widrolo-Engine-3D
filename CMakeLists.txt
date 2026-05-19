@@ -328,9 +328,16 @@ if(MSVC)
 endif()
 
 # hard coded for now, sorry...
+find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
+
+
 list(APPEND CMAKE_PREFIX_PATH "/home/filip/git/VulkanMemoryAllocator/build/install")
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-target_link_libraries(Widrolo_Engine_3D PRIVATE GPUOpen::VulkanMemoryAllocator)
+target_link_libraries(Widrolo_Engine_3D PRIVATE
+        #Vulkan::Vulkan
+        Vulkan::shaderc_combined
+        GPUOpen::VulkanMemoryAllocator
+)
 
 if(WIN32)
     message(STATUS Detected Windows)

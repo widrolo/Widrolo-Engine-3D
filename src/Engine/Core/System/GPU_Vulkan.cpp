@@ -154,6 +154,8 @@ bool ParseVkResult(VkResult result)
             while (true);
         case GPUSettingsVulkan::InvalidResultAction::Abort:
             abort();
+        default:
+            return false;
     }
 }
 
@@ -184,7 +186,7 @@ VkBool32 ValidationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeveri
     if (messageTypes == VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
         WEngine::WLog::ConsoleLog(std::format("{} Validation layer tripped! \"{}\"\n{}", warnStart, pCallbackData->pMessageIdName, pCallbackData->pMessage));
     else if (messageTypes == VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
-        WEngine::WLog::ConsoleLog(std::format("{} Non-optimal use of Vulkan!\"{}\"\n{}", warnStart, pCallbackData->pMessageIdName, pCallbackData->pMessage));
+        WEngine::WLog::ConsoleLog(std::format("{} Non-optimal use of Vulkan! \"{}\"\n{}", warnStart, pCallbackData->pMessageIdName, pCallbackData->pMessage));
 
 
     return VK_FALSE;
@@ -670,7 +672,6 @@ VkPipeline CreateBasicPipeline(VkRenderPass renderPass)
 {
     VkPipeline pipeline;
 
-
     // ----------------------------------------------- [INPUT ASSEMBLY] -----------------------------------------------
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
@@ -684,8 +685,8 @@ VkPipeline CreateBasicPipeline(VkRenderPass renderPass)
     bindingDescription.stride = sizeof(WEngine::VertexData);
     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    // [0] = Position (Vector3)     |     [1] = Color (Vector3)     |     [2] = UV (Vector2)
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+    // [0] = Position (Vector3)   |   [1] = Color (Vector3)   |   [2] = Color UV (Vector2)   |   [3] = Shadow UV (Vector2)
+    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
     attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT; // Khronos had a meth party while making this one
@@ -697,7 +698,11 @@ VkPipeline CreateBasicPipeline(VkRenderPass renderPass)
     attributeDescriptions[2].binding = 0;
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT; // Khronos had a meth party while making this one
-    attributeDescriptions[2].offset = offsetof(WEngine::VertexData, uvCoord);
+    attributeDescriptions[2].offset = offsetof(WEngine::VertexData, uv0Coord);
+    attributeDescriptions[3].binding = 0;
+    attributeDescriptions[3].location = 3;
+    attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT; // Khronos had a meth party while making this one
+    attributeDescriptions[3].offset = offsetof(WEngine::VertexData, uv1Coord);
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -792,6 +797,9 @@ VkPipeline CreateBasicPipeline(VkRenderPass renderPass)
 
     vkDestroyShaderModule(vcore.gpuDevice, shaderStages[0].module, vcore.allocator);
     vkDestroyShaderModule(vcore.gpuDevice, shaderStages[1].module, vcore.allocator);
+
+    wFree(vertexShaderCode.shaderCode);
+    wFree(fragmentShaderCode.shaderCode);
 
     return pipeline;
 }
@@ -919,8 +927,10 @@ WEngine::Nullable<WEngine::Shader> Iris::ALLOC_CompileShader(const std::string& 
     {
         WEngine::WLog::SetConsoleError();
         WEngine::WLog::ConsoleLog(std::format("Shader already {} compiled", shaderName));
-        return check;
+        return WEngine::Nullable<WEngine::Shader>();
     }
+
+    return WEngine::Nullable<WEngine::Shader>();
 }
 
 WEngine::Nullable<WEngine::Model> Iris::ALLOC_CreateModel(const WEngine::ModelInfo &model)
