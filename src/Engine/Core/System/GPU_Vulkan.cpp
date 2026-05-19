@@ -20,6 +20,8 @@
 
 #include "Engine/Core/Handlers/AssetRepo.h"
 #include "Engine/Types/CoreSystems.h"
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------- [ MEMORY ] ---------------------------------------------------
@@ -68,7 +70,8 @@ struct QueueFamily
 enum class BufferType
 {
     Uniform,
-    Storage
+    Storage,
+    Vertex
 };
 
 enum class ImageBufferType
@@ -89,6 +92,13 @@ struct Vulkan_Shader
     bool geometryPresent : 1;
 };
 
+struct Vulkan_Model
+{
+    VkBuffer vertexBuffer;
+    VmaAllocation vertexAllocation;
+    uint64 vertexCount;
+};
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------ [GPU API VARIABLES] -----------------------------------------------
@@ -97,6 +107,7 @@ struct Vulkan_Shader
 VkDebugUtilsMessengerEXT validationMessenger = VK_NULL_HANDLE;
 VkAllocationCallbacks* allocator = nullptr;
 VkAllocationCallbacks allocatorInternal;
+VmaAllocator vmaAllocator;
 
 VkInstance instance = VK_NULL_HANDLE;
 VkPhysicalDevice gpuPhysicalDevice = VK_NULL_HANDLE;
@@ -130,6 +141,7 @@ VkPipeline testPipeline;
 
 wtl::vector<Vulkan_Shader> loadedShaders;
 std::unordered_map<std::string, WEngine::Shader> loadedShadersHandles;
+wtl::vector<Vulkan_Model> loadedModels;
 
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------ [GPU API HELPERS] -------------------------------------------------
@@ -201,6 +213,24 @@ void SetupAllocator()
     allocatorInternal.pfnInternalFree = VulkanInternalFree;
 
     allocator = &allocatorInternal;
+}
+
+void SetupVmaAllocator()
+{
+    VmaVulkanFunctions vulkanFunctions = {};
+    vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+    vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+    VmaAllocatorCreateInfo allocatorCreateInfo = {};
+    allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+    allocatorCreateInfo.physicalDevice = gpuPhysicalDevice;
+    allocatorCreateInfo.device = gpuDevice;
+    allocatorCreateInfo.instance = instance;
+    allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+
+
+    vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
 }
 
 bool SetupValidation()
@@ -572,6 +602,9 @@ VkBuffer CreateBuffer(const uint64 size, BufferType bufferType)
         case BufferType::Storage:
             bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             break;
+        case BufferType::Vertex:
+            bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+            break;
     }
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     auto bufRes = vkCreateBuffer(gpuDevice, &bufferInfo, allocator, &buffer);
@@ -602,7 +635,7 @@ VkImage CreateImage(ImageBufferType imageType, WEngine::Vector2 imageSize)
     {
         case ImageBufferType::Storage:
             imageInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT;
-            imageInfo.format = VK_FORMAT_R8G8B8A8_UINT; // and he decided it all to be uint from now on!
+            imageInfo.format = VK_FORMAT_R8G8B8A8_UINT; // and so god decided it all to be uint from now on!
             break;
         case ImageBufferType::Sampled:
             imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -886,7 +919,17 @@ VkPipeline CreateBasicPipeline(VkRenderPass renderPass)
     pipeInfo.renderPass = renderPass;
     pipeInfo.layout = pipelineLayout;
 
-    vkCreateGraphicsPipelines(gpuDevice, VK_NULL_HANDLE, 1, &pipeInfo, allocator, &pipeline);
+    auto res = vkCreateGraphicsPipelines(gpuDevice, VK_NULL_HANDLE, 1, &pipeInfo, allocator, &pipeline);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to create graphics pipeline.");
+    }
+
+    vkDestroyShaderModule(gpuDevice, shaderStages[0].module, allocator);
+    vkDestroyShaderModule(gpuDevice, shaderStages[1].module, allocator);
+
     return pipeline;
 }
 
@@ -913,6 +956,8 @@ bool GPU::SETTING_InitGPUApi(SDL_Window *window)
 
     if (!SetupGraphicsDevice())
         return false;
+
+    SetupVmaAllocator();
 
     if (!SDL_Vulkan_CreateSurface(window, instance, allocator, &screen))
     {
@@ -971,7 +1016,7 @@ void GPU::SETTING_BeginNewFrame()
     vkBeginCommandBuffer(testBufs[currentFrame], &beginInfo);
 }
 
-void GPU::SETTING_SetViewportSize(WEngine::Vector3 size)
+void GPU::SETTING_SetViewportSize(WEngine::Vector2 size)
 {
     VkViewport viewport{};
     viewport.width = size.x;
@@ -1005,6 +1050,48 @@ WEngine::Nullable<WEngine::Shader> GPU::ALLOC_CompileShader(const std::string& s
     }
 }
 
+WEngine::Nullable<WEngine::Model> GPU::ALLOC_CreateModel(const WEngine::ModelInfo &model)
+{
+    Vulkan_Model vkModel{};
+    VkDeviceSize vertBufferSize = model.vertices.size() * sizeof(WEngine::VertexData);
+
+    VkBufferCreateInfo bufferCreateInfo{};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.size = vertBufferSize;
+    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    allocationCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    VmaAllocationInfo bufferAllocInfo{};
+
+    auto res = vmaCreateBuffer(vmaAllocator, &bufferCreateInfo, &allocationCreateInfo,
+        &vkModel.vertexBuffer, &vkModel.vertexAllocation, &bufferAllocInfo);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to allocate vertex buffer");
+        return WEngine::Nullable<WEngine::Model>();
+    }
+
+    if (bufferAllocInfo.pMappedData)
+    {
+        memcpy(bufferAllocInfo.pMappedData, model.vertices.data(), vertBufferSize);
+    }
+    else
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to allocate vertex buffer");
+        return WEngine::Nullable<WEngine::Model>();
+    }
+
+    loadedModels.push_back(vkModel);
+    return WEngine::Nullable<WEngine::Model>(loadedModels.size());
+}
+
 
 void GPU::DRAWCALL_ClearFrame(WEngine::Color clearColor)
 {
@@ -1027,6 +1114,13 @@ void GPU::DRAWCALL_ClearFrame(WEngine::Color clearColor)
 
 void GPU::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings &settings)
 {
+    vkCmdBindPipeline(testBufs[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, testPipeline);
+
+    Vulkan_Model vkModel = loadedModels[model - 1];
+    VkDeviceSize offset = 0;
+    vkCmdBindVertexBuffers(testBufs[currentFrame], 0, 1, &vkModel.vertexBuffer, &offset);
+
+    vkCmdDraw(testBufs[currentFrame], 3, 1, 0, 0);
 
 }
 

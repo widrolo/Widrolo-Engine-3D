@@ -28,13 +28,17 @@ public:
     static bool SETTING_InitGPUApi(SDL_Window* window);
     static void SETTING_ConfigureImGui(SDL_Window* window);
     static void SETTING_BeginNewFrame();
-    static void SETTING_SetViewportSize(WEngine::Vector3 size);
+    static void SETTING_SetViewportSize(WEngine::Vector2 size);
 
     static WEngine::Nullable<WEngine::Shader> GetShader(const std::string& shaderName);
 
     // ----------------------- Shaders -----------------------
 
     static WEngine::Nullable<WEngine::Shader> ALLOC_CompileShader(const std::string& shaderName);
+
+    // ----------------------- Models ------------------------
+
+    static WEngine::Nullable<WEngine::Model> ALLOC_CreateModel(const WEngine::ModelInfo& model);
 
     // ----------------------- Drawing -----------------------
 

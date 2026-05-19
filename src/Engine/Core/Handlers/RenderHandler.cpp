@@ -1,11 +1,9 @@
 #include "RenderHandler.h"
 #include <iostream>
-#include <mmintrin.h>
 #include <queue>
 
 #include <Engine/Math/Vector.h>
 #include <Engine/Util/Log.h>
-#include <Engine/Util/Conversions.h>
 #include <Engine/Components/Rendering/CameraComponent.h>
 #include <Engine/Core/Handlers/AssetRepo.h>
 
@@ -13,15 +11,17 @@
 
 #include <Engine/imgui/imgui.h>
 #include <Engine/imgui/implot.h>
-#include <Engine/imgui/imgui_node_editor.h>
 
 #include <Engine/Core/System/GPU.h>
 
-#include "steamclientpublic.h"
 #include "Engine/imgui/imgui_node_editor_internal.h"
 #include "Engine/Types/DebugFlags.h"
 
+#include <Engine/Types/Rendering/VertextData.h>
+
 using namespace WEngine;
+
+Model testModel;
 
 RenderHandler::RenderHandler()
 {
@@ -33,16 +33,38 @@ RenderHandler::RenderHandler()
 		abort();
 	}
 	InitImGui();
+
+	ModelInfo info;
+	info.vertices.resize(3);
+	info.vertices[0] = {{0.0f, -0.5f, 0.5f}, {0.0f, 0.0f}};
+	info.vertices[1] = {{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}};
+	info.vertices[2] = {{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}};
+
+	auto modelN = GPU::ALLOC_CreateModel(info);
+
+	if (modelN.HasValue())
+		testModel = modelN.GetValue();
+	else
+	{
+		WLog::SetConsoleError();
+		WLog::ConsoleLog("DAMMIT!!!");
+	}
+
+
 }
 
 void RenderHandler::BeginFrame()
 {
 	GPU::SETTING_BeginNewFrame();
 	GPU::DRAWCALL_ClearFrame(Color{2, 2, 2, 255});
+	GPU::SETTING_SetViewportSize(EngineSettings::resolution);
 }
 
 void RenderHandler::RenderFrame()
 {
+	ShaderSettings shaderSettings{};
+	GPU::DRAWCALL_DrawModel(testModel, 0, shaderSettings);
+
 	GPU::DRAWCALL_SwapBuffers(m_window);
 }
 

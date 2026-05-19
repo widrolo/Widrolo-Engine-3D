@@ -326,6 +326,11 @@ if(MSVC)
     target_compile_options(Widrolo_Engine_3D PRIVATE /MP /wd4005)
 endif()
 
+# hard coded for now, sorry...
+list(APPEND CMAKE_PREFIX_PATH "/home/filip/git/VulkanMemoryAllocator/build/install")
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+target_link_libraries(Widrolo_Engine_3D PRIVATE GPUOpen::VulkanMemoryAllocator)
+
 if(WIN32)
     message(STATUS Detected Windows)
     target_compile_definitions(Widrolo_Engine_3D PRIVATE WE_Windows)
