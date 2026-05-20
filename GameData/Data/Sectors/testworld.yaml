@@ -1,0 +1,15 @@
+entities:
+  e0:
+    name: thing 1
+    position: [0.5, 0, 0]
+    size: [1, 1, 1]
+    components:
+      c0:
+        component-type: 14
+  e1:
+    name: thing 2
+    position: [-0.5, 0, 0]
+    size: [1, 1, 1]
+    components:
+      c0:
+        component-type: 14

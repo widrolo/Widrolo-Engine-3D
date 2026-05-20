@@ -1,0 +1,10 @@
+entities:
+  e0:
+    name: camera
+    position: [0, 0, 0]
+    size: [1, 1, 1]
+    components:
+      c0:
+        component-type: 4
+      c1:
+        component-type: 1024
