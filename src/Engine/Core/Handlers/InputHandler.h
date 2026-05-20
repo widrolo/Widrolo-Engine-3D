@@ -33,7 +33,10 @@ namespace WEngine
 
 		wtl::vector<InputPeripheral> m_peripherals;
 
+		SDL_Window* m_window;
+
 	public:
+		void SetWindow(SDL_Window* window);
 		/**
 		 * Fetches input from keyboard, mouse, controller, and steering wheel.
 		 * Also checks for newly connected or disconnected peripherals.
@@ -64,6 +67,11 @@ namespace WEngine
 		 * @return The current mouse position.
 		 */
 		[[nodiscard]] Vector2 GetMousePos() const;
+		/**
+		 * Retrieves the current mouse position as a Vector2.
+		 * @return The current mouse position.
+		 */
+		void SetMousePos(const Vector2& pos);
 		/**
 		 * Checks if a specific mouse button is pressed during this frame and was not pressed in the previous frame.
 		 * @param button The mouse button to check for a press event.

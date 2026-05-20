@@ -19,6 +19,9 @@
 
 #include <Engine/Types/Rendering/VertextData.h>
 
+#include "InputHandler.h"
+#include "Engine/Types/CoreSystems.h"
+
 using namespace WEngine;
 
 Model testModel;
@@ -39,13 +42,30 @@ RenderHandler::RenderHandler()
 	InitImGui();
 
 	ModelInfo info;
-	info.vertices.resize(4);
-	info.vertices[0] = {{ 0.1f, -0.1f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
-	info.vertices[1] = {{ 0.1f,	 0.1f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
-	info.vertices[2] = {{-0.1f,  0.1f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
-	info.vertices[3] = {{-0.1f, -0.1f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
+	info.vertices.resize(8);
+	info.vertices[0] = {{ 0.1f, -0.1f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t r f
+	info.vertices[1] = {{ 0.1f,	 0.1f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b r f
+	info.vertices[2] = {{-0.1f,  0.1f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b l f
+	info.vertices[3] = {{-0.1f, -0.1f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t l f
 
-	info.indices = {0, 1, 2, 0, 2, 3};
+	info.vertices[4] = {{ 0.1f, -0.1f, -0.7f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t r b
+	info.vertices[5] = {{ 0.1f,	 0.1f, -0.7f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b r b
+	info.vertices[6] = {{-0.1f,  0.1f, -0.7f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b l b
+	info.vertices[7] = {{-0.1f, -0.1f, -0.7f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t l b
+
+	info.indices =
+		{0, 1, 2,
+		 0, 2, 3,
+		 0, 3, 4,
+		 3, 7, 4,
+		 0, 4, 5,
+		 0, 5, 1,
+		 3, 2, 7,
+		 2, 6, 7,
+		 2, 1, 5,
+		 2, 5, 6,
+		 4, 6, 5,
+		 4, 7, 6};
 
 	auto modelN = Iris::ALLOC_CreateModel(info);
 
@@ -199,6 +219,8 @@ void RenderHandler::InitSDL()
 		return;
 	}
 	WLog::ConsoleLog(std::format("Window opened at resolution {}x{}", m_windowResolution.x, m_windowResolution.y));
+
+	CoreSystems::GetInputHandler()->SetWindow(m_window);
 }
 void RenderHandler::InitImGui()
 {

@@ -1,5 +1,7 @@
 #include "Freecam.h"
 
+#include "Engine/Core/Handlers/InputHandler.h"
+
 REGISTER_COMPONENT(Freecam)
 
 Freecam::Freecam(WEngine::Entity *e)
@@ -33,31 +35,25 @@ void Freecam::Tick(float32 dt)
     if (input->GetActionInput(WKey::D))
         entity->transform.position = entity->transform.position + entity->transform.Right() * m_speed * dt;
 
-    if (input->GetActionInput(WKey::E))
+    if (input->GetActionInput(WKey::SPACE))
         entity->transform.position = entity->transform.position + entity->transform.Up() * m_speed * dt;
-    if (input->GetActionInput(WKey::Q))
+    if (input->GetActionInput(WKey::SHIFT))
         entity->transform.position = entity->transform.position - entity->transform.Up() * m_speed * dt;
 
 
     auto newMousePos = input->GetMousePosition();
+    WEngine::CoreSystems::GetInputHandler()->SetMousePos(EngineSettings::resolution / 2);
 
-    WEngine::Vector2 mouseDelta = m_oldMousePos - (newMousePos - WEngine::Vector2{1920/2, 1080/2});
+    WEngine::Vector2 mouseDelta = newMousePos - EngineSettings::resolution / 2;
 
-    entity->transform.rotation.y = entity->transform.rotation.y - (mouseDelta.x / 10);
-    entity->transform.rotation.x = entity->transform.rotation.x + (mouseDelta.y / 10);
+    m_yaw += (mouseDelta.x / 2);
+    m_pitch -=  (mouseDelta.y / 2);
 
-    m_oldMousePos = newMousePos - WEngine::Vector2{1920/2, 1080/2};
+    if (m_pitch > 89.0f)
+        m_pitch = 89.0f;
+    if (m_pitch < -89.0f)
+        m_pitch = -89.0f;
 
-    return;
-
-    if (input->GetActionInput(WKey::LEFT))
-        entity->transform.rotation.y = entity->transform.rotation.y - (dt * 20.0f);
-    if (input->GetActionInput(WKey::RIGHT))
-        entity->transform.rotation.y = entity->transform.rotation.y + (dt * 20.0f);
-
-    if (input->GetActionInput(WKey::UP))
-        entity->transform.rotation.x = entity->transform.rotation.x + (dt * 20.0f);
-    if (input->GetActionInput(WKey::DOWN))
-        entity->transform.rotation.x = entity->transform.rotation.x - (dt * 20.0f);
-
+    entity->transform.rotation.y = m_yaw;
+    entity->transform.rotation.x = m_pitch;
 }

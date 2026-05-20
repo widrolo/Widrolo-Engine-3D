@@ -14,6 +14,8 @@ public:
 
 private:
     float32 m_speed;
+    float32 m_yaw;
+    float32 m_pitch;
 
     WEngine::Vector2 m_oldMousePos;
 

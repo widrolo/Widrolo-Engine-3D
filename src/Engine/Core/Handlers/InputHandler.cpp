@@ -47,6 +47,11 @@ InputHandler::InputHandler()
 	}
 }
 
+void InputHandler::SetWindow(SDL_Window *window)
+{
+	m_window = window;
+}
+
 void InputHandler::FetchInput()
 {
 	FetchKeyboardInput();
@@ -77,6 +82,12 @@ bool InputHandler::GetKeyReleased(WKey key) const
 Vector2 InputHandler::GetMousePos() const
 {
 	return m_mousePosition;
+}
+
+void InputHandler::SetMousePos(const Vector2 &pos)
+{
+	m_mousePosition = pos;
+	SDL_WarpMouseInWindow(m_window, pos.x, pos.y);
 }
 
 bool InputHandler::GetMousePressed(WMouseBtn button) const

@@ -81,6 +81,10 @@ struct Vulkan_Screen
     wtl::vector<VkSemaphore> renderFinishedSems;
     wtl::vector<VkFence> endOfFrameFences;
     uint32 currentFrame = 0;
+
+    VkImage depthImage;
+    VkImageView depthImageView;
+    VmaAllocation depthAllocation;
 };
 
 struct Vulkan_Core
@@ -453,11 +457,16 @@ void SetupSwapchainFramebuffers()
 
         vkCreateImageView(vcore.gpuDevice, &viewInfo, vcore.allocator, &screen.swapchainImageViews[i]);
 
+        std::array<VkImageView, 2> attachments = {
+            screen.swapchainImageViews[i],
+            screen.depthImageView
+        };
+
         VkFramebufferCreateInfo fbInfo{};
         fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         fbInfo.renderPass = renderPass;
-        fbInfo.attachmentCount = 1;
-        fbInfo.pAttachments = &screen.swapchainImageViews[i];
+        fbInfo.attachmentCount = attachments.size();
+        fbInfo.pAttachments = attachments.data();
         fbInfo.width = EngineSettings::resolution.x;
         fbInfo.height = EngineSettings::resolution.y;
         fbInfo.layers = 1;
@@ -591,6 +600,70 @@ bool SetupCommandPool()
     return true;
 }
 
+VkFormat FindBestDepthFormat()
+{
+    std::vector<VkFormat> candidates =
+    {
+        VK_FORMAT_D32_SFLOAT,
+        VK_FORMAT_D32_SFLOAT_S8_UINT,
+        VK_FORMAT_D24_UNORM_S8_UINT
+    };
+
+    for (VkFormat format : candidates)
+    {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(vcore.gpuPhysicalDevice, format, &props);
+
+        if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+            return format;
+    }
+
+    return VK_FORMAT_UNDEFINED;
+}
+
+bool SetupDepthImage()
+{
+    VkImageCreateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    info.imageType = VK_IMAGE_TYPE_2D;
+    info.extent = { (uint32)EngineSettings::resolution.x, (uint32)EngineSettings::resolution.y, 1 };
+    info.mipLevels = 1;
+    info.arrayLayers = 1;
+    info.format = FindBestDepthFormat();
+    info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    info.samples = VK_SAMPLE_COUNT_1_BIT;
+
+    VmaAllocationCreateInfo allocInfo{};
+    allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    allocInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+    auto res = vmaCreateImage(vcore.vmaAllocator, &info, &allocInfo, &screen.depthImage, &screen.depthAllocation, nullptr);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Unable to create depth image.");
+        return false;
+    }
+
+    VkImageViewCreateInfo depthViewInfo{};
+    depthViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    depthViewInfo.image = screen.depthImage;
+    depthViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    depthViewInfo.format = FindBestDepthFormat();
+    depthViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    depthViewInfo.subresourceRange.baseMipLevel = 0;
+    depthViewInfo.subresourceRange.levelCount = 1;
+    depthViewInfo.subresourceRange.baseArrayLayer = 0;
+    depthViewInfo.subresourceRange.layerCount = 1;
+
+    vkCreateImageView(vcore.gpuDevice, &depthViewInfo, vcore.allocator, &screen.depthImageView);
+
+    return true;
+}
+
 // ------------------------------------------------- [MEM FUNCTIONS] --------------------------------------------------
 
 
@@ -633,27 +706,44 @@ VkRenderPass CreateBasicRenderPass()
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+    VkAttachmentDescription depthAttachment{};
+    depthAttachment.format = FindBestDepthFormat();
+    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
     VkSubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.attachmentCount = attachments.size();
+    renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = 1;
@@ -753,6 +843,11 @@ VkPipeline CreatePipeline(VkRenderPass renderPass, std::string shaderName)
 
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo{};
     depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencilInfo.depthTestEnable = VK_TRUE;
+    depthStencilInfo.depthWriteEnable = VK_TRUE;
+    depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+    depthStencilInfo.stencilTestEnable = VK_FALSE;
 
     VkPipelineMultisampleStateCreateInfo multisampleInfo{};
     multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -937,6 +1032,9 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
         return false;
     }
 
+    if (!SetupDepthImage())
+        return false;
+
     if (!SetupSwapchain())
         return false;
 
@@ -1069,16 +1167,19 @@ WEngine::Nullable<WEngine::Model> Iris::ALLOC_CreateModel(const WEngine::ModelIn
 
 void Iris::DRAWCALL_ClearFrame(WEngine::Color clearColor)
 {
-    VkClearValue clearCol{};
+    VkClearColorValue clearCol{};
     WEngine::Colorf col(clearColor);
     clearCol = { col.red, col.green, col.blue, col.alpha };
 
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = clearCol;
+    clearValues[1].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass;
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearCol;
+    renderPassInfo.clearValueCount = clearValues.size();
+    renderPassInfo.pClearValues = clearValues.data();
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = {(uint32)EngineSettings::resolution.x, (uint32)EngineSettings::resolution.y};
     renderPassInfo.framebuffer = screen.swapchainFramebuffers[screen.swapchainCurrentImage];
