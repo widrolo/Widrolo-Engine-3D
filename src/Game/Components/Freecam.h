@@ -15,6 +15,8 @@ public:
 private:
     float32 m_speed;
 
+    WEngine::Vector2 m_oldMousePos;
+
     COMP_HASH(0xe6321c612fcb459b)
 };
 
