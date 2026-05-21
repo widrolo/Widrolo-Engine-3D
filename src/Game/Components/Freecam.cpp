@@ -17,37 +17,58 @@ void Freecam::Awake(WEngine::ComponentArgs ca)
 void Freecam::Start()
 {
     m_oldMousePos = input->GetMousePosition();
+    WEngine::CoreSystems::GetInputHandler()->SetMouseRelativeMode(true);
+    m_focused = true;
 }
 
 void Freecam::Tick(float32 dt)
 {
+    static bool firstFrame = true;
+    if (firstFrame)
+    {
+        firstFrame = false;
+        return;
+    }
+
     if (dt > 10.0f)
         return;
 
+    float32 speed = m_speed * dt;
+
+    if (input->GetActionInput(WKey::CONTROL))
+        speed *= 2.0f;
 
     if (input->GetActionInput(WKey::W))
-        entity->transform.position = entity->transform.position + entity->transform.Forward() * m_speed * dt;
+        entity->transform.position = entity->transform.position + entity->transform.Forward() * speed;
     if (input->GetActionInput(WKey::S))
-        entity->transform.position = entity->transform.position - entity->transform.Forward() * m_speed * dt;
+        entity->transform.position = entity->transform.position - entity->transform.Forward() * speed;
 
     if (input->GetActionInput(WKey::A))
-        entity->transform.position = entity->transform.position - entity->transform.Right() * m_speed * dt;
+        entity->transform.position = entity->transform.position - entity->transform.Right() * speed;
     if (input->GetActionInput(WKey::D))
-        entity->transform.position = entity->transform.position + entity->transform.Right() * m_speed * dt;
+        entity->transform.position = entity->transform.position + entity->transform.Right() * speed;
 
     if (input->GetActionInput(WKey::SPACE))
-        entity->transform.position = entity->transform.position + entity->transform.Up() * m_speed * dt;
+        entity->transform.position = entity->transform.position + entity->transform.Up() * speed;
     if (input->GetActionInput(WKey::SHIFT))
-        entity->transform.position = entity->transform.position - entity->transform.Up() * m_speed * dt;
+        entity->transform.position = entity->transform.position - entity->transform.Up() * speed;
 
 
-    auto newMousePos = input->GetMousePosition();
-    WEngine::CoreSystems::GetInputHandler()->SetMousePos(EngineSettings::resolution / 2);
+    if (input->GetActionInput(WKey::DEBUG5, WEngine::Press))
+    {
+        m_focused = !m_focused;
+        WEngine::CoreSystems::GetInputHandler()->SetMouseRelativeMode(m_focused);
+        firstFrame = true; // hacky solution, but it works; so meh
+        return;
+    }
 
-    WEngine::Vector2 mouseDelta = newMousePos - EngineSettings::resolution / 2;
+    if (!m_focused)
+        return;
 
-    m_yaw += (mouseDelta.x / 2);
-    m_pitch -=  (mouseDelta.y / 2);
+    WEngine::Vector2 mouseDelta = input->GetMousePosition();
+
+    m_yaw += (mouseDelta.x / 3);
+    m_pitch -=  (mouseDelta.y / 3);
 
     if (m_pitch > 89.0f)
         m_pitch = 89.0f;

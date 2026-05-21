@@ -17,6 +17,8 @@ private:
     float32 m_yaw;
     float32 m_pitch;
 
+    bool m_focused;
+
     WEngine::Vector2 m_oldMousePos;
 
     COMP_HASH(0xe6321c612fcb459b)

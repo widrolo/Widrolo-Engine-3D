@@ -182,7 +182,7 @@ void AssetRepo::LoadSpirVFromGlsl(SpirVAssetMission &mission)
 #ifdef DEBUG
 	options.SetOptimizationLevel(shaderc_optimization_level_zero);
 	options.SetGenerateDebugInfo();
-#elif
+#else
 	options.SetOptimizationLevel(shaderc_optimization_level_performance);
 #endif
 

@@ -15,7 +15,11 @@ struct GPUSettingsVulkan
         Abort
     };
     _GLOBAL_CEX_ bool useWAllocator = true;
+#ifdef DEBUG
     _GLOBAL_CEX_ bool enableValidation = true;
+#else
+    _GLOBAL_CEX_ bool enableValidation = false;
+#endif
     _GLOBAL_CEX_ InvalidResultAction invalidResultAction = InvalidResultAction::Abort;
 
 };

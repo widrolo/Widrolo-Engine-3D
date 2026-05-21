@@ -390,3 +390,4 @@ build/
 .vscode/
 Documentation/doxygen/Output/
 keys/
+/packedBuild.zip

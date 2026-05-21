@@ -84,10 +84,18 @@ Vector2 InputHandler::GetMousePos() const
 	return m_mousePosition;
 }
 
+void InputHandler::SetMouseRelativeMode(bool mode)
+{
+	SDL_SetWindowRelativeMouseMode(m_window, mode);
+	if (!mode)
+		SDL_ShowCursor();
+}
+
 void InputHandler::SetMousePos(const Vector2 &pos)
 {
 	m_mousePosition = pos;
 	SDL_WarpMouseInWindow(m_window, pos.x, pos.y);
+	//SDL_FlushEvent(SDL_EVENT_MOUSE_MOTION);
 }
 
 bool InputHandler::GetMousePressed(WMouseBtn button) const
@@ -309,8 +317,12 @@ void InputHandler::FetchMouseInput()
 	// It's ok, since im not swapping buffer unlike above
 	m_lastMousestate = m_mousestate;
 
-	float mouseY, mouseX;
-	m_mousestate = SDL_GetMouseState(&mouseX, &mouseY);
+	float32 mouseY, mouseX;
+
+	if (SDL_GetWindowRelativeMouseMode(m_window))
+		m_mousestate = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+	else
+		m_mousestate = SDL_GetMouseState(&mouseX, &mouseY);
 	m_mousePosition = { mouseX, mouseY };
 }
 

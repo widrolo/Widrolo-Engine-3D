@@ -67,8 +67,9 @@ namespace WEngine
 		 * @return The current mouse position.
 		 */
 		[[nodiscard]] Vector2 GetMousePos() const;
+		void SetMouseRelativeMode(bool mode);
 		/**
-		 * Retrieves the current mouse position as a Vector2.
+		 * Set the position of the mouse cursor to a specific pixel.
 		 * @return The current mouse position.
 		 */
 		void SetMousePos(const Vector2& pos);
