@@ -317,7 +317,7 @@ void InputHandler::FetchMouseInput()
 	// It's ok, since im not swapping buffer unlike above
 	m_lastMousestate = m_mousestate;
 
-	float32 mouseY, mouseX;
+	float32 mouseY = 0.0f, mouseX = 0.0f;
 
 	if (SDL_GetWindowRelativeMouseMode(m_window))
 		m_mousestate = SDL_GetRelativeMouseState(&mouseX, &mouseY);

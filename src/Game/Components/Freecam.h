@@ -14,8 +14,8 @@ public:
 
 private:
     float32 m_speed;
-    float32 m_yaw;
-    float32 m_pitch;
+    float32 m_yaw = 0.0f;
+    float32 m_pitch = 0.0f;
 
     bool m_focused;
 

@@ -1,7 +1,7 @@
 entities:
   e0:
     name: camera
-    position: [0, 0, 0]
+    position: [10, -10, 10]
     size: [1, 1, 1]
     components:
       c0:

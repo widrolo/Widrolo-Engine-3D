@@ -24,6 +24,9 @@ namespace WEngine
 
 		wtl::deque<RenderMission> m_renderQueue;
 
+		glm::mat4 m_projection;
+		glm::mat4 m_viewMatrix;
+
 	public:
 		void BeginFrame();
 		void RenderFrame();

@@ -24,12 +24,6 @@
 
 using namespace WEngine;
 
-Model testModel;
-Shader triShader;
-
-glm::mat4 projection;
-glm::mat4 viewMatrix;
-
 RenderHandler::RenderHandler()
 {
 	InitSDL();
@@ -41,58 +35,7 @@ RenderHandler::RenderHandler()
 	}
 	InitImGui();
 
-	ModelInfo info;
-	info.vertices.resize(8);
-	info.vertices[0] = {{ 0.1f, -0.1f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t r f
-	info.vertices[1] = {{ 0.1f,	 0.1f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b r f
-	info.vertices[2] = {{-0.1f,  0.1f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b l f
-	info.vertices[3] = {{-0.1f, -0.1f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t l f
-
-	info.vertices[4] = {{ 0.1f, -0.1f, -0.7f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t r b
-	info.vertices[5] = {{ 0.1f,	 0.1f, -0.7f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b r b
-	info.vertices[6] = {{-0.1f,  0.1f, -0.7f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // b l b
-	info.vertices[7] = {{-0.1f, -0.1f, -0.7f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}; // t l b
-
-	info.indices =
-		{0, 1, 2,
-		 0, 2, 3,
-		 0, 3, 4,
-		 3, 7, 4,
-		 0, 4, 5,
-		 0, 5, 1,
-		 3, 2, 7,
-		 2, 6, 7,
-		 2, 1, 5,
-		 2, 5, 6,
-		 4, 6, 5,
-		 4, 7, 6};
-
-	MeshAssetMission mission;
-	mission.name = "Monkey";
-	ModelInfo monkey;
-	CoreSystems::GetAssetRepo()->GetAsset(mission);
-
-	auto modelN = Iris::ALLOC_CreateModel(mission.model);
-
-	if (modelN.HasValue())
-		testModel = modelN.GetValue();
-	else
-	{
-		WLog::SetConsoleError();
-		WLog::ConsoleLog("DAMMIT!!!");
-	}
-
-	auto shaderN = Iris::ALLOC_CompileShader("triangle");
-
-	if (shaderN.HasValue())
-		triShader = shaderN.GetValue();
-	else
-	{
-		WLog::SetConsoleError();
-		WLog::ConsoleLog("DAMMIT AGAIN!!!");
-	}
-
-	projection = glm::perspective(
+	m_projection = glm::perspective(
 		glm::radians(90.0f),
 		m_windowResolution.x / m_windowResolution.y,
 		0.01f,
@@ -110,19 +53,19 @@ void RenderHandler::BeginFrame()
 
 
 	if (m_camera == nullptr)
-		viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		m_viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	else
 	{
 		Vector3 camPos = m_camera->GetPosition();
 		Vector3 camRot = m_camera->GetRotation();
 
-		viewMatrix = glm::mat4(1.0f);
+		m_viewMatrix = glm::mat4(1.0f);
 
-		viewMatrix = glm::rotate(viewMatrix, glm::radians(camRot.x), glm::vec3(1, 0, 0));
-		viewMatrix = glm::rotate(viewMatrix, glm::radians(camRot.y), glm::vec3(0, 1, 0));
-		viewMatrix = glm::rotate(viewMatrix, glm::radians(camRot.z), glm::vec3(0, 0, 1));
+		m_viewMatrix = glm::rotate(m_viewMatrix, glm::radians(camRot.x), glm::vec3(1, 0, 0));
+		m_viewMatrix = glm::rotate(m_viewMatrix, glm::radians(camRot.y), glm::vec3(0, 1, 0));
+		m_viewMatrix = glm::rotate(m_viewMatrix, glm::radians(camRot.z), glm::vec3(0, 0, 1));
 
-		viewMatrix = glm::translate(viewMatrix, -glm::vec3(camPos.x, camPos.y, camPos.z));
+		m_viewMatrix = glm::translate(m_viewMatrix, -glm::vec3(camPos.x, camPos.y, camPos.z));
 	}
 }
 
@@ -145,6 +88,8 @@ void RenderHandler::RegisterCamera(CameraComponent *camera)
 
 void RenderHandler::AddToRenderQueue(RenderMission& mission)
 {
+	if (mission.model == 0 || mission.shader == 0)
+		return;
 	m_renderQueue.push_back(mission);
 }
 
@@ -158,20 +103,18 @@ void RenderHandler::RenderSingleMission(RenderMission &mission)
 
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(modPos.x, modPos.y, modPos.z));
 
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(modRot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(modRot.x - 180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(modRot.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(modRot.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(modSca.x, modSca.y, modSca.z));
 
-	glm::mat4 mvpG = projection * viewMatrix * modelMatrix;
+	glm::mat4 mvpG = m_projection * m_viewMatrix * modelMatrix;
 
 	Mat4x4 mvp = Glm4x4ToMat4x4(mvpG);
 	ShaderSettings shaderSettings{};
 	shaderSettings.push_back({ShaderSettingType::Matrix4, mvp, "mvp"});
-	Iris::DRAWCALL_DrawModel(testModel, triShader, shaderSettings);
+	Iris::DRAWCALL_DrawModel(mission.model, mission.shader, shaderSettings);
 }
 
 void RenderHandler::InitSDL()

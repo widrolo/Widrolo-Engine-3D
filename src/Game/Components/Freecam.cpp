@@ -17,8 +17,8 @@ void Freecam::Awake(WEngine::ComponentArgs ca)
 void Freecam::Start()
 {
     m_oldMousePos = input->GetMousePosition();
-    WEngine::CoreSystems::GetInputHandler()->SetMouseRelativeMode(false);
-    m_focused = false;
+    WEngine::CoreSystems::GetInputHandler()->SetMouseRelativeMode(true);
+    m_focused = true;
 }
 
 void Freecam::Tick(float32 dt)

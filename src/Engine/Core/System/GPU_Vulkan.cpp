@@ -142,6 +142,7 @@ VkRenderPass renderPass;
 wtl::vector<Vulkan_Shader> loadedShaders;
 std::unordered_map<std::string, WEngine::Shader> loadedShadersHandles;
 wtl::vector<Vulkan_Model> loadedModels;
+std::unordered_map<std::string, WEngine::Model> loadedModelHandles;
 
 static uint32 drawCallsThisFrame = 0;
 static uint32 drawCallsLastFrame = 0;
@@ -1139,6 +1140,13 @@ WEngine::Nullable<WEngine::Shader> Iris::ALLOC_CompileShader(const std::string& 
     return WEngine::Nullable<WEngine::Shader>(shaderHandle);
 }
 
+WEngine::Nullable<WEngine::Model> Iris::GetModel(const std::string &modelName)
+{
+    if (loadedModelHandles.contains(modelName))
+        return WEngine::Nullable<WEngine::Shader>(loadedModelHandles[modelName]);
+    return WEngine::Nullable<WEngine::Shader>();
+}
+
 WEngine::Nullable<WEngine::Model> Iris::ALLOC_CreateModel(const WEngine::ModelInfo &model)
 {
     Vulkan_Model vkModel{};
@@ -1161,7 +1169,10 @@ WEngine::Nullable<WEngine::Model> Iris::ALLOC_CreateModel(const WEngine::ModelIn
 
 
     loadedModels.push_back(vkModel);
-    return WEngine::Nullable<WEngine::Model>(loadedModels.size());
+    WEngine::Model modelHandle = loadedModels.size();
+    loadedModelHandles[model.name] = modelHandle;
+
+    return WEngine::Nullable<WEngine::Model>(modelHandle);
 }
 
 

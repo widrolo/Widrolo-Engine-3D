@@ -126,6 +126,8 @@ void AssetRepo::GetAsset<MeshAssetMission>(MeshAssetMission& mission)
 		return;
 	}
 
+	mission.model.name = mission.name;
+
 	// TODO: fix up this vibe coded mess so it fits within the project nicely.
 
 	auto GetAccessorData = [&](int accessorIdx, size_t componentSize) -> std::pair<const uint8_t*, size_t>
@@ -262,7 +264,8 @@ template<>
 void AssetRepo::GetAsset<SpirVAssetMission>(SpirVAssetMission& mission)
 {
 #ifdef PACKAGE
-	LoadSpirVFromSpv(mission);
+	//LoadSpirVFromSpv(mission);
+	LoadSpirVFromGlsl(mission);
 #else
 	LoadSpirVFromGlsl(mission);
 #endif

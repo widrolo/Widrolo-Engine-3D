@@ -7,35 +7,6 @@
         ID: 1
         Name: "RNG"
         Description: "Generates a random number."
-    SpriteRendererComponent:
-        ID: 2
-        Name: "Sprite Renderer"
-        Description: "Basic component for sprite rendering."
-        Settings:
-            SpriteName:
-                Name: "Sprite Name"
-                Description: "Selects the sprite to be rendered."
-                Type: "String"
-                Internal: "spriteName"
-            Scale:
-                Name: "Scale"
-                Description: "Scales the sprite."
-                Type: "Float"
-                Internal: "scale"
-            IsAtlas:
-                Name: "Is Atlas"
-                Description: "Decides wether the image passed will be interpreted as an atlas."
-                Type: "Bool"
-                Internal: "isAtlas"
-            AtlasFrame:
-                Name: "Atlas Frame"
-                Description: "Decides wether the image passed will be interpreted as an atlas."
-                Type: "Number"
-                Internal: "atlasFrame" 
-    DebugRendererComponent:
-        ID: 3
-        Name: "Debug Renderer"
-        Description: "Renders a debug view used for development."
     CameraComponent:
         ID: 4
         Name: "Camera"
@@ -51,90 +22,10 @@
                 Description: "Offsets the camera."
                 Type: "Vector2"
                 Internal: offset
-    DynamicBody:
-        ID: 5
-        Name: "Dynamic Body"
-        Description: "A movable physics object."
-        Settings:
-            Gravity:
-                Name: "Gravity"
-                Description: "Gavity applied to the object."
-                Type: "Float"
-                Internal: gravity
-            Damping:
-                Name: "Damping"
-                Description: "Damping slows the body down."
-                Type: "Float"
-                Internal: damping
-            Mass:
-                Name: "Mass"
-                Description: "Mass of the body."
-                Type: "Float"
-                Internal: mass
-            Freeze:
-                Name: "Freze on Spawn"
-                Description: "If true, then the body will spawn as frozen."
-                Type: "Bool"
-                Internal: freeze
-            StartAcceleration:
-                Name: "Start Acceleration"
-                Description: "Starting acceleration of the body."
-                Type: "Vector2"
-                Internal: startaccel
-            Restitution:
-                Name: "Restitution"
-                Description: "Restitution of the body."
-                Type: "Float"
-                Internal: restitution
-    StaticBody:
-        ID: 6
-        Name: "Static Body"
-        Description: "An unmovable physics body."
-        Settings:
-            Restitution:
-                Name: "Restitution"
-                Description: "Restitution of the body."
-                Type: "Float"
-                Internal: restitution
     InputComponent:
         ID: 7
         Name: "Input"
         Description: "Used for input, every Entity spawns with this component by default."
-    AnimationRendererComponent:
-        ID: 8
-        Name: "Animation Renderer"
-        Description: "Renders an animation from a sprite atlas."
-        Settings:
-            AtlasName:
-                Name: "Atlas Name"
-                Description: "Selects the atlas used by the animation."
-                Type: "String"
-                Internal: "atlasName"
-            Offset:
-                Name: "Offset"
-                Description: "Offset of the sprite"
-                Type: "Vector2"
-                Internal: "offset"
-            Scale:
-                Name: "Scale"
-                Description: "Scales the sprite."
-                Type: "Float"
-                Internal: "scale"
-            StartAnimArch:
-                Name: "Start Archtype"
-                Description: "Selects the archetype for the animation to be played."
-                Type: "String"
-                Internal: "startAnimArch"
-            StartAnimSubt:
-                Name: "Start Subtype"
-                Description: "Selects the subtype for the animation to be played."
-                Type: "String"
-                Internal: "startAnimSubt"
-            StartAnimName:
-                Name: "Start Animation"
-                Description: "Selects the start animation. If none is selected, then it will just render the first frame of the atlas."
-                Type: "String"
-                Internal: "startAnimName"
     AudioComponent:
         ID: 9
         Name: "Audio Player"
@@ -155,80 +46,28 @@
                 Description: "If true, the audio will play immediately after its loaded."
                 Type: "Bool"
                 Internal: "playOnAwake"
-    CircleAreaComponent:
-        ID: 10
-        Name: "Circular Area"
-        Description: "Defines a circular shape for a Simulatable Object."
-        Settings:
-            AreaRadius:
-                Name: "Circle Radius"
-                Description: "Radius of the circle."
-                Type: "Float"
-                Internal: areaRadius
-            Offset:
-                Name: "Offset"
-                Description: "Offsets the circle."
-                Type: "Vector2"
-                Internal: offset
-    RectAreaComponent:
-        ID: 11
-        Name: "Rectanglular Area"
-        Description: "Defines a rectanglular shape for a Simulatable Object."
-        Settings:
-            AreaSize:
-                Name: "Ractangle Size"
-                Description: "Size of the rectangle. (from center)"
-                Type: "Vector2"
-                Internal: areaSize
-            Offset:
-                Name: "Offset"
-                Description: "Offsets the rectangle."
-                Type: "Vector2"
-                Internal: offset
-            IsTrigger:
-                Name: "Is Trigger"
-                Description: "If true, the body will not collidable and will not collide."
-                Type: "Bool"
-                Internal: istrigger
-    BoundaryAreaComponent:
-        ID: 12
-        Name: "Boundary Area"
-        Description: "Defines a boundary that no dynamic object can pass."
-        Settings:
-            AreaAxis:
-                Name: "Area Axis"
-                Description: "Axis for the world boundary."
-                Type: "String"
-                Internal: areaAxis
-            Offset:
-                Name: "Offset"
-                Description: "Offsets the boundary."
-                Type: "Vector2"
-                Internal: offset
-    CylinderAreaComponent:
-        ID: 13
-        Name: "Cylindrical Area"
-        Description: "Defines a cylindrical shape for a Simulatable Object."
-        Settings:
-            AreaRadius:
-                Name: "Cylinder Radius"
-                Description: "Radius of the cylinder."
-                Type: "Float"
-                Internal: areaSize
-            AreaMidHeight:
-                Name: "Cylinder Mid Height"
-                Description: "Height of the inner rectangle of the cylinder."
-                Type: "Float"
-                Internal: areaMidHeight
-            Offset:
-                Name: "Offset"
-                Description: "Offsets the cylinder."
-                Type: "Vector2"
-                Internal: offset
     MeshRendererComponent:
         ID: 14
         Name: "Mesh Renderer"
-        Description: "Render a mesh."
+        Description: "Render a mesh with a given shader"
+        Settings:
+            Mesh:
+                Name: "Mesh Name"
+                Description: "Name of the mesh."
+                Type: "String"
+                Internal: "meshName"
+            Shader:
+                Name: "Shader Name"
+                Description: "Name of the shader to be used for rendering."
+                Type: "String"
+                Internal: "shaderName"
+            Instanceable:
+                Name: "Is Instanceable"
+                Description: "Whether this model is available for instancing."
+                Type: "Bool"
+                Internal: "instance"
+
+
 
     EditorTester:
         ID: 512

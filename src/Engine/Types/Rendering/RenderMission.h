@@ -6,6 +6,8 @@
 
 #include "ShaderSettings.h"
 #include "Engine/Math/Transform.h"
+#include "GPU/Model.h"
+#include "GPU/Shader.h"
 
 namespace WEngine
 {
@@ -21,8 +23,8 @@ namespace WEngine
 
 	struct RenderMission
 	{
-		uint32 layer;
-		std::string shader;
+		Shader shader;
+		Model model;
 		ShaderSettings shaderSettings;
 		Transform transform;
 	};
