@@ -126,8 +126,10 @@ struct Vulkan_Model
     VkBuffer instanceBuffer;
     VmaAllocation instanceAllocation;
     uint16 activeInstances;
+    uint32 instanceBufferSize;
 };
 
+using BufferCollection = wtl::vector<std::pair<VkBuffer, VmaAllocation>>;
 
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------ [GPU API VARIABLES] -----------------------------------------------
@@ -154,6 +156,8 @@ static uint32 drawCallsThisFrame = 0;
 static uint32 drawCallsLastFrame = 0;
 
 static uint32 currentBoundShader = 999999999;
+
+std::vector<BufferCollection> bufferGraveyard;
 
 // --------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------ [GPU API HELPERS] -------------------------------------------------
@@ -519,6 +523,7 @@ bool SetupSwapchain()
     screen.imageAvailableSems.resize(swapchainImageCount);
     screen.renderFinishedSems.resize(swapchainImageCount);
     screen.endOfFrameFences.resize(swapchainImageCount);
+    bufferGraveyard.resize(swapchainImageCount);
 
 
     VkSemaphoreCreateInfo semInfo{};
@@ -1047,6 +1052,50 @@ std::pair<VkBuffer, VmaAllocation> InitInstanceBuffer()
     return {instBuf, instAlloc};
 }
 
+void ExpandInstanceBuffer(Vulkan_Model& model, uint64 minSize)
+{
+    WEngine::WLog::SetConsoleInfo();
+    WEngine::WLog::ConsoleLog(std::format("Invoked an instance buffer expansion: {}", minSize));
+
+    VmaAllocationInfo bufferAllocInfo{};
+    vmaGetAllocationInfo(vcore.vmaAllocator, model.instanceAllocation, &bufferAllocInfo);
+    uint64 oldSize = bufferAllocInfo.size / sizeof(WEngine::InstanceData);
+
+    VkBuffer instBuf;
+    VmaAllocation instAlloc;
+    VkDeviceSize newSize = minSize * 2 * sizeof(WEngine::InstanceData);
+
+    VkBufferCreateInfo bufferCreateInfo{};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.size = newSize;
+    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    allocationCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    auto res = vmaCreateBuffer(vcore.vmaAllocator, &bufferCreateInfo, &allocationCreateInfo,
+        &instBuf, &instAlloc, &bufferAllocInfo);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to expand instance buffer");
+        return;
+    }
+
+    WEngine::InstanceData* instOld;
+    vmaMapMemory(vcore.vmaAllocator, model.instanceAllocation, (void**)&instOld);
+    memcpy(bufferAllocInfo.pMappedData, instOld, oldSize * sizeof(WEngine::InstanceData));
+    vmaUnmapMemory(vcore.vmaAllocator, model.instanceAllocation);
+    bufferGraveyard[screen.currentFrame].push_back({model.instanceBuffer, model.instanceAllocation});
+
+    model.instanceBuffer = instBuf;
+    model.instanceAllocation = instAlloc;
+    model.instanceBufferSize = minSize * 2;
+}
+
 // ------------------------------------------------ [HELPER FUNCTIONS] ------------------------------------------------
 
 uint64 GetSizeOfImageInBytes(WEngine::Vector2 imageSize, uint8 channelCount)
@@ -1130,6 +1179,11 @@ void Iris::SETTING_ConfigureImGui(SDL_Window *window)
 void Iris::SETTING_BeginNewFrame()
 {
     vkWaitForFences(vcore.gpuDevice, 1, &screen.endOfFrameFences[screen.currentFrame], VK_TRUE, UINT64_MAX);
+
+    for (auto& buf : bufferGraveyard[screen.currentFrame])
+        vmaDestroyBuffer(vcore.vmaAllocator, buf.first, buf.second);
+    bufferGraveyard[screen.currentFrame].clear();
+
     vkResetFences(vcore.gpuDevice, 1, &screen.endOfFrameFences[screen.currentFrame]);
     vkAcquireNextImageKHR(vcore.gpuDevice, screen.swapchain, max_uint64, screen.imageAvailableSems[screen.currentFrame],
         VK_NULL_HANDLE, &screen.swapchainCurrentImage);
@@ -1220,6 +1274,8 @@ WEngine::Nullable<WEngine::Model> Iris::ALLOC_CreateModel(const WEngine::ModelIn
     vkModel.instanceBuffer = instBuf.first;
     vkModel.instanceAllocation = instBuf.second;
 
+    vkModel.instanceBufferSize = GPUSettingsVulkan::maxInstanceBufferSize;
+
     loadedModels.push_back(vkModel);
     WEngine::Model modelHandle = loadedModels.size();
     loadedModelHandles[model.name] = modelHandle;
@@ -1284,17 +1340,14 @@ void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader sha
         currentBoundShader = shader;
     }
 
-    if (instanceMats.size() > GPUSettingsVulkan::maxInstanceBufferSize)
-    {
-        WEngine::WLog::SetConsoleError();
-        WEngine::WLog::ConsoleLog("Instance count higher than buffer size, fix yo code already man.");
-        abort();
-    }
 
     WEngine::Mat4x4 vp = std::get<WEngine::Mat4x4>(settings[0].option);
     auto vpRaw = vp.GetRawData();
 
     Vulkan_Model& vkModel = loadedModels[model - 1];
+
+    if (instanceMats.size() + vkModel.activeInstances > vkModel.instanceBufferSize)
+        ExpandInstanceBuffer(vkModel, instanceMats.size() + vkModel.activeInstances);
 
     WEngine::InstanceData* inst;
     vmaMapMemory(vcore.vmaAllocator, vkModel.instanceAllocation, (void**)&inst);

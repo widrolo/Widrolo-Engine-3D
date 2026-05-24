@@ -39,7 +39,7 @@ RenderHandler::RenderHandler()
 		glm::radians(90.0f),
 		m_windowResolution.x / m_windowResolution.y,
 		0.01f,
-		100.0f
+		1000.0f
 		);
 }
 
