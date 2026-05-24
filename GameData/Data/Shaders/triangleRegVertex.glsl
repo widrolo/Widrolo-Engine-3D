@@ -5,8 +5,10 @@ layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec2 uv0;
 layout(location = 3) in vec2 uv1;
 
+layout(location = 4) in mat4 inModel;
+
 layout(push_constant) uniform PushConstants {
-    mat4 mvp;
+    mat4 vp;
 } pc;
 
 layout(location = 0) out vec3 outColor;
@@ -14,6 +16,5 @@ layout(location = 0) out vec3 outColor;
 void main()
 {
     outColor = inColor;
-    //outColor = vec3(1.0, 1.0, 1.0);
-    gl_Position = pc.mvp * vec4(inPosition, 1.0);
+    gl_Position = pc.vp * inModel * vec4(inPosition, 1.0);
 }

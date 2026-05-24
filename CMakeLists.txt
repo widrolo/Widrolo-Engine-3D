@@ -303,6 +303,7 @@ add_executable(Widrolo_Engine_3D
         src/Engine/gl/gltf/tiny_gltf_v3.c
         src/Game/Core/PerfTester.cpp
         src/Game/Core/PerfTester.h
+        src/Engine/Types/Rendering/InstanceData.h
 )
 
 set_target_properties(Widrolo_Engine_3D PROPERTIES

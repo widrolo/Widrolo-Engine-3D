@@ -9,6 +9,7 @@
 #include "Engine/Types/Rendering/Color.h"
 #include "../../Types/Rendering/GPU/Framebuffer.h"
 #include "Engine/imgui/imgui.h"
+#include "Engine/Types/Rendering/InstanceData.h"
 #include "Engine/Types/Rendering/LineInfo.h"
 #include "Engine/Types/Rendering/GPU/Line.h"
 #include "Engine/Types/Rendering/ModelInfo.h"
@@ -46,6 +47,8 @@ public:
     static void DRAWCALL_ClearFrame(WEngine::Color clearColor);
 
     static void DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings& settings);
+    static void DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader shader,
+        const WEngine::ShaderSettings& settings, const wtl::vector<WEngine::InstanceData>& instanceMats);
 
     static void DRAWCALL_ResetImGui();
     static void DRAWCALL_DrawImGui();

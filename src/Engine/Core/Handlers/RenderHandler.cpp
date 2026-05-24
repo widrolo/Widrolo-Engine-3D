@@ -51,7 +51,6 @@ void RenderHandler::BeginFrame()
 	Iris::SETTING_SetViewportSize(EngineSettings::resolution);
 
 
-
 	if (m_camera == nullptr)
 		m_viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	else
@@ -71,14 +70,20 @@ void RenderHandler::BeginFrame()
 
 void RenderHandler::RenderFrame()
 {
-	for (auto& mission : m_renderQueue)
+	SortMissions();
+
+	for (auto& shaderGroup : m_sortedMissions)
 	{
-		RenderSingleMission(mission);
+		for (auto& modelGroup : shaderGroup.models)
+		{
+			RenderModelGroup(modelGroup, shaderGroup.groupID);
+		}
 	}
 
 	Iris::DRAWCALL_DrawImGui();
 	Iris::DRAWCALL_SwapBuffers(m_window);
 	m_renderQueue.clear();
+	CleanSortedMissions();
 }
 
 void RenderHandler::RegisterCamera(CameraComponent *camera)
@@ -93,11 +98,30 @@ void RenderHandler::AddToRenderQueue(RenderMission& mission)
 	m_renderQueue.push_back(mission);
 }
 
-void RenderHandler::RenderSingleMission(RenderMission &mission)
+Mat4x4 RenderHandler::CalcModelMatrix(const Transform &transform)
 {
-	Vector3 modPos = mission.transform.position;
-	Vector3 modRot = mission.transform.rotation;
-	Vector3 modSca = mission.transform.size;
+	Vector3 modPos = transform.position;
+	Vector3 modRot = transform.rotation;
+	Vector3 modSca = transform.size;
+
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(modPos.x, modPos.y, modPos.z));
+
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(modRot.x - 180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(modRot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(modRot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(modSca.x, modSca.y, modSca.z));
+
+	return Glm4x4ToMat4x4(modelMatrix);
+}
+
+Mat4x4 RenderHandler::CalcMVPMatrix(const Transform &transform)
+{
+	Vector3 modPos = transform.position;
+	Vector3 modRot = transform.rotation;
+	Vector3 modSca = transform.size;
 
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 
@@ -111,10 +135,89 @@ void RenderHandler::RenderSingleMission(RenderMission &mission)
 
 	glm::mat4 mvpG = m_projection * m_viewMatrix * modelMatrix;
 
-	Mat4x4 mvp = Glm4x4ToMat4x4(mvpG);
+	return Glm4x4ToMat4x4(mvpG);
+}
+
+void RenderHandler::RenderSingleMission(RenderMission &mission)
+{
+	Mat4x4 mvp = CalcMVPMatrix(mission.transform);
 	ShaderSettings shaderSettings{};
 	shaderSettings.push_back({ShaderSettingType::Matrix4, mvp, "mvp"});
 	Iris::DRAWCALL_DrawModel(mission.model, mission.shader, shaderSettings);
+}
+
+void RenderHandler::RenderModelGroup(const ModelGroup &group, Shader shader)
+{
+	wtl::vector<InstanceData> instances(group.models.size());
+
+	for (int i = 0; i < group.models.size(); i++)
+	{
+		Mat4x4 model = CalcModelMatrix(group.models[i].transform);
+		instances[i] = {model};
+	}
+
+	glm::mat4 vpG = m_projection * m_viewMatrix;
+	Mat4x4 vp = Glm4x4ToMat4x4(vpG);
+
+	ShaderSettings shaderSettings{};
+	shaderSettings.push_back({ShaderSettingType::Matrix4, vp, "vp"});
+	Iris::DRAWCALL_DrawModelInstanced(group.groupID, shader, shaderSettings, instances);
+}
+
+void RenderHandler::SortMissions()
+{
+	for (auto& mission : m_renderQueue)
+	{
+		bool foundShader = false;
+		for (uint64 i = 0; i < m_sortedMissions.size(); ++i)
+		{
+			if (m_sortedMissions[i].groupID == mission.shader)
+			{
+				foundShader = true;
+				InsertModelIntoShaderGroup(mission, m_sortedMissions[i]);
+			}
+		}
+		if (!foundShader)
+		{
+			ShaderGroup group;
+			group.groupID = mission.shader;
+			InsertModelIntoShaderGroup(mission, group);
+			m_sortedMissions.push_back(group);
+		}
+	}
+}
+
+void RenderHandler::InsertModelIntoShaderGroup(RenderMission &mission, ShaderGroup& shaderGroup)
+{
+	bool foundModel = false;
+	for (uint64 i = 0; i < shaderGroup.models.size(); ++i)
+	{
+		if (shaderGroup.models[i].groupID == mission.model)
+		{
+			foundModel = true;
+			shaderGroup.models[i].models.push_back(mission);
+		}
+	}
+	if (!foundModel)
+	{
+		ModelGroup group;
+		group.groupID = mission.model;
+		group.models.push_back(mission);
+		shaderGroup.models.push_back(group);
+	}
+}
+
+void RenderHandler::CleanSortedMissions()
+{
+	for (auto& shaderGroup : m_sortedMissions)
+	{
+		for (auto& modelGroup : shaderGroup.models)
+		{
+			modelGroup.models.clear();
+		}
+		shaderGroup.models.clear();
+	}
+	m_sortedMissions.clear();
 }
 
 void RenderHandler::InitSDL()

@@ -2,6 +2,8 @@
 
 #include "Engine/Core/Handlers/InputHandler.h"
 
+const bool enabledByDefault = false;
+
 REGISTER_COMPONENT(Freecam)
 
 Freecam::Freecam(WEngine::Entity *e)
@@ -17,8 +19,8 @@ void Freecam::Awake(WEngine::ComponentArgs ca)
 void Freecam::Start()
 {
     m_oldMousePos = input->GetMousePosition();
-    WEngine::CoreSystems::GetInputHandler()->SetMouseRelativeMode(true);
-    m_focused = true;
+    WEngine::CoreSystems::GetInputHandler()->SetMouseRelativeMode(enabledByDefault);
+    m_focused = enabledByDefault;
 }
 
 void Freecam::Tick(float32 dt)

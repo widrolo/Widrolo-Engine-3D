@@ -24,6 +24,8 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
+#include "Engine/Types/Rendering/InstanceData.h"
+
 // --------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------- [ MEMORY ] ---------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
@@ -120,6 +122,10 @@ struct Vulkan_Model
     VmaAllocation indexAllocation;
     uint32 vertexCount;
     uint32 indexCount;
+
+    VkBuffer instanceBuffer;
+    VmaAllocation instanceAllocation;
+    uint16 activeInstances;
 };
 
 
@@ -789,13 +795,17 @@ VkPipeline CreatePipeline(VkRenderPass renderPass, std::string shaderName)
 
     // --------------------------------------------- [VERTEX DEFINITION] ----------------------------------------------
 
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(WEngine::VertexData);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    std::array<VkVertexInputBindingDescription, 2> bindDesc{};
+    bindDesc[0].binding = 0;
+    bindDesc[0].stride = sizeof(WEngine::VertexData);
+    bindDesc[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    bindDesc[1].binding = 1;
+    bindDesc[1].stride = sizeof(WEngine::InstanceData);
+    bindDesc[1].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
     // [0] = Position (Vector3)   |   [1] = Color (Vector3)   |   [2] = Color UV (Vector2)   |   [3] = Shadow UV (Vector2)
-    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
+    // [4-7] = Model (Mat4x4)     |
+    std::array<VkVertexInputAttributeDescription, 8> attributeDescriptions{};
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
     attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT; // Khronos had a meth party while making this one
@@ -813,10 +823,15 @@ VkPipeline CreatePipeline(VkRenderPass renderPass, std::string shaderName)
     attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT; // Khronos had a meth party while making this one
     attributeDescriptions[3].offset = offsetof(WEngine::VertexData, uv1Coord);
 
+    attributeDescriptions[4] = {4, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 0};
+    attributeDescriptions[5] = {5, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 4};
+    attributeDescriptions[6] = {6, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 8};
+    attributeDescriptions[7] = {7, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 12};
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexBindingDescriptionCount = bindDesc.size();
+    vertexInputInfo.pVertexBindingDescriptions = bindDesc.data();
     vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
@@ -1001,6 +1016,37 @@ std::pair<VkBuffer, VmaAllocation> CreateIndexBuffer(const wtl::vector<uint32>& 
     return {indBuf, indAlloc};
 }
 
+std::pair<VkBuffer, VmaAllocation> InitInstanceBuffer()
+{
+    VkBuffer instBuf;
+    VmaAllocation instAlloc;
+    VkDeviceSize isntBufferSize = GPUSettingsVulkan::maxInstanceBufferSize * sizeof(WEngine::InstanceData);
+
+    VkBufferCreateInfo bufferCreateInfo{};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.size = isntBufferSize;
+    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    allocationCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    VmaAllocationInfo bufferAllocInfo{};
+
+    auto res = vmaCreateBuffer(vcore.vmaAllocator, &bufferCreateInfo, &allocationCreateInfo,
+        &instBuf, &instAlloc, &bufferAllocInfo);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to allocate instance buffer");
+        return {VK_NULL_HANDLE, VK_NULL_HANDLE};
+    }
+
+    return {instBuf, instAlloc};
+}
+
 // ------------------------------------------------ [HELPER FUNCTIONS] ------------------------------------------------
 
 uint64 GetSizeOfImageInBytes(WEngine::Vector2 imageSize, uint8 channelCount)
@@ -1088,7 +1134,6 @@ void Iris::SETTING_BeginNewFrame()
     vkAcquireNextImageKHR(vcore.gpuDevice, screen.swapchain, max_uint64, screen.imageAvailableSems[screen.currentFrame],
         VK_NULL_HANDLE, &screen.swapchainCurrentImage);
 
-    // Testing cmd buffer
 
     vkResetCommandBuffer(cmdBufs[screen.currentFrame], 0);
 
@@ -1096,6 +1141,9 @@ void Iris::SETTING_BeginNewFrame()
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     vkBeginCommandBuffer(cmdBufs[screen.currentFrame], &beginInfo);
+
+    for (auto& model : loadedModels)
+        model.activeInstances = 0;
 }
 
 void Iris::SETTING_SetViewportSize(WEngine::Vector2 size)
@@ -1155,18 +1203,22 @@ WEngine::Nullable<WEngine::Model> Iris::ALLOC_CreateModel(const WEngine::ModelIn
 
     auto vertBuf = CreateVertexBuffer(model.vertices);
     auto indBuf = CreateIndexBuffer(model.indices);
+    auto instBuf = InitInstanceBuffer();
 
     // creation funcs already gave an error message
     if (vertBuf.first == VK_NULL_HANDLE)
         return WEngine::Nullable<WEngine::Model>();
     if (indBuf.first == VK_NULL_HANDLE)
         return WEngine::Nullable<WEngine::Model>();
+    if (instBuf.first == VK_NULL_HANDLE)
+        return WEngine::Nullable<WEngine::Model>();
 
     vkModel.vertexBuffer = vertBuf.first;
     vkModel.vertexAllocation = vertBuf.second;
     vkModel.indexBuffer = indBuf.first;
     vkModel.indexAllocation = indBuf.second;
-
+    vkModel.instanceBuffer = instBuf.first;
+    vkModel.instanceAllocation = instBuf.second;
 
     loadedModels.push_back(vkModel);
     WEngine::Model modelHandle = loadedModels.size();
@@ -1216,8 +1268,51 @@ void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, cons
     vkCmdBindIndexBuffer(cmdBufs[screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdPushConstants(cmdBufs[screen.currentFrame], pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(WEngine::Mat4x4), &mvpRaw);
+
     vkCmdDrawIndexed(cmdBufs[screen.currentFrame], vkModel.indexCount, 1, 0, 0, 0);
 
+    drawCallsThisFrame++;
+}
+
+void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader shader,
+    const WEngine::ShaderSettings &settings, const wtl::vector<WEngine::InstanceData>& instanceMats)
+{
+    if (currentBoundShader != shader)
+    {
+        Vulkan_Shader vkShader = loadedShaders[shader - 1];
+        vkCmdBindPipeline(cmdBufs[screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
+        currentBoundShader = shader;
+    }
+
+    if (instanceMats.size() > GPUSettingsVulkan::maxInstanceBufferSize)
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Instance count higher than buffer size, fix yo code already man.");
+        abort();
+    }
+
+    WEngine::Mat4x4 vp = std::get<WEngine::Mat4x4>(settings[0].option);
+    auto vpRaw = vp.GetRawData();
+
+    Vulkan_Model& vkModel = loadedModels[model - 1];
+
+    WEngine::InstanceData* inst;
+    vmaMapMemory(vcore.vmaAllocator, vkModel.instanceAllocation, (void**)&inst);
+
+    memcpy(inst + vkModel.activeInstances, instanceMats.data(), instanceMats.size() * sizeof(WEngine::InstanceData));
+
+    vmaUnmapMemory(vcore.vmaAllocator, vkModel.instanceAllocation);
+
+    std::array<VkDeviceSize, 2> offsets{0, sizeof(WEngine::InstanceData) * vkModel.activeInstances};
+    vkCmdBindVertexBuffers(cmdBufs[screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offsets[0]);
+    vkCmdBindVertexBuffers(cmdBufs[screen.currentFrame], 1, 1, &vkModel.instanceBuffer, &offsets[1]);
+    vkCmdBindIndexBuffer(cmdBufs[screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdPushConstants(cmdBufs[screen.currentFrame], pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+        sizeof(WEngine::Mat4x4), &vpRaw);
+
+    vkCmdDrawIndexed(cmdBufs[screen.currentFrame], vkModel.indexCount, instanceMats.size(), 0, 0, 0);
+
+    vkModel.activeInstances += instanceMats.size();
     drawCallsThisFrame++;
 }
 

@@ -6,6 +6,7 @@
 #include "Engine/Math/Vector.h"
 #include "Engine/Types/Rendering/RenderMission.h"
 #include "Engine/WTL/deque.h"
+#include "Engine/WTL/list.h"
 
 namespace WEngine
 {
@@ -16,6 +17,19 @@ namespace WEngine
 		RenderHandler();
 
 	private:
+
+		struct ModelGroup
+		{
+			Model groupID;
+			wtl::vector<RenderMission> models;
+		};
+
+		struct ShaderGroup
+		{
+			Shader groupID;
+			wtl::vector<ModelGroup> models;
+		};
+
 		Vector2 m_windowResolution;
 		SDL_DisplayMode* m_displayMode = nullptr;
 		SDL_Window* m_window = nullptr;
@@ -23,6 +37,9 @@ namespace WEngine
 		CameraComponent* m_camera = nullptr;
 
 		wtl::deque<RenderMission> m_renderQueue;
+
+		// first vector is sorted by shader, second sorts missions by model.
+		wtl::vector<ShaderGroup> m_sortedMissions;
 
 		glm::mat4 m_projection;
 		glm::mat4 m_viewMatrix;
@@ -36,7 +53,15 @@ namespace WEngine
 		void AddToRenderQueue(RenderMission& mission);
 
 	private:
+		Mat4x4 CalcModelMatrix(const Transform& transform);
+		Mat4x4 CalcMVPMatrix(const Transform& transform);
+
 		void RenderSingleMission(RenderMission& mission);
+		void RenderModelGroup(const ModelGroup& group, Shader shader);
+
+		void SortMissions();
+		void InsertModelIntoShaderGroup(RenderMission& mission, ShaderGroup& shaderGroup);
+		void CleanSortedMissions();
 
 		void InitSDL();
 		void InitImGui();
