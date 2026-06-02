@@ -16,6 +16,7 @@
 #include "Engine/Types/Rendering/ShaderSettings.h"
 #include "Engine/Types/Rendering/TextureInfo.h"
 #include "Engine/Types/Rendering/GPU/Model.h"
+#include "Engine/Types/Rendering/Iris/InstThreadedList.h"
 
 /**
  * This class is the primary interface to talk to the GPU.
@@ -60,4 +61,8 @@ public:
     static uint64 GetVramUsage();
     static uint32 GetDrawCallCountLastFrame();
     static WEngine::Nullable<ImTextureID> FramebufferToImGui(WEngine::Framebuffer framebuffer);
+    static wtl::vector<MemListDebugInfo> GetStatInstBufAllocInfo();
+
+    static void AddStationaryObjects(WEngine::Model model, WEngine::Shader shader,
+        wtl::vector<WEngine::InstanceData> instanceMats);
 };

@@ -1,6 +1,11 @@
 #pragma once
 #include "Engine/Types/CommonTypes.h"
 
+struct GPUSettings
+{
+    _GLOBAL_CEX_ uint64 stationaryInstBufferSize = 64 * MB;
+};
+
 struct GPUSettingsOpenGL
 {
 

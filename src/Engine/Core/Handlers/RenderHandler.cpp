@@ -22,6 +22,7 @@
 #include "InputHandler.h"
 #include "Engine/Types/CoreSystems.h"
 
+
 using namespace WEngine;
 
 RenderHandler::RenderHandler()
@@ -96,6 +97,15 @@ void RenderHandler::AddToRenderQueue(RenderMission& mission)
 	if (mission.model == 0 || mission.shader == 0)
 		return;
 	m_renderQueue.push_back(mission);
+}
+
+void RenderHandler::RecordStationaryAdd(Model model, Shader shader, const Transform& transform)
+{
+	StatinaryObjStaged obj;
+	obj.model = model;
+	obj.shader = shader;
+	obj.transform = transform;
+	m_stationaryAddQueue.push_back(obj);
 }
 
 Mat4x4 RenderHandler::CalcModelMatrix(const Transform &transform)

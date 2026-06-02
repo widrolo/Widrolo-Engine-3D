@@ -25,6 +25,7 @@
 #include <vk_mem_alloc.h>
 
 #include "Engine/Types/Rendering/InstanceData.h"
+#include "Engine/Types/Rendering/Iris/InstThreadedList.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------- [ MEMORY ] ---------------------------------------------------
@@ -54,6 +55,7 @@ void VulkanInternalFree(void*, size_t size, VkInternalAllocationType allocationT
 // --------------------------------------------------------------------------------------------------------------------
 // -------------------------------------------------- [GPU API TYPES] -------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
+
 
 enum class QueuePurpose : uint8
 {
@@ -129,6 +131,13 @@ struct Vulkan_Model
     uint32 instanceBufferSize;
 };
 
+struct Vulkan_StatBuf
+{
+    InstThreadedList statBookkeep;
+    VkBuffer statBuffer;
+    VmaAllocation statAllocation;
+};
+
 using BufferCollection = wtl::vector<std::pair<VkBuffer, VmaAllocation>>;
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -138,7 +147,7 @@ using BufferCollection = wtl::vector<std::pair<VkBuffer, VmaAllocation>>;
 Vulkan_Core vcore;
 Vulkan_Screen screen;
 Vulkan_Queues queues;
-
+Vulkan_StatBuf statBuf;
 
 VkPipelineLayout pipelineLayout;
 VkDescriptorPool descriptorPool;
@@ -694,6 +703,35 @@ bool SetupDepthImage()
     return true;
 }
 
+bool SetupStationaryInstanceBuffer()
+{
+    VkBufferCreateInfo bufferCreateInfo{};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.size = GPUSettings::stationaryInstBufferSize;
+    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    allocationCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    VmaAllocationInfo bufferAllocInfo{};
+
+    auto res = vmaCreateBuffer(vcore.vmaAllocator, &bufferCreateInfo, &allocationCreateInfo,
+        &statBuf.statBuffer, &statBuf.statAllocation, &bufferAllocInfo);
+
+    vramUsage += bufferAllocInfo.size;
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to expand instance buffer");
+        return false;
+    }
+
+    return true;
+}
+
 // ------------------------------------------------- [MEM FUNCTIONS] --------------------------------------------------
 
 
@@ -1171,6 +1209,9 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
     if (!SetupCommandPool())
         return false;
 
+    if (!SetupStationaryInstanceBuffer())
+        return false;
+
 
     cmdBufs.resize(screen.swapchainImages.size());
     for (uint32 i = 0; i < screen.swapchainImages.size(); i++)
@@ -1466,6 +1507,17 @@ uint32 Iris::GetDrawCallCountLastFrame()
 WEngine::Nullable<ImTextureID> Iris::FramebufferToImGui(WEngine::Framebuffer framebuffer)
 {
     return WEngine::Nullable<ImTextureID>();
+}
+
+wtl::vector<MemListDebugInfo> Iris::GetStatInstBufAllocInfo()
+{
+    return statBuf.statBookkeep.GetDebugInfo();
+}
+
+void Iris::AddStationaryObjects(WEngine::Model model, WEngine::Shader shader,
+    wtl::vector<WEngine::InstanceData> instanceMats)
+{
+
 }
 
 #endif

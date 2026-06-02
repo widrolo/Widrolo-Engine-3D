@@ -30,6 +30,13 @@ namespace WEngine
 			wtl::vector<ModelGroup> models;
 		};
 
+		struct StatinaryObjStaged
+		{
+			Model model;
+			Shader shader;
+			Transform transform;
+		};
+
 		Vector2 m_windowResolution;
 		SDL_DisplayMode* m_displayMode = nullptr;
 		SDL_Window* m_window = nullptr;
@@ -37,6 +44,7 @@ namespace WEngine
 		CameraComponent* m_camera = nullptr;
 
 		wtl::deque<RenderMission> m_renderQueue;
+		wtl::deque<StatinaryObjStaged> m_stationaryAddQueue;
 
 		// first vector is sorted by shader, second sorts missions by model.
 		wtl::vector<ShaderGroup> m_sortedMissions;
@@ -51,6 +59,8 @@ namespace WEngine
 		void RegisterCamera(CameraComponent* camera);
 
 		void AddToRenderQueue(RenderMission& mission);
+
+		void RecordStationaryAdd(Model model, Shader shader, const Transform& transform);
 
 	private:
 		Mat4x4 CalcModelMatrix(const Transform& transform);

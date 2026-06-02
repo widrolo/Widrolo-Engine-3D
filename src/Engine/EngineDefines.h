@@ -14,7 +14,7 @@
 #define GPU_METAL 3 // use this when compiling for targets "MacOS", "iOS"
 #define GPU_D3D12 4 // use this when compiling for targets "Windows", "XboxSeries"
 #define GPU_GNM 5 // use this when compiling for targets "Playstation5", "Playstation6"
-#define GPU_NVM 6 // use this when compiling for targets "NintendoS1", "NintendoS2", "NintendoS3"
+#define GPU_NVN 6 // use this when compiling for targets "NintendoS1", "NintendoS2", "NintendoS3"
 
 #define GPU_BACKEND GPU_VULKAN
 

@@ -46,7 +46,7 @@ void StatisticsWidgets::TopRow()
 void StatisticsWidgets::BottomRow()
 {
 	ImGui::TableNextColumn();
-	ImGui::Text("Frame Time: %.3fms", Engine::GetDeltaTime());
+	ImGui::Text("Frame Time: %.3fms", Engine::GetDeltaTime() * 1000.0f);
 	ImGui::TableNextColumn();
 	ImGui::Text("Vram Usage: %.2fMB", (float64)Iris::GetVramUsage() / MB);
 	ImGui::TableNextColumn();

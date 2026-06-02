@@ -18,6 +18,7 @@ namespace WEngine
         SectorWatch,
         PhysicsWatch,
         DebugFlags,
+        RenderWatch,
 
         SysWidget_Count
     };

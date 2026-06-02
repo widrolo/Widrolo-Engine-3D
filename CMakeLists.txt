@@ -304,6 +304,10 @@ add_executable(Widrolo_Engine_3D
         src/Game/Core/PerfTester.cpp
         src/Game/Core/PerfTester.h
         src/Engine/Types/Rendering/InstanceData.h
+        src/Engine/Types/Rendering/Iris/InstThreadedList.cpp
+        src/Engine/Types/Rendering/Iris/InstThreadedList.h
+        src/Engine/EngineWidgets/RenderWatchWidget.cpp
+        src/Engine/EngineWidgets/RenderWatchWidget.h
 )
 
 set_target_properties(Widrolo_Engine_3D PROPERTIES
@@ -383,6 +387,7 @@ else() # really should be elseif(linux), but it doesnt work...
             dl
             pthread
             vulkan
+            TracyClient
     )
 endif()
 
