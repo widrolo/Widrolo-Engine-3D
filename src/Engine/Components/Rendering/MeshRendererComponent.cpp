@@ -59,16 +59,15 @@ void MeshRendererComponent::Awake(ComponentArgs ca)
             m_shader = shaderNN.GetValue();
         }
     }
-
-    if (instN.HasValue())
-        m_isInstanceable = instN.GetValue();
-
 }
 
 void MeshRendererComponent::LateAwake()
 {
     if (entity->IsStationary() && m_model != 0 && m_shader != 0)
+    {
+        m_isStationary = true;
         CoreSystems::GetRenderHandler()->RecordStationaryAdd(m_model, m_shader, entity->transform);
+    }
 }
 
 void MeshRendererComponent::Draw()
@@ -77,6 +76,8 @@ void MeshRendererComponent::Draw()
     mission.transform = entity->transform;
     mission.model = m_model;
     mission.shader = m_shader;
+    mission.isStationary = m_isStationary;
 
     CoreSystems::GetRenderHandler()->AddToRenderQueue(mission);
+
 }

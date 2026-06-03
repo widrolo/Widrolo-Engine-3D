@@ -50,6 +50,8 @@ public:
     static void DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings& settings);
     static void DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader shader,
         const WEngine::ShaderSettings& settings, const wtl::vector<WEngine::InstanceData>& instanceMats);
+    static void DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::Shader shader,
+        const WEngine::ShaderSettings &settings);
 
     static void DRAWCALL_ResetImGui();
     static void DRAWCALL_DrawImGui();

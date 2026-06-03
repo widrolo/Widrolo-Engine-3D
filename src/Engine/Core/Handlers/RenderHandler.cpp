@@ -81,6 +81,15 @@ void RenderHandler::RenderFrame()
 		}
 	}
 
+	glm::mat4 vpG = m_projection * m_viewMatrix;
+	Mat4x4 vp = Glm4x4ToMat4x4(vpG);
+	ShaderSettings shaderSettings{};
+	shaderSettings.push_back({ShaderSettingType::Matrix4, vp, "vp"});
+	for (auto& stat : m_stationaryMissions)
+	{
+		Iris::DRAWCALL_DrawModelInstancedStationary(stat.model, stat.shader, shaderSettings);
+	}
+
 	Iris::DRAWCALL_DrawImGui();
 	Iris::DRAWCALL_SwapBuffers(m_window);
 	m_renderQueue.clear();
@@ -197,6 +206,11 @@ void RenderHandler::SortMissions()
 {
 	for (auto& mission : m_renderQueue)
 	{
+		if (mission.isStationary)
+		{
+			SortStationary(mission);
+			continue;
+		}
 		bool foundShader = false;
 		for (uint64 i = 0; i < m_sortedMissions.size(); ++i)
 		{
@@ -214,6 +228,16 @@ void RenderHandler::SortMissions()
 			m_sortedMissions.push_back(group);
 		}
 	}
+}
+
+void RenderHandler::SortStationary(const RenderMission& mission)
+{
+	for (auto& objects : m_stationaryMissions)
+	{
+		if (objects.model == mission.model && objects.shader == mission.shader)
+			return;
+	}
+	m_stationaryMissions.push_back({mission.model, mission.shader});
 }
 
 void RenderHandler::InsertModelIntoShaderGroup(RenderMission &mission, ShaderGroup& shaderGroup)
@@ -247,6 +271,7 @@ void RenderHandler::CleanSortedMissions()
 		shaderGroup.models.clear();
 	}
 	m_sortedMissions.clear();
+	m_stationaryMissions.clear();
 }
 
 void RenderHandler::InitSDL()

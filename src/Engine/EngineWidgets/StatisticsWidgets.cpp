@@ -39,7 +39,7 @@ void StatisticsWidgets::TopRow()
 	ImGui::TableNextColumn();
 	ImGui::Text("Frame Rate: %.2ffps", 1 / Engine::GetDeltaTime());
 	ImGui::TableNextColumn();
-	ImGui::Text("Ram Usage: %.2fKB", (float64)WAllocator::GetMemoryUsage() / KB);
+	ImGui::Text("Ram Usage: %.2fMB", (float64)WAllocator::GetMemoryUsage() / MB);
 	ImGui::TableNextColumn();
 	ImGui::Text("Uptime: %s", UptimeToString(Engine::GetUptime()).c_str());
 }

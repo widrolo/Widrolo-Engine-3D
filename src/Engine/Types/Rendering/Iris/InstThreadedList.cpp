@@ -338,17 +338,77 @@ void InstThreadedList::DecoupleOccupiedEntry(MemListNode *entry)
     entry->prevOfKind = nullptr;
 }
 
-void InstThreadedList::SqueezeEntry(MemListNode *entry, MemListNode *freeBlock)
+void InstThreadedList::SqueezeEntry(MemListNode* entry, MemListNode* freeBlock)
 {
+    if (entry == nullptr || freeBlock == nullptr)
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("InstThreadedList::SqueezeEntry() received nullptr!");
+        abort();
+    }
+    if (freeBlock->model != 0)
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("InstThreadedList::SqueezeEntry() received non-free freeBlock!");
+        abort();
+    }
     if (freeBlock->size < entry->size)
     {
         WEngine::WLog::SetConsoleError();
         WEngine::WLog::ConsoleLog("Unable to squeeze memory entry, please fix InstThreadedList::FindBestFit()!");
         abort();
     }
+    const uint64 allocatedOffset = freeBlock->offset;
+    const uint64 allocatedSize = entry->size;
 
-    // move there
-    // inform the free block.
-    // couple into list, connect kind pointer.
-    // change cursor offset.
+    // just for good measure
+    entry->next = nullptr;
+    entry->prev = nullptr;
+    entry->nextOfKind = nullptr;
+    entry->prevOfKind = nullptr;
+    entry->offset = allocatedOffset;
+
+    // case 1: replace the free block withe the entry
+    if (freeBlock->size == allocatedSize)
+    {
+        MemListNode* oldPrev = freeBlock->prev;
+        MemListNode* oldNext = freeBlock->next;
+        // Remove freeBlock from free-kind list.
+        if (freeBlock->prevOfKind != nullptr)
+            freeBlock->prevOfKind->nextOfKind = freeBlock->nextOfKind;
+        else
+            emptyHead = freeBlock->nextOfKind;
+        if (freeBlock->nextOfKind != nullptr)
+            freeBlock->nextOfKind->prevOfKind = freeBlock->prevOfKind;
+        // Replace freeBlock with entry in main list.
+        entry->prev = oldPrev;
+        entry->next = oldNext;
+        if (oldPrev != nullptr)
+            oldPrev->next = entry;
+        else
+            head = entry;
+        if (oldNext != nullptr)
+            oldNext->prev = entry;
+        wFree(freeBlock);
+    }
+    // case 2: change the free block to fit it.
+    else
+    {
+        MemListNode* oldPrev = freeBlock->prev;
+        entry->prev = oldPrev;
+        entry->next = freeBlock;
+        if (oldPrev != nullptr)
+            oldPrev->next = entry;
+        else
+            head = entry;
+        freeBlock->prev = entry;
+        freeBlock->offset += allocatedSize;
+        freeBlock->size -= allocatedSize;
+    }
+
+    entry->prevOfKind = nullptr;
+    entry->nextOfKind = occupiedHead;
+    if (occupiedHead != nullptr)
+        occupiedHead->prevOfKind = entry;
+    occupiedHead = entry;
 }

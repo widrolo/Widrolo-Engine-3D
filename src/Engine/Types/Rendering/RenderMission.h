@@ -27,6 +27,7 @@ namespace WEngine
 		Model model;
 		ShaderSettings shaderSettings;
 		Transform transform;
+		bool isStationary;
 	};
 
 	struct RenderVisualizationMission

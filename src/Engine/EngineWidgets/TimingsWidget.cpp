@@ -44,14 +44,14 @@ void TimingsWidget::RenderInternal()
 	entity << "Entity: " << Engine::GetEntityTick() << "uS";
 	physics << "Physics: " << Engine::GetPhysicsTick() << "uS";
 	widget << "Widgets: " << Engine::GetWidgetDraw() << "uS";
-	draw << "Draw: " << Engine::GetDraw() << "uS";
+	draw << "Draw: " << Engine::GetDraw() / 1000.0f << "ms";
 
 	MakePlot(m_beginTimes, begin.str().c_str(), 300, m_beginTimesBuf);
 	MakePlot(m_sectorTimes, sector.str().c_str(), 2000, m_sectorTimesBuf);
 	MakePlot(m_tickTimes, entity.str().c_str(), 1000, m_tickTimesBuf);
 	MakePlot(m_physicsTimes, physics.str().c_str(), 300, m_physicsTimesBuf);
 	MakePlot(m_widgetTimes, widget.str().c_str(), 2000, m_widgetTimesBuf);
-	MakePlot(m_drawTimes, draw.str().c_str(), 2500, m_drawTimesBuf);
+	MakePlot(m_drawTimes, draw.str().c_str(), 33000, m_drawTimesBuf);
 }
 
 void TimingsWidget::AddTime(wtl::deque<float32>& buf, float32 time)
@@ -62,16 +62,27 @@ void TimingsWidget::AddTime(wtl::deque<float32>& buf, float32 time)
 	buf.push_back(time);
 }
 
-
-
 void TimingsWidget::MakePlot(wtl::deque<float32>& timings, const char* name, uint32 maxY, float32* buf)
 {
 	DequeToCArray(timings, MaxTimings, buf);
 	ImPlotFlags flag = ImPlotFlags_NoInputs;
 	if (ImPlot::BeginPlot(name, ImVec2(-1, 0), flag))
 	{
-		ImPlot::SetupAxes("hist", "uS");
-		ImPlot::SetupAxesLimits(0, MaxTimings, 0, maxY);
+		if (maxY > 5000)
+		{
+			ImPlot::SetupAxes("hist", "ms");
+			ImPlot::SetupAxesLimits(0, MaxTimings, 0, maxY / 1000);
+
+			for (int i = 0; i < MaxTimings; i++)
+			{
+				buf[i] = buf[i] / 1000.0f;
+			}
+		}
+		else
+		{
+			ImPlot::SetupAxes("hist", "uS");
+			ImPlot::SetupAxesLimits(0, MaxTimings, 0, maxY);
+		}
 		ImPlot::PlotLine(name, buf, MaxTimings);
 		ImPlot::EndPlot();
 	}

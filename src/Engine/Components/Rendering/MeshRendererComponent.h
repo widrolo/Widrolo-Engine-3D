@@ -18,7 +18,7 @@ namespace WEngine
     private:
         Model m_model = 0;
         Shader m_shader = 0;
-        bool m_isInstanceable = false;
+        bool m_isStationary = false;
 
         COMP_HASH(0xeb113cecf16966)
 

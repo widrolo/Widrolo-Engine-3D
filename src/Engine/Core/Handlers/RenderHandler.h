@@ -38,6 +38,12 @@ namespace WEngine
 			wtl::vector<InstanceData> instData;
 		};
 
+		struct StationaryRenderMission
+		{
+			Model model;
+			Shader shader;
+		};
+
 		Vector2 m_windowResolution;
 		SDL_DisplayMode* m_displayMode = nullptr;
 		SDL_Window* m_window = nullptr;
@@ -49,6 +55,7 @@ namespace WEngine
 
 		// first vector is sorted by shader, second sorts missions by model.
 		wtl::vector<ShaderGroup> m_sortedMissions;
+		wtl::vector<StationaryRenderMission> m_stationaryMissions;
 
 		glm::mat4 m_projection;
 		glm::mat4 m_viewMatrix;
@@ -71,6 +78,7 @@ namespace WEngine
 		void RenderModelGroup(const ModelGroup& group, Shader shader);
 
 		void SortMissions();
+		void SortStationary(const RenderMission& mission);
 		void InsertModelIntoShaderGroup(RenderMission& mission, ShaderGroup& shaderGroup);
 		void CleanSortedMissions();
 

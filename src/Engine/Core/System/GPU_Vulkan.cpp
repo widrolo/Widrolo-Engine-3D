@@ -1438,6 +1438,38 @@ void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader sha
     drawCallsThisFrame++;
 }
 
+void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::Shader shader,
+    const WEngine::ShaderSettings &settings)
+{
+    auto alloc = statBuf.statBookkeep.FindNode(model, shader);
+    if (alloc.first == 0 && alloc.second == 0)
+        return;
+
+    if (currentBoundShader != shader)
+    {
+        Vulkan_Shader vkShader = loadedShaders[shader - 1];
+        vkCmdBindPipeline(cmdBufs[screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
+        currentBoundShader = shader;
+    }
+
+    Vulkan_Model& vkModel = loadedModels[model - 1];
+    WEngine::Mat4x4 vp = std::get<WEngine::Mat4x4>(settings[0].option);
+    auto vpRaw = vp.GetRawData();
+
+    uint64 offset = alloc.first / sizeof(WEngine::InstanceData);
+    uint64 count = alloc.second / sizeof(WEngine::InstanceData);
+
+    std::array<VkDeviceSize, 2> offsets{0, alloc.first};
+    vkCmdBindVertexBuffers(cmdBufs[screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offsets[0]);
+    vkCmdBindVertexBuffers(cmdBufs[screen.currentFrame], 1, 1, &statBuf.statBuffer, &offsets[1]);
+    vkCmdBindIndexBuffer(cmdBufs[screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdPushConstants(cmdBufs[screen.currentFrame], pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+        sizeof(WEngine::Mat4x4), &vpRaw);
+
+    vkCmdDrawIndexed(cmdBufs[screen.currentFrame], vkModel.indexCount, count, 0, 0, 0);
+    drawCallsThisFrame++;
+}
+
 void Iris::DRAWCALL_ResetImGui()
 {
     ImGui_ImplVulkan_NewFrame();
@@ -1517,8 +1549,40 @@ wtl::vector<MemListDebugInfo> Iris::GetStatInstBufAllocInfo()
 void Iris::AddStationaryObjects(WEngine::Model model, WEngine::Shader shader,
     wtl::vector<WEngine::InstanceData> instanceMats)
 {
+    auto oldAlloc = statBuf.statBookkeep.FindNode(model, shader);
+
     uint64 size = instanceMats.size() * sizeof(WEngine::InstanceData);
-    statBuf.statBookkeep.InsertData(model, shader, size);
+    auto newAlloc = statBuf.statBookkeep.InsertData(model, shader, size);
+
+    uint64 trueOffset = newAlloc.first / sizeof(WEngine::InstanceData);
+
+    WEngine::InstanceData* data;
+
+    vmaMapMemory(vcore.vmaAllocator, statBuf.statAllocation, (void**)&data);
+
+    // case 1: new allocation
+    if (oldAlloc.first == 0 && oldAlloc.second == 0)
+    {
+        memcpy(data + trueOffset, instanceMats.data(), size);
+        vmaUnmapMemory(vcore.vmaAllocator, statBuf.statAllocation);
+        return;
+    }
+
+    uint64 trueOldOffset = oldAlloc.first / sizeof(WEngine::InstanceData);
+    uint64 trueOldSize = oldAlloc.second / sizeof(WEngine::InstanceData);
+
+    // case 2: simple resize
+    if (oldAlloc.first == newAlloc.first)
+    {
+        memcpy(data + trueOffset + trueOldSize, instanceMats.data(), size);
+    }
+    // case 3: reallocation
+    else
+    {
+        memmove(data + trueOffset, data + trueOldOffset, oldAlloc.second);
+        memcpy(data + trueOffset + trueOldSize, instanceMats.data(), size);
+    }
+    vmaUnmapMemory(vcore.vmaAllocator, statBuf.statAllocation);
 }
 
 #endif
