@@ -3,6 +3,7 @@
 #if GPU_BACKEND == GPU_VULKAN
 
 #include "VulkanTypes.h"
+#include "Engine/Types/Rendering/GPU/Material.h"
 
 struct VulkanContext
 {
@@ -11,9 +12,12 @@ struct VulkanContext
     Vulkan_Queues queues{};
     Vulkan_StatBuf statBuf{};
 
-    VkPipelineLayout pipelineLayout{};
-    VkDescriptorPool descriptorPool{};
+    VkDescriptorPool imGuiDescriptorPool{};
+    VkDescriptorPool renderDescriptorPool{};
     VkCommandPool commandPool{};
+
+    VkPipelineLayout pipelineLayout{};
+    VkDescriptorSetLayout descSetLayout{};
 
     wtl::vector<VkCommandBuffer> cmdBufs{};
     VkRenderPass renderPass{};
@@ -22,6 +26,8 @@ struct VulkanContext
     std::unordered_map<std::string, WEngine::Shader> loadedShadersHandles{};
     wtl::vector<Vulkan_Model> loadedModels{};
     std::unordered_map<std::string, WEngine::Model> loadedModelHandles{};
+    wtl::vector<Vulkan_Material> loadedMaterials{};
+    std::unordered_map<std::string, WEngine::Material> loadedMaterialHandles{};
 
     uint32 currentBoundShader = 999999999;
     std::vector<BufferCollection> bufferGraveyard{};

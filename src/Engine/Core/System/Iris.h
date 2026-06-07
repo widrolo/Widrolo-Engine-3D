@@ -15,6 +15,7 @@
 #include "Engine/Types/Rendering/ModelInfo.h"
 #include "Engine/Types/Rendering/ShaderSettings.h"
 #include "Engine/Types/Rendering/TextureInfo.h"
+#include "Engine/Types/Rendering/GPU/Material.h"
 #include "Engine/Types/Rendering/GPU/Model.h"
 #include "Engine/Types/Rendering/Iris/InstThreadedList.h"
 
@@ -35,8 +36,8 @@ public:
 
     // ----------------------- Shaders -----------------------
 
-    static WEngine::Nullable<WEngine::Shader> GetShader(const std::string& shaderName);
-    static WEngine::Nullable<WEngine::Shader> ALLOC_CompileShader(const std::string& shaderName);
+    static WEngine::Nullable<WEngine::Material> GetMaterial(const std::string &matName);
+    static WEngine::Nullable<WEngine::Material> ALLOC_CompileMaterial(const std::string& matName);
 
     // ----------------------- Models ------------------------
 

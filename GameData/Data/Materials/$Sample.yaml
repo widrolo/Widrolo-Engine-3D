@@ -1,0 +1,49 @@
+# This is not an actual material, but rather a spec that shows all names.
+# For optimization, we distinguish the difference between how the packaged binary loads
+# a material and how a Development binary loads is.
+
+material:
+    name: m_protoPBR # Name used by components
+
+    # During devel this will load the GLSL, in packaging this will use the compiled Spir-V shaders.
+    vertexshader: regularPBRVertex
+    fragmentshader: regularPBRFragment
+
+    # The following two use a temporary name system. The first key is the temporary name which points 
+    # to the file on the disk. Its only used for material construction, its discarded afterwards.
+
+    # This is loaded by the development version of the game.
+    texturesDevel:
+        color:      Proto/proto1024_c.png
+        normal:     Proto/proto1024_n.png # two channel
+        roughness:  Proto/proto1024_r.png
+        metal:      Proto/proto1024_m.png
+        ao:         Proto/proto1024_ao.png
+
+    # This is loaded by the packaged version of the game. (packed channels, dual channel normals)
+    # The pbr extention isnt custom, its just a renamed PNG
+    texturesPackaging:
+        base: Proto/proto1024.png # rgb=colors | a=normal X
+        pbr: Proto/proto1024.pbr # r=AO map | g=roughness | b=metal | a=normal Y
+
+    # Since the shader always assumes its in a packaged state, we need to tell the engine how to
+    # transform the passed textures into the packaged textures on the fly when running in development mode. 
+    # It will also be used by the game packager to package the textures.
+    # in development mode, there will be a performance impact for each load.
+    # Here, names of the tags play a crutial role. A typical name looks like this:
+    # 
+    #       base.r = color.b
+    # 
+    # For the first
+    # base: the temporary of the packaging texture, in this case Proto/proto1024.png
+    # r: the color channel, in this case red.
+    #
+    # For the second
+    # color: the temporary of the development texture, in this case Proto/proto1024_c.png
+    # b: the color channel, in this case blue.
+    # With that, the engine/packer will use the blue channel of the color texture when constructing 
+    # the red channel for the base.
+    # You can use the GLSL style rgba accessor. Channel count must match in the end, otherwise the engine aborts.
+    develTransform:
+        base.rgba: [color.rgb, normal.r]
+        pbr.rgba: [ao.r, roughness.r, metal.r, normal.g]

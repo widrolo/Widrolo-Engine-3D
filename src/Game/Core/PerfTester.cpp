@@ -29,7 +29,7 @@ void PerfTester::LotsOfCubesMonkey(WEngine::Sector* testworld)
     args.transform = t;
     args.ca = {ca};
 
-    const uint32 sideLen = 45;
+    const uint32 sideLen = 20;
     const float32 stride = 3.0f;
     uint32 counterModel = 0;
     uint32 counterShader = 0;

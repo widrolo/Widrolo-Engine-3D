@@ -68,10 +68,16 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
     if (!SetupSwapchain(ctx, stats))
         return false;
 
-    if (!SetupPipelineLayout(ctx))
+    if (!SetupImGuiDescriptorPool(ctx))
         return false;
 
-    if (!SetupDescriptorPool(ctx))
+    if (!SetupRenderDescriptorPool(ctx))
+        return false;
+
+    if (!SetupDescriptorSetLayout(ctx))
+        return false;
+
+    if (!SetupPipelineLayout(ctx))
         return false;
 
     if (!SetupCommandPool(ctx))
@@ -152,31 +158,31 @@ void Iris::SETTING_SetViewportSize(WEngine::Vector2 size)
     vkCmdSetScissor(ctx.cmdBufs[ctx.screen.currentFrame], 0, 1, &scissor);
 }
 
-WEngine::Nullable<WEngine::Shader> Iris::GetShader(const std::string &shaderName)
+WEngine::Nullable<WEngine::Material> Iris::GetMaterial(const std::string &matName)
 {
-    if (ctx.loadedShadersHandles.contains(shaderName))
-        return WEngine::Nullable<WEngine::Shader>(ctx.loadedShadersHandles[shaderName]);
-    return WEngine::Nullable<WEngine::Shader>();
+    if (ctx.loadedMaterialHandles.contains(matName))
+        return WEngine::Nullable<WEngine::Material>(ctx.loadedMaterialHandles[matName]);
+    return WEngine::Nullable<WEngine::Material>();
 }
 
-WEngine::Nullable<WEngine::Shader> Iris::ALLOC_CompileShader(const std::string& shaderName)
+WEngine::Nullable<WEngine::Material> Iris::ALLOC_CompileMaterial(const std::string& matName)
 {
-    auto check = GetShader(shaderName);
+    auto check = GetMaterial(matName);
 
     if (check.HasValue())
     {
         WEngine::WLog::SetConsoleError();
-        WEngine::WLog::ConsoleLog(std::format("Shader already {} compiled", shaderName));
-        return WEngine::Nullable<WEngine::Shader>();
+        WEngine::WLog::ConsoleLog(std::format("Material already {} compiled", matName));
+        return WEngine::Nullable<WEngine::Material>();
     }
 
-    auto pipeline = CreatePipeline(ctx, ctx.renderPass, shaderName);
+    auto pipeline = CreatePipeline(ctx, ctx.renderPass, matName);
 
     ctx.loadedShaders.push_back({pipeline});
     WEngine::Shader shaderHandle = ctx.loadedShaders.size();
-    ctx.loadedShadersHandles[shaderName] = shaderHandle;
+    ctx.loadedShadersHandles[matName] = shaderHandle;
 
-    return WEngine::Nullable<WEngine::Shader>(shaderHandle);
+    return WEngine::Nullable<WEngine::Material>(shaderHandle);
 }
 
 WEngine::Nullable<WEngine::Model> Iris::GetModel(const std::string &modelName)

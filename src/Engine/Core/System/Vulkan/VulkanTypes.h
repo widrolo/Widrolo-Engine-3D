@@ -11,6 +11,8 @@
 #include <Engine/WTL/vector.h>
 #include <Engine/Types/Rendering/Iris/InstThreadedList.h>
 
+#include "Engine/Types/Rendering/GPU/Material.h"
+
 
 enum class QueuePurpose : uint8
 {
@@ -66,9 +68,20 @@ struct Vulkan_Queues
     VkQueue primaryDrawQueue = VK_NULL_HANDLE;
 };
 
+struct Vulkan_Material
+{
+    // only albedo for now.
+    VkImageView albedo;
+    VkSampler albedoSampler;
+
+    VkDescriptorSet materialDescriptorSet;
+    WEngine::Shader materialShader;
+};
+
 struct Vulkan_Shader
 {
     VkPipeline pipeline;
+    wtl::vector<Vulkan_Material> shaderMaterials;
 };
 
 struct Vulkan_Model
@@ -85,6 +98,7 @@ struct Vulkan_Model
     uint16 activeInstances;
     uint32 instanceBufferSize;
 };
+
 
 struct Vulkan_StatBuf
 {

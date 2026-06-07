@@ -46,10 +46,10 @@ void MeshRendererComponent::Awake(ComponentArgs ca)
 
     if (shaderN.HasValue())
     {
-        auto shaderNN = Iris::GetShader(shaderN.GetValue());
+        auto shaderNN = Iris::GetMaterial(shaderN.GetValue());
         if (!shaderNN.HasValue())
         {
-            shaderNN = Iris::ALLOC_CompileShader(shaderN.GetValue());
+            shaderNN = Iris::ALLOC_CompileMaterial(shaderN.GetValue());
             if (shaderNN.HasValue())
                 m_shader = shaderNN.GetValue();
         }

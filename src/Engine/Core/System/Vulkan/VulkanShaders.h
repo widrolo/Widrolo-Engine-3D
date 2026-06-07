@@ -15,5 +15,5 @@ VkPipelineShaderStageCreateInfo CreatePipeline_ShaderStange_Vertex(const VulkanC
 VkPipelineShaderStageCreateInfo CreatePipeline_ShaderStange_Fragment(const VulkanContext& ctx, const std::string &shaderName);
 
 VkPipeline CreatePipeline(VulkanContext& ctx, VkRenderPass renderPass, const std::string& shaderName);
-
+void SaturateDescriptorSet(VulkanContext& ctx, Vulkan_Material& material);
 #endif

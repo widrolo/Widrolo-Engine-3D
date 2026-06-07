@@ -1,0 +1,3 @@
+material:
+    vertexshader: triangleInvertVertex
+    fragmentshader: triangleInvertFragment

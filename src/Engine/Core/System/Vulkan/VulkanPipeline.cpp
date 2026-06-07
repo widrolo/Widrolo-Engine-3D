@@ -20,6 +20,8 @@ bool SetupPipelineLayout(VulkanContext& ctx)
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &ctx.descSetLayout;
 
     auto resLayout = vkCreatePipelineLayout(ctx.vcore.gpuDevice, &pipelineLayoutInfo, ctx.vcore.allocator, &ctx.pipelineLayout);
     if (!ParseVkResult(resLayout))
@@ -31,7 +33,56 @@ bool SetupPipelineLayout(VulkanContext& ctx)
     return true;
 }
 
-bool SetupDescriptorPool(VulkanContext& ctx)
+bool SetupDescriptorSetLayout(VulkanContext &ctx)
+{
+    VkDescriptorSetLayout layout{};
+
+    VkDescriptorSetLayoutBinding binding{};
+    binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    binding.descriptorCount = 1;
+    binding.binding = 0;
+
+    VkDescriptorSetLayoutCreateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    info.bindingCount = 1;
+    info.pBindings = &binding;
+
+    auto res = vkCreateDescriptorSetLayout(ctx.vcore.gpuDevice, &info, ctx.vcore.allocator, &layout);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Unable to create descriptor set layout");
+        return false;
+    }
+
+    ctx.descSetLayout = layout;
+
+    return true;
+}
+
+VkDescriptorSet CreateDescriptorSet(VulkanContext &ctx)
+{
+    VkDescriptorSet set;
+    VkDescriptorSetAllocateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    info.descriptorPool = ctx.renderDescriptorPool;
+    info.descriptorSetCount = 1;
+    info.pSetLayouts = &ctx.descSetLayout;
+
+    auto res = vkAllocateDescriptorSets(ctx.vcore.gpuDevice, &info, &set);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Unable to create descriptor set!");
+        return VK_NULL_HANDLE;
+    }
+    return set;
+}
+
+bool SetupImGuiDescriptorPool(VulkanContext& ctx)
 {
     // So far im only using this for imgui, so please adjust when needed.
 
@@ -49,7 +100,30 @@ bool SetupDescriptorPool(VulkanContext& ctx)
     descInfo.poolSizeCount = poolSizes.size();
     descInfo.pPoolSizes = poolSizes.data();
 
-    auto res = vkCreateDescriptorPool(ctx.vcore.gpuDevice, &descInfo, ctx.vcore.allocator, &ctx.descriptorPool);
+    auto res = vkCreateDescriptorPool(ctx.vcore.gpuDevice, &descInfo, ctx.vcore.allocator, &ctx.imGuiDescriptorPool);
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Unable to create descriptor pool!");
+        return false;
+    }
+    return true;
+}
+
+bool SetupRenderDescriptorPool(VulkanContext &ctx)
+{
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSize.descriptorCount = ctx.screen.swapchainImages.size();
+
+    VkDescriptorPoolCreateInfo descInfo{};
+    descInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descInfo.maxSets = 512;
+    descInfo.poolSizeCount = 1;
+    descInfo.pPoolSizes = &poolSize;
+
+    auto res = vkCreateDescriptorPool(ctx.vcore.gpuDevice, &descInfo, ctx.vcore.allocator, &ctx.renderDescriptorPool);
 
     if (!ParseVkResult(res))
     {

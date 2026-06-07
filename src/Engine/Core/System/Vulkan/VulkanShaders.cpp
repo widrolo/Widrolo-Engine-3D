@@ -4,6 +4,7 @@
 #if GPU_BACKEND == GPU_VULKAN
 
 #include "VulkanHelpers.h"
+#include "VulkanPipeline.h"
 #include "Engine/Core/Handlers/AssetRepo.h"
 #include "Engine/Types/AssetMission.h"
 #include "Engine/Types/CoreSystems.h"
@@ -201,12 +202,31 @@ VkPipeline CreatePipeline(VulkanContext& ctx, VkRenderPass renderPass, const std
     vkDestroyShaderModule(ctx.vcore.gpuDevice, shaderStages[0].module, ctx.vcore.allocator);
     vkDestroyShaderModule(ctx.vcore.gpuDevice, shaderStages[1].module, ctx.vcore.allocator);
 
-
-
     wFree((void*)vertexDefinition.pVertexBindingDescriptions);
     wFree((void*)vertexDefinition.pVertexAttributeDescriptions);
 
     return pipeline;
+}
+
+void SaturateDescriptorSet(VulkanContext& ctx, Vulkan_Material& material)
+{
+    auto& set = material.materialDescriptorSet;
+
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageView   = material.albedo;
+    imageInfo.sampler     = material.albedoSampler;
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    VkWriteDescriptorSet write{};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstSet = set;
+    write.dstBinding = 0;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write.pImageInfo = &imageInfo;
+
+    vkUpdateDescriptorSets(ctx.vcore.gpuDevice, 1, &write, 0, nullptr);
 }
 
 #endif
