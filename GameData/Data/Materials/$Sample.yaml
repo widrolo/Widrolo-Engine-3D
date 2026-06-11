@@ -3,7 +3,7 @@
 # a material and how a Development binary loads is.
 
 material:
-    name: m_protoPBR # Name used by components
+    materialName: m_protoPBR # Name used by components
 
     # During devel this will load the GLSL, in packaging this will use the compiled Spir-V shaders.
     shader: regularPBR
@@ -23,7 +23,7 @@ material:
         ao:         Proto/proto1024_ao.png
 
     # Optional, if true this will disable the warning message for the above check.
-    disableStrictCheck: true
+    disableStrictCheck: false
 
     # This is loaded by the packaged version of the game. (packed channels, dual channel normals)
     # The pbr extension isnt custom, its just a renamed PNG. It use used by the engine in combination

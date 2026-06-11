@@ -318,6 +318,7 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Types/Rendering/GPU/Material.h
         src/Engine/Types/Rendering/ShaderDefinition.h
         src/Engine/Types/Refcounted.h
+        src/Engine/Types/Rendering/MaterialDefinition.h
 )
 
 set_target_properties(Widrolo_Engine_3D PROPERTIES

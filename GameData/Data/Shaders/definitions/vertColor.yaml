@@ -2,7 +2,7 @@ shader:
     isCompute: false
 
     shaderName: vertColor
-    abundance: 6
+    abundance: 0
 
     vertexCode: basic
     fragmentCode: vertColor

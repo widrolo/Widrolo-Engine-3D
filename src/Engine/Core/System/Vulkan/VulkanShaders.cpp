@@ -358,6 +358,158 @@ WEngine::ShaderDefinition ParseShaderDefinition(const YAML::Node& root)
     return def;
 }
 
+WEngine::MaterialDefinition ParseMaterialDefinition(VulkanContext &ctx, const YAML::Node &root)
+{
+    WEngine::MaterialDefinition def{};
+
+    if (!root["material"])
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to load material definition!");
+        return def;
+    }
+
+    const YAML::Node material = root["material"];
+
+    // we need to at least have the name to give a better error is something is missing later.
+    if (!material["materialName"])
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Material definition name not present!");
+        return def;
+    }
+
+    def.name = material["materialName"].as<std::string>();
+
+    if (!material["shader"])
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog(std::format("Material \"{}\" is missing one of the following fields:\n"
+                                              "\t shader", def.name));
+        return def;
+    }
+
+    def.shaderName = material["shader"].as<std::string>();
+
+    if (!ctx.loadedShadersHandles.contains(def.shaderName))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog(std::format("Material \"{}\" depends on nonexistent shader: \"{}\"", def.name, def.shaderName));
+        return def;
+    }
+
+    WEngine::Shader shHandle = ctx.loadedShadersHandles[def.shaderName];
+    Vulkan_Shader shader = ctx.loadedShaders[shHandle];
+    const auto& fragInfo = shader.shaderDefinition.fragInfo;
+
+    bool disableStrictCheck = false;
+    if (material["disableStrictCheck"])
+        disableStrictCheck = material["disableStrictCheck"].as<bool>();
+
+    // reading this unironically sounds like im praying on the materials' downfall.
+    if (fragInfo.expectTextureCount != 0)
+    {
+        // since we have textures now, we have to ensure proper sanity checks.
+        if (!material["texturesDevel"] || !material["texturesPackaging"] || !material["develTransform"])
+        {
+            WEngine::WLog::SetConsoleError();
+            WEngine::WLog::ConsoleLog(std::format("Material \"{}\" is missing one of the following fields:\n"
+                                                  "\t texturesDevel, texturesPackaging, develTransform.", def.name));
+            return def;
+        }
+
+        // this will later be vital for swizzling
+        // first = temp name | second = file name
+        wtl::vector<std::pair<std::string, std::string>> develTex;
+        wtl::vector<std::pair<std::string, std::string>> packTex;
+
+        for (const auto& tex : material["texturesDevel"])
+            develTex.push_back({tex.first.as<std::string>(), tex.second.as<std::string>()});
+        for (const auto& tex : material["texturesPackaging"])
+            packTex.push_back({tex.first.as<std::string>(), tex.second.as<std::string>()});
+
+        for (const auto& tex : develTex)
+            def.texturesDevel.push_back(tex.second);
+        for (const auto& tex : packTex)
+            def.texturesPackaging.push_back(tex.second);
+
+        if (packTex.size() != fragInfo.expectTextureCount)
+        {
+            WEngine::WLog::SetConsoleError();
+            WEngine::WLog::ConsoleLog(std::format("Material sanity test tripped in \"{}\":\n"
+                "\t unexpected texture count!", def.name));
+            return def;
+        }
+
+        if (!disableStrictCheck)
+        {
+            std::string missingExpected;
+            for (const auto& expect : fragInfo.expectChannelNames)
+            {
+                if (!std::ranges::contains(develTex, expect, [](const auto& p) { return p.first; }))
+                {
+                    missingExpected = expect;
+                    goto channelCheckFail;
+                }
+            }
+            // Reddit purists are pounding on my door as we speak.
+            goto channelCheckSuccess;
+
+            channelCheckFail:
+            WEngine::WLog::SetConsoleError();
+            WEngine::WLog::ConsoleLog(std::format("Material sanity test tripped in \"{}\":\n"
+                "\t expected channel \"{}\" not found!", def.name, missingExpected));
+            return def;
+
+            channelCheckSuccess:
+        }
+
+        wtl::vector<std::string> colorTex;
+        wtl::vector<std::string> pbrTex;
+
+        for (const auto& tex : packTex)
+        {
+            // here we check for the file extension, png ends with g and pbr ends with r
+            // the spec specifically only allows these two to exist, it's your fault
+            // if you show up with a jpg to a png convention.
+            char last = tex.second.back();
+
+            if (last == 'g')
+                colorTex.push_back(tex.first);
+            if (last == 'r')
+                pbrTex.push_back(tex.first);
+        }
+
+        // runs on the same thread as the world streaming btw
+        for (const auto& expect : fragInfo.colorTextures)
+            if (!std::ranges::contains(colorTex, expect))
+                goto typeCheckFail;
+        for (const auto& expect : fragInfo.pbrTextures)
+            if (!std::ranges::contains(pbrTex, expect))
+                goto typeCheckFail;
+
+        goto typeCheckSuccess;
+
+        typeCheckFail:
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog(std::format("Material sanity test tripped in \"{}\":\n"
+            "\t mismatch in expected texture types!", def.name));
+        return def;
+
+        typeCheckSuccess:
+
+        // TODO: Do swizzling later when i have sanity again.
+    }
+
+    if (!fragInfo.expectedParams.empty())
+    {
+        // TODO: Do this later as well
+    }
+
+    def.valid = true;
+    return def;
+}
+
 void TryCompileAllShaders(VulkanContext &ctx)
 {
     std::string dir = WEngine::CoreSystems::GetAssetRepo()->GetDataPath() + EngineSettings::shaderPath + "definitions";
@@ -383,7 +535,6 @@ void TryCompileAllShaders(VulkanContext &ctx)
 
         Vulkan_Shader shader{};
 
-
         auto descPool = CreateDescriptorPool(ctx, def);
         auto descLayout = CreateDescriptorSetLayout(ctx, def);
         auto pipeLayout = CreatePipelineLayout(ctx, descLayout);
@@ -393,6 +544,7 @@ void TryCompileAllShaders(VulkanContext &ctx)
         shader.descriptorSetLayout = descLayout;
         shader.pipelineLayout = pipeLayout;
         shader.pipeline = pipeline;
+        shader.shaderDefinition = def;
 
         ctx.loadedShaders.push_back(shader);
         WEngine::Shader shaderHandle = ctx.loadedShaders.size();

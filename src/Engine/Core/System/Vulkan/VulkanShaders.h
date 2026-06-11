@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 #include "VulkanContext.h"
 #include "Engine/Types/AssetMission.h"
+#include "Engine/Types/Rendering/MaterialDefinition.h"
 #include "Engine/Types/Rendering/ShaderDefinition.h"
 
 VkShaderModule CompileShader(const VulkanContext& ctx, const WEngine::SpirVAssetMission& spirvAssetMission);
@@ -20,6 +21,7 @@ VkPipeline CreatePipeline(VulkanContext& ctx, VkRenderPass renderPass, const WEn
 void SaturateDescriptorSet(VulkanContext& ctx, Vulkan_Material& material);
 
 WEngine::ShaderDefinition ParseShaderDefinition(const YAML::Node& root);
+WEngine::MaterialDefinition ParseMaterialDefinition(VulkanContext &ctx, const YAML::Node& root);
 
 void TryCompileAllShaders(VulkanContext& ctx);
 

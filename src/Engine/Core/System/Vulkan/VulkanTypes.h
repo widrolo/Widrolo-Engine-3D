@@ -11,6 +11,7 @@
 #include <Engine/WTL/vector.h>
 #include <Engine/Types/Rendering/Iris/InstThreadedList.h>
 
+#include "Engine/Types/Rendering/ShaderDefinition.h"
 #include "Engine/Types/Rendering/GPU/Material.h"
 
 
@@ -85,6 +86,7 @@ struct Vulkan_Shader
     wtl::vector<Vulkan_Material> shaderMaterials;
     VkDescriptorPool descriptorPool;
     VkDescriptorSetLayout descriptorSetLayout;
+    WEngine::ShaderDefinition shaderDefinition;
 };
 
 struct Vulkan_Model
