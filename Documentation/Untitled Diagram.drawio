@@ -1,9 +1,17 @@
 <mxfile host="app.diagrams.net" agent="5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36">
   <diagram id="kgpKYQtTHZ0yAKxKKP6v" name="Page-1">
-    <mxGraphModel dx="1923" dy="1137" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2071" dy="1225" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="QZozGhfnKPgpjbq-TObu-18" edge="1" parent="1" source="Rupf-1fVi9H6Zibw66AW-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="940" y="800" />
+            </Array>
+            <mxPoint x="940" y="800" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="Rupf-1fVi9H6Zibw66AW-23" parent="1" style="swimlane;startSize=40;" value="System Abstraction" vertex="1">
           <mxGeometry height="280" width="800" x="25" y="680" as="geometry">
             <mxRectangle height="30" width="90" x="140" y="640" as="alternateBounds" />
@@ -35,6 +43,11 @@
         </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-31" edge="1" parent="1" source="-NolNCKCxvoOFp3M2r7I-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Rupf-1fVi9H6Zibw66AW-23">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-11" edge="1" parent="1" source="-NolNCKCxvoOFp3M2r7I-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="940" y="495" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-10" parent="1" style="swimlane;startSize=50;" value="Deep Core Handlers" vertex="1">
           <mxGeometry height="290" width="800" x="25" y="350" as="geometry" />
@@ -368,29 +381,92 @@
         <mxCell id="-NolNCKCxvoOFp3M2r7I-124" parent="1" style="text;whiteSpace=wrap;html=1;" value="&amp;nbsp;" vertex="1">
           <mxGeometry height="40" width="40" x="690" y="1000" as="geometry" />
         </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-10" edge="1" parent="1" source="-NolNCKCxvoOFp3M2r7I-134" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1220" y="610" />
+              <mxPoint x="1220" y="430" />
+            </Array>
+            <mxPoint x="1140" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-20" edge="1" parent="1" source="-NolNCKCxvoOFp3M2r7I-134" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1230" y="800" />
+              <mxPoint x="1230" y="800" />
+            </Array>
+            <mxPoint x="1140" y="800" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-134" parent="1" style="swimlane;startSize=50;" value="Asset Repository" vertex="1">
-          <mxGeometry height="610" width="200" x="850" y="350" as="geometry" />
+          <mxGeometry height="610" width="200" x="1260" y="350" as="geometry" />
         </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-144" parent="-NolNCKCxvoOFp3M2r7I-134" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="The Asset repository handles both the retrieving as well as bookkeeping of assets." vertex="1">
           <mxGeometry height="520" width="160" x="20" y="70" as="geometry" />
         </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-138" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
-          <mxGeometry height="103" width="80" x="910" y="977" as="geometry" />
+          <mxGeometry height="103" width="80" x="1320" y="977" as="geometry" />
         </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-139" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="70" width="70" x="915" y="982.5" as="geometry" />
+          <mxGeometry height="70" width="70" x="1325" y="982.5" as="geometry" />
         </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-141" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="910" y="1050" as="sourcePoint" />
-            <mxPoint x="950" y="1020" as="targetPoint" />
+            <mxPoint x="1320" y="1050" as="sourcePoint" />
+            <mxPoint x="1360" y="1020" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="-NolNCKCxvoOFp3M2r7I-142" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="920" y="1070" as="sourcePoint" />
-            <mxPoint x="950" y="1020" as="targetPoint" />
+            <mxPoint x="1330" y="1070" as="sourcePoint" />
+            <mxPoint x="1360" y="1020" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-13" edge="1" parent="1" source="QZozGhfnKPgpjbq-TObu-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="200" />
+            </Array>
+            <mxPoint x="730.0000000000002" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-7" parent="1" style="swimlane;" value="Asset mission" vertex="1">
+          <mxGeometry height="200" width="200" x="940" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-8" parent="QZozGhfnKPgpjbq-TObu-7" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Simple assets such as text files or yaml are trivially requested via GetAsset(), and the placed in the same asset mission to be used." vertex="1">
+          <mxGeometry height="170" width="180" x="10" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-9" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="-NolNCKCxvoOFp3M2r7I-134">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1195" y="475" />
+              <mxPoint x="1195" y="655" />
+            </Array>
+            <mxPoint x="1140" y="475" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-12" edge="1" parent="1" source="-NolNCKCxvoOFp3M2r7I-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.573;entryY=0.011;entryDx=0;entryDy=0;entryPerimeter=0;" target="QZozGhfnKPgpjbq-TObu-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-15" edge="1" parent="1" source="QZozGhfnKPgpjbq-TObu-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1.002;entryY=0.098;entryDx=0;entryDy=0;entryPerimeter=0;" target="-NolNCKCxvoOFp3M2r7I-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-19" edge="1" parent="1" source="QZozGhfnKPgpjbq-TObu-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1260" y="830" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-22" edge="1" parent="1" source="QZozGhfnKPgpjbq-TObu-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820.0000000000002" y="830" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-17" parent="1" style="swimlane;" value="Asset Communications" vertex="1">
+          <mxGeometry height="200" width="200" x="940" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="QZozGhfnKPgpjbq-TObu-24" parent="QZozGhfnKPgpjbq-TObu-17" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;Asset communications are meant to hold a steady stream of information exchange between the Asset Repository and a system.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;These assets are reference counted and stored within the repository.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="170" width="180" x="10" y="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
