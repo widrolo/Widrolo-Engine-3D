@@ -130,13 +130,22 @@ VkDescriptorPool CreateDescriptorPool(VulkanContext &ctx, const WEngine::ShaderD
         return VK_NULL_HANDLE;
     }
 
+    uint16 maxSets = 0;
+    switch (shaderDef.abundance)
+    {
+        case 0: maxSets = 4; break;
+        case 1: maxSets = 128; break;
+        case 2: maxSets = 512; break;
+        case 3: maxSets = 2048; break;
+    }
+
     VkDescriptorPoolSize poolSize{};
     poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize.descriptorCount = shaderDef.fragInfo.expectTextureCount * GPUSettingsVulkan::maxMaterialCount;
+    poolSize.descriptorCount = shaderDef.fragInfo.expectTextureCount * maxSets;
 
     VkDescriptorPoolCreateInfo descInfo{};
     descInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descInfo.maxSets = GPUSettingsVulkan::maxMaterialCount;
+    descInfo.maxSets = maxSets;
     descInfo.poolSizeCount = 1;
     descInfo.pPoolSizes = &poolSize;
 

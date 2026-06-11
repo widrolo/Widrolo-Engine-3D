@@ -7,10 +7,21 @@ shader:
 
     shaderName: regularPBR
 
+    # This dictates how many materials can be derived from this shader. For example, one fancy wall shader
+    # could only ever create about one or two materials, while a general purpose PBR shader may have 
+    # hundreds of materials. This dicates how many get created.
+    # |  value  |   max materials   |    recommended usage    |
+    # |    0    |         4         |      niche effect       |
+    # |    1    |       128         | building specifc shader |
+    # |    2    |       512         |   area specifc shader   |
+    # |    3    |      2048         |  general purpose shader |
+    # Shader compilation for this shader gets skipped if you dare step out of this range.
+    abundance: 2
+
     # This defines which code to use for the stages. We dont use any file extensions here,
     # Development uses GLSL which gets compiled to Spir-V during packaging. The engine knows, trust.
-    # The engine also appends the sahder type at the end.
-    # In total, if you provide vertexCode: regularPBR, the engine wil look for regularPBRVertex.glsl/spv
+    # The engine also appends the shader type at the end.
+    # So if you provide vertexCode: regularPBR, the engine will look for regularPBRVertex.glsl/spv
     vertexCode: regularPBR
     fragmentCode: regularPBR
 

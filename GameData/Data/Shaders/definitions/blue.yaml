@@ -2,6 +2,7 @@ shader:
     isCompute: false
 
     shaderName: blue
+    abundance: 1
 
     vertexCode: basic
     fragmentCode: blue

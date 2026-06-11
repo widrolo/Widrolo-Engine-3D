@@ -13,5 +13,6 @@ uint64 CalcModelSize(uint8 bytesPerVertex, uint32 vertexCount);
 VkFormat FindBestDepthFormat(const VulkanContext& ctx);
 VkFormat FindBestColorFormat(const VulkanContext& ctx);
 uint64 GetSizeOfImageInBytes(WEngine::Vector2 imageSize, uint8 channelCount);
+uint32 GetVulkanVersion();
 
 #endif

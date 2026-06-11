@@ -260,16 +260,24 @@ WEngine::ShaderDefinition ParseShaderDefinition(const YAML::Node& root)
     def.name = shader["shaderName"].as<std::string>();
 
     // some checks to see if the crucial stuff is present.
-    if (!shader["vertexCode"] || !shader["fragmentCode"] || !shader["fragmentInfo"])
+    if (!shader["vertexCode"] || !shader["fragmentCode"] || !shader["fragmentInfo"] || !shader["abundance"])
     {
         WEngine::WLog::SetConsoleError();
         WEngine::WLog::ConsoleLog(std::format("Shader \"{}\" is missing one of the following fields:\n"
-                                              "\t vertexCode, fragmentCode, fragmentInfo.", def.name));
+                                              "\t vertexCode, fragmentCode, fragmentInfo, abundance", def.name));
         return def;
     }
 
     def.vertexCodeName = shader["vertexCode"].as<std::string>();
     def.fragmentCodeName = shader["fragmentCode"].as<std::string>();
+    def.abundance = shader["abundance"].as<uint8>();
+    if (def.abundance > 3)
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog(std::format("Shader sanity test tripped in \"{}\":\n"
+            "\t abundance out of range, max allowed is 3!", def.name));
+        return def;
+    }
 
     const YAML::Node fragInfo = shader["fragmentInfo"];
 

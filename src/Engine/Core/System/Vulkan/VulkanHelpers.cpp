@@ -115,4 +115,9 @@ uint64 GetSizeOfImageInBytes(WEngine::Vector2 imageSize, uint8 channelCount)
     return (uint64)imageSize.x * (uint64)imageSize.y * channelCount;
 }
 
+uint32 GetVulkanVersion()
+{
+    return VK_API_VERSION_1_4;
+}
+
 #endif

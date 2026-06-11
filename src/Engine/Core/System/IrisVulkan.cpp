@@ -68,9 +68,6 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
     if (!SetupSwapchain(ctx, stats))
         return false;
 
-    if (!SetupImGuiDescriptorPool(ctx))
-        return false;
-
     if (!SetupCommandPool(ctx))
         return false;
 
@@ -92,9 +89,12 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
 
 void Iris::SETTING_ConfigureImGui(SDL_Window *window)
 {
+    if (!SetupImGuiDescriptorPool(ctx))
+        return;
+
     ImGui_ImplSDL3_InitForVulkan(window);
     ImGui_ImplVulkan_InitInfo initInfo{};
-    initInfo.ApiVersion = VK_API_VERSION_1_4;
+    initInfo.ApiVersion = GetVulkanVersion();
     initInfo.Instance = ctx.vcore.instance;
     initInfo.PhysicalDevice = ctx.vcore.gpuPhysicalDevice;
     initInfo.Device = ctx.vcore.gpuDevice;

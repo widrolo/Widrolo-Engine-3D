@@ -2,6 +2,7 @@ shader:
     isCompute: false
 
     shaderName: vertColorInvert
+    abundance: 0
 
     vertexCode: basic
     fragmentCode: vertColorInvert

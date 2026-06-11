@@ -54,7 +54,7 @@ void SetupVmaAllocator(VulkanContext& ctx)
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+    allocatorCreateInfo.vulkanApiVersion = GetVulkanVersion();
     allocatorCreateInfo.physicalDevice = ctx.vcore.gpuPhysicalDevice;
     allocatorCreateInfo.device = ctx.vcore.gpuDevice;
     allocatorCreateInfo.instance = ctx.vcore.instance;
@@ -118,7 +118,7 @@ bool SetupVkInstance(VulkanContext& ctx)
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = GameSettings::gameName.c_str();
     appInfo.pEngineName = EngineSettings::engineName.c_str();
-    appInfo.apiVersion = VK_API_VERSION_1_4;
+    appInfo.apiVersion = GetVulkanVersion();
 
     wtl::vector<std::string> extensions = GetExtensionsToLoad(ctx);
     std::vector<const char*> extensionsData;

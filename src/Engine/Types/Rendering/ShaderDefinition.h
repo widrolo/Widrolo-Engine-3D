@@ -15,7 +15,7 @@ namespace WEngine
 
         std::string vertexCodeName;
         std::string fragmentCodeName;
-
+        uint8 abundance = 0;
 
         struct FragmentInfo
         {
