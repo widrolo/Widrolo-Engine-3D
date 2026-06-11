@@ -71,15 +71,6 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
     if (!SetupImGuiDescriptorPool(ctx))
         return false;
 
-    if (!SetupRenderDescriptorPool(ctx))
-        return false;
-
-    if (!SetupDescriptorSetLayout(ctx))
-        return false;
-
-    if (!SetupPipelineLayout(ctx))
-        return false;
-
     if (!SetupCommandPool(ctx))
         return false;
 
@@ -253,9 +244,10 @@ void Iris::DRAWCALL_ClearFrame(WEngine::Color clearColor)
 
 void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings &settings)
 {
+    Vulkan_Shader vkShader;
     if (ctx.currentBoundShader != shader)
     {
-        Vulkan_Shader vkShader = ctx.loadedShaders[shader - 1];
+        vkShader = ctx.loadedShaders[shader - 1];
         vkCmdBindPipeline(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
         ctx.currentBoundShader = shader;
     }
@@ -267,7 +259,7 @@ void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, cons
     VkDeviceSize offset = 0;
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offset);
     vkCmdBindIndexBuffer(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdPushConstants(ctx.cmdBufs[ctx.screen.currentFrame], ctx.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+    vkCmdPushConstants(ctx.cmdBufs[ctx.screen.currentFrame], vkShader.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(WEngine::Mat4x4), &mvpRaw);
 
     vkCmdDrawIndexed(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexCount, 1, 0, 0, 0);
@@ -278,9 +270,10 @@ void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, cons
 void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader shader,
     const WEngine::ShaderSettings &settings, const wtl::vector<WEngine::InstanceData>& instanceMats)
 {
+    Vulkan_Shader vkShader;
     if (ctx.currentBoundShader != shader)
     {
-        Vulkan_Shader vkShader = ctx.loadedShaders[shader - 1];
+        vkShader = ctx.loadedShaders[shader - 1];
         vkCmdBindPipeline(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
         ctx.currentBoundShader = shader;
     }
@@ -305,7 +298,7 @@ void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader sha
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offsets[0]);
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 1, 1, &vkModel.instanceBuffer, &offsets[1]);
     vkCmdBindIndexBuffer(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdPushConstants(ctx.cmdBufs[ctx.screen.currentFrame], ctx.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+    vkCmdPushConstants(ctx.cmdBufs[ctx.screen.currentFrame], vkShader.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(WEngine::Mat4x4), &vpRaw);
 
     vkCmdDrawIndexed(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexCount, instanceMats.size(), 0, 0, 0);
@@ -321,9 +314,10 @@ void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::
     if (alloc.first == 0 && alloc.second == 0)
         return;
 
+    Vulkan_Shader vkShader;
     if (ctx.currentBoundShader != shader)
     {
-        Vulkan_Shader vkShader = ctx.loadedShaders[shader - 1];
+        vkShader = ctx.loadedShaders[shader - 1];
         vkCmdBindPipeline(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
         ctx.currentBoundShader = shader;
     }
@@ -339,7 +333,7 @@ void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offsets[0]);
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 1, 1, &ctx.statBuf.statBuffer, &offsets[1]);
     vkCmdBindIndexBuffer(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdPushConstants(ctx.cmdBufs[ctx.screen.currentFrame], ctx.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+    vkCmdPushConstants(ctx.cmdBufs[ctx.screen.currentFrame], vkShader.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(WEngine::Mat4x4), &vpRaw);
 
     vkCmdDrawIndexed(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexCount, count, 0, 0, 0);

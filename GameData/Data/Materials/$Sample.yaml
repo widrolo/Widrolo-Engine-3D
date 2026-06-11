@@ -13,7 +13,7 @@ material:
     # texturesDevel names are also used for sanity checks, please use the names provided in your 
     # shader definition. Since the development pipeline can be flexible, a failed sanity check wont 
     # lead to a crash, but will throw a warning.
-
+    # If the shader has zero textures expected, then this doesnt need to be defined
     # This is loaded by the development version of the game.
     texturesDevel:
         color:      Proto/proto1024_c.png
@@ -31,6 +31,7 @@ material:
     # consist of color, while pbr consists of material properties. The engine will treat both the same, but 
     # its used for another layer of error checking. The temporary names will also be used for error checking,
     # this one cannot be disabled.
+    # If the shader has zero textures expected, then this doesnt need to be defined
     texturesPackaging:
         base: Proto/proto1024.png # rgb=colors | a=normal X
         pbr: Proto/proto1024.pbr # r=AO map | g=roughness | b=metal | a=normal Y
@@ -55,6 +56,7 @@ material:
     # You can use the GLSL style rgba accessor. Channel count must match in the end, otherwise the engine aborts.
     # Dont go overboard with swizziling, this isnt glsl; consider this more of a mix-and-match game. base.gggg 
     # isnt supported, base.r = (float) isnt supported. 
+    # If the shader has zero textures expected, then this doesnt need to be defined
     develTransform:
         base.rgba: [color.rgb, normal.r]
         pbr.rgba: [ao.r, roughness.r, metal.r, normal.g]
@@ -62,6 +64,7 @@ material:
     # These are parameters that the shader expects. Please consult your shader definition to know which to use.
     # Failure to provide one or wrong type will result in a crash. Additional non required params will be dropped
     # with a warning in the console.
+    # If the shader has zero params expected, then this doesnt need to be defined
     params:
         colorTint: [1.0, 1.0, 1.0, 1.0]
         roughnessScale: 1.0

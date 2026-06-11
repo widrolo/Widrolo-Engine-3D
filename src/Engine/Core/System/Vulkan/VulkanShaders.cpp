@@ -127,7 +127,8 @@ VkPipelineShaderStageCreateInfo CreatePipeline_ShaderStange_Fragment(const Vulka
     return shaderStage;
 }
 
-VkPipeline CreatePipeline(VulkanContext& ctx, VkRenderPass renderPass, const WEngine::ShaderDefinition& shaderDef)
+VkPipeline CreatePipeline(VulkanContext& ctx, VkRenderPass renderPass, const WEngine::ShaderDefinition& shaderDef,
+    VkPipelineLayout pipelineLayout)
 {
     VkPipelineRasterizationStateCreateInfo rasterInfo{};
     rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -190,7 +191,7 @@ VkPipeline CreatePipeline(VulkanContext& ctx, VkRenderPass renderPass, const WEn
     pipeInfo.stageCount = shaderStages.size();
     pipeInfo.pStages = shaderStages.data();
     pipeInfo.renderPass = renderPass;
-    pipeInfo.layout = ctx.pipelineLayout;
+    pipeInfo.layout = pipelineLayout;
 
     VkPipeline pipeline;
     auto res = vkCreateGraphicsPipelines(ctx.vcore.gpuDevice, VK_NULL_HANDLE, 1, &pipeInfo, ctx.vcore.allocator, &pipeline);
@@ -235,6 +236,7 @@ void SaturateDescriptorSet(VulkanContext& ctx, Vulkan_Material& material)
 WEngine::ShaderDefinition ParseShaderDefinition(const YAML::Node& root)
 {
     // tessellation and geometry shading isnt supported by the renderer, therefore its skipped for now.
+    // as said in the spec, no compute either
 
     WEngine::ShaderDefinition def{};
 
@@ -371,9 +373,20 @@ void TryCompileAllShaders(VulkanContext &ctx)
         if (!def.valid)
             continue;
 
-        auto pipeline = CreatePipeline(ctx, ctx.renderPass, def);
+        Vulkan_Shader shader{};
 
-        ctx.loadedShaders.push_back({pipeline});
+
+        auto descPool = CreateDescriptorPool(ctx, def);
+        auto descLayout = CreateDescriptorSetLayout(ctx, def);
+        auto pipeLayout = CreatePipelineLayout(ctx, descLayout);
+        auto pipeline = CreatePipeline(ctx, ctx.renderPass, def, pipeLayout);
+
+        shader.descriptorPool = descPool;
+        shader.descriptorSetLayout = descLayout;
+        shader.pipelineLayout = pipeLayout;
+        shader.pipeline = pipeline;
+
+        ctx.loadedShaders.push_back(shader);
         WEngine::Shader shaderHandle = ctx.loadedShaders.size();
         ctx.loadedShadersHandles[def.name] = shaderHandle;
 

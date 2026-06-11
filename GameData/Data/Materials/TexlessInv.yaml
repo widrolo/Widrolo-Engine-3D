@@ -1,3 +1,3 @@
 material:
-    vertexshader: triangleInvertVertex
-    fragmentshader: triangleInvertFragment
+    name: m_texlessInv
+    shader: vertColorInvert

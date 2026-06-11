@@ -13,11 +13,7 @@ struct VulkanContext
     Vulkan_StatBuf statBuf{};
 
     VkDescriptorPool imGuiDescriptorPool{};
-    VkDescriptorPool renderDescriptorPool{};
     VkCommandPool commandPool{};
-
-    VkPipelineLayout pipelineLayout{};
-    VkDescriptorSetLayout descSetLayout{};
 
     wtl::vector<VkCommandBuffer> cmdBufs{};
     VkRenderPass renderPass{};

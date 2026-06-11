@@ -81,7 +81,10 @@ struct Vulkan_Material
 struct Vulkan_Shader
 {
     VkPipeline pipeline;
+    VkPipelineLayout pipelineLayout;
     wtl::vector<Vulkan_Material> shaderMaterials;
+    VkDescriptorPool descriptorPool;
+    VkDescriptorSetLayout descriptorSetLayout;
 };
 
 struct Vulkan_Model
