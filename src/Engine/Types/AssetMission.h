@@ -8,6 +8,7 @@
 #include <Engine/Types/Audio.h>
 
 #include "Rendering/ModelInfo.h"
+#include "Rendering/TextureInfo.h"
 
 namespace WEngine
 {
@@ -52,13 +53,6 @@ namespace WEngine
 	};
 
 	/**
-	 * Represents a mission to retrieve or load an atlas info asset.
-	 */
-	struct AtlasInfoAssetMission : public AssetMissionBase
-	{
-		YAML::Node root;
-	};
-	/**
 	 * Represents a mission to retrieve or load an audio clip asset.
 	 */
 	struct AudioClipAssetMission : public AssetMissionBase
@@ -77,5 +71,19 @@ namespace WEngine
 	struct MeshAssetMission : public AssetMissionBase
 	{
 		ModelInfo model;
+	};
+
+	// ---------------------------------- [IRIS SPECIFIC] ----------------------------------
+
+	enum class IrisAssetCommunicationType : uint8
+	{
+		GetTextures,
+		RetireTextures
+	};
+	struct IrisAssetCommunication
+	{
+		IrisAssetCommunicationType commType;
+		wtl::vector<std::string> textureNames;
+		wtl::vector<TextureInfo> textureData;
 	};
 }

@@ -94,8 +94,6 @@ VkDescriptorSet CreateDescriptorSet(VulkanContext &ctx, const Vulkan_Shader& sha
 
 bool SetupImGuiDescriptorPool(VulkanContext& ctx)
 {
-    // So far im only using this for imgui, so please adjust when needed.
-
     wtl::vector<VkDescriptorPoolSize> poolSizes =
     {
         { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE},

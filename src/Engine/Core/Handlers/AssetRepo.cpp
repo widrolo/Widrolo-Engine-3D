@@ -17,6 +17,7 @@
 
 #include "RNGHandler.h"
 #include "Engine/Types/CoreSystems.h"
+#include "Engine/Types/Rendering/TextureInfo.h"
 #include "Engine/Types/Rendering/VertextData.h"
 
 
@@ -55,13 +56,6 @@ template<>
 void AssetRepo::GetAsset<YamlAssetMission>(YamlAssetMission& mission)
 {
 	const std::string file = LoadTextFile(GetDataPath() + EngineSettings::sectorPath + mission.name + ".yaml");
-	mission.root = YAML::Load(file);
-}
-
-template<>
-void AssetRepo::GetAsset<AtlasInfoAssetMission>(AtlasInfoAssetMission& mission)
-{
-	const std::string file = LoadTextFile(GetDataPath() + EngineSettings::spritePath + mission.name + ".yaml");
 	mission.root = YAML::Load(file);
 }
 
@@ -271,6 +265,34 @@ void AssetRepo::GetAsset<SpirVAssetMission>(SpirVAssetMission& mission)
 
 }
 
+void AssetRepo::IrisAssetComms(IrisAssetCommunication &mission)
+{
+	switch (mission.commType)
+	{
+		case IrisAssetCommunicationType::GetTextures:
+			IrisCommsGetTex(mission);
+			break;
+		case IrisAssetCommunicationType::RetireTextures:
+			IrisCommsRetTex(mission);
+			break;
+	}
+}
+
+TextureInfo AssetRepo::LoadTexturePNG(const std::string& path)
+{
+	TextureInfo info{};
+	info.data = stbi_load(path.c_str(), &info.width, &info.height, &info.channels, 4);
+	if (info.data == nullptr)
+	{
+		WLog::SetConsoleError();
+		WLog::ConsoleLog(std::format("Failed to load texture {}", path));
+		return TextureInfo{};
+	}
+	uint64 size = info.width * info.height * 4;
+	WAllocator::ReportExternalAllocation(size);
+	return info;
+}
+
 AudioClip* AssetRepo::LoadAudioWAV(const std::string& name)
 {
 	AudioClip clip{};
@@ -401,4 +423,45 @@ void AssetRepo::LoadSpirVFromSpv(SpirVAssetMission &mission)
 	mission.shaderCode = new uint32[mission.shaderSize / sizeof(uint32)];
 	file.read(reinterpret_cast<char*>(mission.shaderCode), mission.shaderSize);
 	file.close();
+}
+
+void AssetRepo::IrisCommsGetTex(IrisAssetCommunication &mission)
+{
+	// This is only here because I don't trust myself.
+	mission.textureData.resize(mission.textureNames.size());
+
+	int32 i = 0;
+	for (const auto& request : mission.textureNames)
+	{
+		if (!m_textureRepo.contains(request))
+		{
+			TextureInfo info = LoadTexturePNG(m_dataPath + EngineSettings::texturePath + request);
+			m_textureRepo.try_emplace(request, info);
+		}
+
+		mission.textureData[i] = m_textureRepo.at(request).Get();
+		m_textureRepo.at(request).Add();
+		i++;
+	}
+}
+
+void AssetRepo::IrisCommsRetTex(IrisAssetCommunication &mission)
+{
+	for (const auto& request : mission.textureNames)
+	{
+		// We can kinda guarantee that it exists. Proof is because i said so; q.e.d. :)
+		bool isUnused = m_textureRepo.at(request).Remove();
+
+		if (isUnused)
+		{
+			TextureInfo info = m_textureRepo.at(request).Get();
+
+			free(info.data);
+
+			uint64 size = info.width * info.height * 4;
+			WAllocator::ReportExternalFree(size);
+
+			m_textureRepo.erase(request);
+		}
+	}
 }

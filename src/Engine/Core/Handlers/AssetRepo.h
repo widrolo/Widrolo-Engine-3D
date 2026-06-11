@@ -8,9 +8,11 @@
 #include <unordered_map>
 #include <string>
 #include <Engine/Types/CommonTypes.h>
+#include <Engine/Types/Refcounted.h>
 
 namespace WEngine
 {
+	struct TextureInfo;
 	/**
 	 * AssetRepo handles the loading and unloading of game assets such as sprites, shaders, YAML files, atlas info, audio clips, and UI sheets.
 	 */
@@ -25,6 +27,7 @@ namespace WEngine
 	private:
 		std::string m_dataPath;
 		std::unordered_map<std::string, AudioClip> m_audioRepo;
+		std::unordered_map<std::string, Ref<TextureInfo>> m_textureRepo;
 
 	public:
 		/**
@@ -40,14 +43,22 @@ namespace WEngine
 		 */
 		std::string GetDataPath() const { return m_dataPath; }
 
+		void IrisAssetComms(IrisAssetCommunication& mission);
 
 	private:
-
+		TextureInfo LoadTexturePNG(const std::string& path);
 		AudioClip* LoadAudioWAV(const std::string& name);
 		std::string LoadTextFile(const std::string& path);
 
 		void LoadSpirVFromGlsl(SpirVAssetMission& mission);
 		void LoadSpirVFromSpv(SpirVAssetMission& mission);
+
+
+		// ---------------------------------- [IRIS COMMS] ----------------------------------
+
+		void IrisCommsGetTex(IrisAssetCommunication& mission);
+		void IrisCommsRetTex(IrisAssetCommunication& mission);
+
 	};
 };
 
