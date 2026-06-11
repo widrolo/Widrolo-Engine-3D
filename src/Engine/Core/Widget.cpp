@@ -15,7 +15,6 @@ Widget::Widget()
 	m_windowFlags = 0;
 	m_open = false;
 
-	m_nodeContext = ImNode::CreateEditor();
 	Setup();
 }
 

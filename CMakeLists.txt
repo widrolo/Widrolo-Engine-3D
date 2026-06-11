@@ -258,18 +258,6 @@ add_executable(Widrolo_Engine_3D
         src/Editor/MenubarItems/Tools/Menubar_AnimEditor.cpp
         src/Editor/MenubarItems/Tools/Menubar_AnimEditor.h
         src/Engine/Types/Rendering/PostProcessShader.h
-        src/Engine/imgui/crude_json.cpp
-        src/Engine/imgui/imgui_bezier_math.h
-        src/Engine/imgui/imgui_bezier_math.inl
-        src/Engine/imgui/imgui_canvas.cpp
-        src/Engine/imgui/imgui_canvas.h
-        src/Engine/imgui/imgui_extra_math.h
-        src/Engine/imgui/imgui_extra_math.inl
-        src/Engine/imgui/imgui_node_editor.cpp
-        src/Engine/imgui/imgui_node_editor.h
-        src/Engine/imgui/imgui_node_editor_api.cpp
-        src/Engine/imgui/imgui_node_editor_internal.h
-        src/Engine/imgui/imgui_node_editor_internal.inl
         src/Editor/MenubarItems/Help/Menubar_NodeTest.cpp
         src/Editor/MenubarItems/Help/Menubar_NodeTest.h
         src/Editor/EditorWidgets/Tests/NodeTestWidget.cpp

@@ -14,7 +14,6 @@
 
 #include <Engine/Core/System/Iris.h>
 
-#include "Engine/imgui/imgui_node_editor_internal.h"
 #include "Engine/Types/DebugFlags.h"
 
 #include <Engine/Types/Rendering/VertextData.h>

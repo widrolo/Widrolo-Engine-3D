@@ -1,9 +1,6 @@
 #pragma once
 
 #include <Engine/imgui/imgui.h>
-#include <Engine/imgui/backends/imgui_impl_sdl3.h>
-#include <Engine/imgui/backends/imgui_impl_opengl3.h>
-#include "Engine/imgui/imgui_node_editor.h"
 
 #include <string>
 
@@ -38,7 +35,6 @@ namespace WEngine
 		std::string m_widgetName;			///< The name of the widget
 		ImGuiWindowFlags m_windowFlags{};	///< The flags for the ImGui window
 		bool m_open;						///< Whether the widget is currently open or not
-		ImNode::EditorContext* m_nodeContext;
 
 	public:
 		/**
