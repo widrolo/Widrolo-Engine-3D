@@ -7,7 +7,6 @@ using namespace WEngine;
 
 void MaterialDefinition::Parse(const YAML::Node &root)
 {
-
     if (!root["material"])
     {
         WLog::SetConsoleError();
@@ -90,13 +89,16 @@ void MaterialDefinition::Parse(const YAML::Node &root)
                 return;
         }
 
-        // --- swizzle ---
-
+        SwizzleCompiler compiler;
         for (const auto& swz : material["develTransform"])
         {
             // yaml-cpp pass
 
+
         }
+
+        if (!compiler.Compile())
+            return;
     }
 
     if (!fragInfo.expectedParams.empty())
@@ -264,9 +266,23 @@ bool MaterialDefinition::CheckParamType(ShaderSettingType expect, const YAML::No
 bool SwizzleCompiler::Compile()
 {
     Lexer();
-    SyntaxAnalysis();
-    // semantic analysis
-    // swizzle generation
+    if (!SyntaxAnalysis())
+    {
+        PrintUnexpectedToken();
+        return false;
+    }
+    // check for validity of the string values gathered during lexical analysis
+    if (!SemanticAnalysisTokenVals())
+        return false;
+
+    // This generates IR
+    SwizzleIRGeneration();
+
+    // TODO: Finish this later
+    // semantic analysis 2, check for conflicts
+    // Construct final Swizzle map.
+
+    return true;
 }
 
 void SwizzleCompiler::AddSwizzleLine(const SwizzleRawLine &line)
@@ -444,5 +460,231 @@ void SwizzleCompiler::Consume()
     m_tokenCursor++;
 }
 
+void SwizzleCompiler::PrintUnexpectedToken()
+{
+    std::string error = "[SwizzleCompiler] Compilation Error! Syntax Error, unexpected Token \"";
+    switch (Peek().first)
+    {
+        case SwizzleToken::Invalid:
+            error += "Invalid";
+            break;
+        case SwizzleToken::Name:
+            error += "Name";
+            break;
+        case SwizzleToken::Channel:
+            error += "Channel";
+            break;
+        case SwizzleToken::Dot:
+            error += "Dot";
+            break;
+        case SwizzleToken::Equal:
+            error += "Equal";
+            break;
+        case SwizzleToken::Separation:
+            error += "Separation";
+            break;
+        case SwizzleToken::EndOfLine:
+            error += "EndOfLine";
+            break;
+        case SwizzleToken::EndOfTokens:
+            error += "EndOfTokens";
+            break;
+    }
 
+    error += "\"!";
+
+    WLog::SetConsoleError();
+    WLog::ConsoleLog(error);
+}
+
+bool SwizzleCompiler::SemanticAnalysisTokenVals()
+{
+    // Rules:
+    // 1) Check all channels, and see if they all 'r', 'g', 'b' or 'a'.
+    // 2) Check whether all name tokens after EOL:
+    //      -> Exist in Packaged Texture temp names
+    //      -> All Packaged Texture temp names are present
+    // 3) Check whether all name tokens after either Equal or Separator:
+    //      -> Exist in Devel Texture temp names
+    // 4) Check if per line, the number of channel tokens on the left matches the right, max 4 channels
+
+    // Rule 1
+    for (const auto& c : m_channels)
+    {
+        if (c != 'r' && c != 'g' && c != 'b' && c != 'a')
+        {
+            WLog::SetConsoleError();
+            WLog::ConsoleLog(std::format("[SwizzleCompiler] Compilation Error! Unexpected channel \"{}\"!", c));
+            return false;
+        }
+    }
+
+    m_tokenCursor = 0;
+
+    while (Peek().first != SwizzleToken::EndOfTokens)
+    {
+        const auto t = Peek().first;
+        // Rule 2
+        if (t == SwizzleToken::EndOfLine)
+        {
+            Consume();
+            std::string name = m_names[Peek().second];
+            if (!std::ranges::contains(m_packTex, name, [&](const auto& tex){ return tex.first; }))
+            {
+                WLog::SetConsoleError();
+                WLog::ConsoleLog(std::format("[SwizzleCompiler] Compilation Error! Unexpected left texture \"{}\"!", name));
+                return false;
+            }
+        }
+
+        // Rule 3
+        if (t == SwizzleToken::Equal || t == SwizzleToken::Separation)
+        {
+            Consume();
+            std::string name = m_names[Peek().second];
+            if (!std::ranges::contains(m_develTex, name, [&](const auto& tex){ return tex.first; }))
+            {
+                WLog::SetConsoleError();
+                WLog::ConsoleLog(std::format("[SwizzleCompiler] Compilation Error! Unexpected right texture \"{}\"!", name));
+                return false;
+            }
+        }
+
+        Consume();
+    }
+
+    m_tokenCursor = 0;
+
+    // Rule 4
+    uint8 leftChannelCount = 0;
+    uint8 rightChannelCount = 0;
+    bool countingRight = false;
+    while (Peek().first != SwizzleToken::EndOfTokens)
+    {
+        if (countingRight)
+        {
+            if (Peek().first == SwizzleToken::Channel)
+            {
+                rightChannelCount++;
+                if (rightChannelCount > 4)
+                {
+                    WLog::SetConsoleError();
+                    WLog::ConsoleLog(std::format("[SwizzleCompiler] Compilation Error! Too many channels on right side!"));
+                    return false;
+                }
+            }
+            if (Peek().first == SwizzleToken::EndOfLine)
+            {
+                if (leftChannelCount != rightChannelCount)
+                {
+                    WLog::SetConsoleError();
+                    WLog::ConsoleLog(std::format("[SwizzleCompiler] Compilation Error! Channel count not equal!"));
+                    return false;
+                }
+
+                countingRight = false;
+                leftChannelCount = 0;
+                rightChannelCount = 0;
+            }
+        }
+        else
+        {
+            if (Peek().first == SwizzleToken::Channel)
+            {
+                leftChannelCount++;
+                if (leftChannelCount > 4)
+                {
+                    WLog::SetConsoleError();
+                    WLog::ConsoleLog(std::format("[SwizzleCompiler] Compilation Error! Too many channels on left side!"));
+                    return false;
+                }
+            }
+            if (Peek().first == SwizzleToken::Equal)
+                countingRight = true;
+        }
+        Consume();
+    }
+
+    return true;
+}
+
+void SwizzleCompiler::SwizzleIRGeneration()
+{
+    // Given tokens:
+    // n = Name | c = Channel | d = Dot | e = Equal | s = Separation | l = EndOfLine | t = EndOfTokens
+    // Assume example token series:
+    // ... l n d c c c c e n d c c c s n d c l ...
+    //
+    // We need to generate four swizzle structures for the packed texture. For each, we will have two cursor
+    // searching for the next channel on either side to link them together.
+    // This function should never fail, Semantic Analysis 1 is responsible for clearing the way for us.
+    //
+    // Assumptions we will need:
+    // 1) first token and first token after EOL is always name of left texture
+    // 2) first token after Equal or Separator is always name of right texture
+    // 3) if the cursor is on Name, advancing by 2 will give its first channel
+    // 4) if right cursor hits a Separator, the next Token will be the name of the next right texture
+    // 5) if left cursor is on equal, right cursor is on end of line
+
+    m_tokenCursor = 0;
+
+    uint32 leftChannelCursor = 0;
+    uint32 rightChannelCursor = 0;
+
+    Token leftNameTok;
+    Token rightNameTok;
+
+    while (Peek().first != SwizzleToken::EndOfTokens)
+    {
+        leftNameTok = Peek();
+        leftChannelCursor = m_tokenCursor + 2;
+
+        while (Peek().first != SwizzleToken::Equal)
+            Consume();
+        Consume(); // to get to the name
+
+        rightNameTok = Peek();
+        rightChannelCursor = m_tokenCursor + 2;
+
+        while (m_tokens[leftChannelCursor].first != SwizzleToken::Equal)
+        {
+            // if the channel of the right side ends, we need to advance to the next right texture
+            if (m_tokens[rightChannelCursor].first == SwizzleToken::Separation)
+            {
+                rightChannelCursor++;
+                rightNameTok = m_tokens[rightChannelCursor];
+                rightChannelCursor += 2;
+            }
+
+            // while we need the index, its easier to do this first.
+            std::string leftName = m_names[leftNameTok.second];
+            std::string rightName = m_names[rightNameTok.second];
+
+            uint8 leftTexture;
+            uint8 rightTexture;
+
+            for (const auto& tex : m_packTex)
+                if (tex.first == leftName)
+                    leftTexture = tex.second;
+            for (const auto& tex : m_develTex)
+                if (tex.first == rightName)
+                    rightTexture = tex.second;
+
+            SwizzleGenerated swizzle;
+            swizzle.textureTarget = leftTexture;
+            swizzle.textureOrigin = rightTexture;
+            swizzle.channelTarget = m_channels[m_tokens[leftChannelCursor].second];
+            swizzle.channelOrigin = m_channels[m_tokens[rightChannelCursor].second];
+
+            m_generated.push_back(swizzle);
+
+            leftChannelCursor++;
+            rightChannelCursor++;
+        }
+
+        // assumption 5 go brr
+        m_tokenCursor = rightChannelCursor + 1;
+    }
+
+}
 

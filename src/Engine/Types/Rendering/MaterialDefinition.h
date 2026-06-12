@@ -19,7 +19,7 @@ namespace WEngine
         {
             // index to texturesDevel declaring which texture is going to get sampled
             uint8 develTexOrigin : 6;
-            // which channel of the texture
+            // which channel of the texture; in order rgba
             uint8 channel : 2;
         };
 
@@ -71,6 +71,14 @@ namespace WEngine
         // the uint8 is an index into the corresponding storage for the token.
         using Token = std::pair<SwizzleToken, uint8>;
 
+        struct SwizzleGenerated
+        {
+            uint8 textureTarget;
+            char channelTarget;
+            uint8 textureOrigin;
+            char channelOrigin;
+        };
+
     public:
         bool Compile();
         void AddSwizzleLine(const SwizzleRawLine& line);
@@ -91,11 +99,18 @@ namespace WEngine
         Token Peek();
         void Consume();
 
+        void PrintUnexpectedToken();
+
+        bool SemanticAnalysisTokenVals();
+
+        void SwizzleIRGeneration();
+
     private:
         uint32 m_tokenCursor = 0;
         wtl::vector<Token> m_tokens;
         wtl::vector<std::string> m_names;
         wtl::vector<char> m_channels;
+        wtl::vector<SwizzleGenerated> m_generated;
 
         // inputs
         wtl::vector<SwizzleRawLine> m_swizzles;
