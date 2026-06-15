@@ -8,9 +8,11 @@
 #include "VulkanHelpers.h"
 #include "VulkanPipeline.h"
 #include "Engine/Core/Handlers/AssetRepo.h"
+#include "Engine/Core/System/Iris.h"
 #include "Engine/Core/System/OS.h"
 #include "Engine/Types/AssetMission.h"
 #include "Engine/Types/CoreSystems.h"
+#include "Engine/Types/Nullable.h"
 #include "Engine/Types/Rendering/InstanceData.h"
 #include "Engine/Types/Rendering/VertextData.h"
 #include "Engine/Util/Log.h"
@@ -281,6 +283,37 @@ void TryCompileAllShaders(VulkanContext &ctx)
         WEngine::WLog::SetConsoleSuccess();
         WEngine::WLog::ConsoleLog(std::format("Shader \"{}\" successfully compiled!", def.name));
     }
+}
+
+WEngine::Material CompileMaterial(VulkanContext &ctx, const std::string &matName)
+{
+    WEngine::YamlAssetMission mission;
+    mission.name = "../Materials/" + matName;
+    WEngine::CoreSystems::GetAssetRepo()->GetAsset(mission);
+
+    WEngine::MaterialDefinition matDef;
+    matDef.Parse(mission.root);
+
+    if (!matDef.valid)
+        return 0;
+
+    // lets hope iris never calls this function through GetShader
+    auto shaderN = Iris::GetShader(matDef.shaderName);
+
+    if (!shaderN.HasValue())
+        return 0;
+
+    Vulkan_Material mat;
+    mat.materialShaderHandle = shaderN.GetValue();
+
+    ctx.loadedMaterials.push_back(mat);
+    WEngine::Material matHandle = ctx.loadedMaterials.size();
+    ctx.loadedMaterialHandles[matDef.name] = matHandle;
+
+    WEngine::WLog::SetConsoleSuccess();
+    WEngine::WLog::ConsoleLog(std::format("Material \"{}\" compiled", matName));
+
+    return matHandle;
 }
 
 #endif

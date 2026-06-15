@@ -50,7 +50,7 @@ std::string RenderWatchWidget::GetHeader() const
 std::string RenderWatchWidget::StatInstInfoToString(const MemListDebugInfo& info) const
 {
     std::string text = "";
-    if (info.model == 0 || info.shader == 0)
+    if (info.model == 0 || info.material == 0)
         text += "FREE:\t";
     else
         text += "USED:\t";

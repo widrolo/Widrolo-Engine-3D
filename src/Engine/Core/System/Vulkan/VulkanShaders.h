@@ -23,5 +23,6 @@ void SaturateDescriptorSet(VulkanContext& ctx, Vulkan_Material& material);
 WEngine::MaterialDefinition ParseMaterialDefinition(VulkanContext &ctx, const YAML::Node& root);
 
 void TryCompileAllShaders(VulkanContext& ctx);
+WEngine::Material CompileMaterial(VulkanContext& ctx, const std::string& matName);
 
 #endif

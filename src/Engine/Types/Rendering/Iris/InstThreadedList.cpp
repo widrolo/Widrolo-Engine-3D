@@ -12,7 +12,7 @@ InstThreadedList::InstThreadedList()
     node->nextOfKind = nullptr;
     node->prevOfKind = nullptr;
     node->model = 0;
-    node->shader = 0;
+    node->material = 0;
     node->offset = 0;
     node->size = GPUSettings::stationaryInstBufferSize;
     head = node;
@@ -32,13 +32,13 @@ InstThreadedList::~InstThreadedList()
     }
 }
 
-std::pair<uint64, uint64> InstThreadedList::FindNode(WEngine::Model model, WEngine::Shader shader) const
+std::pair<uint64, uint64> InstThreadedList::FindNode(WEngine::Model model, WEngine::Material material) const
 {
     MemListNode* cursor = occupiedHead;
 
     while (cursor != nullptr)
     {
-        if (cursor->model == model && cursor->shader == shader)
+        if (cursor->model == model && cursor->material == material)
             return {cursor->offset, cursor->size};
         cursor = cursor->nextOfKind;
     }
@@ -46,7 +46,7 @@ std::pair<uint64, uint64> InstThreadedList::FindNode(WEngine::Model model, WEngi
     return {0,0};
 }
 
-std::pair<uint64, uint64> InstThreadedList::InsertData(WEngine::Model model, WEngine::Shader shader, uint64 size)
+std::pair<uint64, uint64> InstThreadedList::InsertData(WEngine::Model model, WEngine::Material material, uint64 size)
 {
     if (occupiedHead == nullptr)
     {
@@ -56,7 +56,7 @@ std::pair<uint64, uint64> InstThreadedList::InsertData(WEngine::Model model, WEn
         node->nextOfKind = nullptr;
         node->prevOfKind = nullptr;
         node->model = model;
-        node->shader = shader;
+        node->material = material;
         node->size = size;
         node->offset = 0;
 
@@ -94,7 +94,7 @@ std::pair<uint64, uint64> InstThreadedList::InsertData(WEngine::Model model, WEn
     bool found = false;
     while (cursor != nullptr)
     {
-        if (cursor->model == model && cursor->shader == shader)
+        if (cursor->model == model && cursor->material == material)
         {
             found = true;
             break;
@@ -161,7 +161,7 @@ std::pair<uint64, uint64> InstThreadedList::InsertData(WEngine::Model model, WEn
         node->nextOfKind = nullptr;
         node->prevOfKind = nullptr;
         node->model = model;
-        node->shader = shader;
+        node->material = material;
         node->size = size;
         cursor = node;
         auto freeBlock = FindBestFit(size);
@@ -171,12 +171,12 @@ std::pair<uint64, uint64> InstThreadedList::InsertData(WEngine::Model model, WEn
     return {cursor->offset, cursor->size};
 }
 
-void InstThreadedList::ClearNode(WEngine::Model model, WEngine::Shader shader)
+void InstThreadedList::ClearNode(WEngine::Model model, WEngine::Material material)
 {
     MemListNode* cursor = occupiedHead;
     while (cursor != nullptr)
     {
-        if (cursor->model == model && cursor->shader == shader)
+        if (cursor->model == model && cursor->material == material)
         {
             DecoupleOccupiedEntry(cursor);
 
@@ -202,7 +202,7 @@ wtl::vector<MemListDebugInfo> InstThreadedList::GetDebugInfo() const
     {
         MemListDebugInfo debugInfo;
         debugInfo.model = cursor->model;
-        debugInfo.shader = cursor->shader;
+        debugInfo.material = cursor->material;
         debugInfo.offset = cursor->offset;
         debugInfo.size = cursor->size;
         info.push_back(debugInfo);
@@ -254,7 +254,7 @@ void InstThreadedList::DecoupleOccupiedEntry(MemListNode *entry)
         node->nextOfKind = nullptr;
         node->prevOfKind = nullptr;
         node->model = 0;
-        node->shader = 0;
+        node->material = 0;
         node->offset = entry->offset;
         node->size = entry->size;
 

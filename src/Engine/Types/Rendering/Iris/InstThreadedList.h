@@ -4,6 +4,7 @@
 #include <Engine/Types/Rendering/GPU/Model.h>
 #include <Engine/Types/Rendering/GPU/Shader.h>
 
+#include "Engine/Types/Rendering/GPU/Material.h"
 #include "Engine/WTL/vector.h"
 
 // by the way, terrible cache efficiency! This is one whole ass cache line long.
@@ -26,7 +27,7 @@ struct MemListNode
     MemListNode* nextOfKind;
     MemListNode* prevOfKind;
     WEngine::Model model;
-    WEngine::Shader shader;
+    WEngine::Material material;
     uint64 offset;
     uint64 size;
 };
@@ -34,7 +35,7 @@ struct MemListNode
 struct MemListDebugInfo
 {
     WEngine::Model model;
-    WEngine::Shader shader;
+    WEngine::Material material;
     uint64 offset;
     uint64 size;
 };
@@ -55,7 +56,7 @@ public:
      * @return [0] offset in the buffer in bytes; [1] reach in the buffer in bytes.
      * @note if the node cannot be found, then it returns 0,0.
      */
-    std::pair<uint64, uint64> FindNode(WEngine::Model model, WEngine::Shader shader) const;
+    std::pair<uint64, uint64> FindNode(WEngine::Model model, WEngine::Material material) const;
 
     /**
      * Inserts instance data into the buffer.
@@ -66,14 +67,14 @@ public:
      * @note if a place cannot be found, then it returns 0,0.
      * @note this may decide to reallocate the block, please make sure to check up with FindNode first!
      */
-    std::pair<uint64, uint64> InsertData(WEngine::Model model, WEngine::Shader shader, uint64 size);
+    std::pair<uint64, uint64> InsertData(WEngine::Model model, WEngine::Material material, uint64 size);
 
     /**
      * Clears an occupied region and makes it empty.
      * @param model model to be cleared.
      * @param shader shader to be cleared.
      */
-    void ClearNode(WEngine::Model model, WEngine::Shader shader);
+    void ClearNode(WEngine::Model model, WEngine::Material material);
 
     /**
      * @warning due to the complexity between this and Iris, this is not yet implemented.

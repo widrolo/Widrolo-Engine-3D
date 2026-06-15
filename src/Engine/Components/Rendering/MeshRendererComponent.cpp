@@ -20,8 +20,6 @@ MeshRendererComponent::MeshRendererComponent(Entity *e)
     COMP_SETUP("MeshRendererComponent")
 }
 
-
-
 void MeshRendererComponent::Awake(ComponentArgs ca)
 {
     auto modelN = ca.GetStringFromParams("meshName");
@@ -60,8 +58,6 @@ void MeshRendererComponent::Awake(ComponentArgs ca)
             m_material = matNN.GetValue();
         }
     }
-
-    shaderTemp = Iris::GetShader(m_material).GetValue();
 }
 
 void MeshRendererComponent::LateAwake()
@@ -78,7 +74,7 @@ void MeshRendererComponent::Draw()
     RenderMission mission;
     mission.transform = entity->transform;
     mission.model = m_model;
-    mission.shader = shaderTemp;
+    mission.material = m_material;
     mission.isStationary = m_isStationary;
 
     CoreSystems::GetRenderHandler()->AddToRenderQueue(mission);

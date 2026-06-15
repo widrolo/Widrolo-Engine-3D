@@ -7,5 +7,11 @@ namespace WEngine
     /**
      * Handle for a texture.
      */
-    using Texture = uint64;
+    struct Texture
+    {
+        Texture() : handle(0) {};
+        Texture(uint64 handle) : handle(handle) {};
+        operator uint64() const { return handle; }
+        uint64 handle;
+    };
 }

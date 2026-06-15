@@ -21,8 +21,6 @@ namespace WEngine
         Material m_material = 0;
         bool m_isStationary = false;
 
-        Shader shaderTemp;
-
         COMP_HASH(0xeb113cecf16966)
 
     };

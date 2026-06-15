@@ -72,11 +72,11 @@ void RenderHandler::RenderFrame()
 {
 	SortMissions();
 
-	for (auto& shaderGroup : m_sortedMissions)
+	for (auto& materialGroup : m_sortedMissions)
 	{
-		for (auto& modelGroup : shaderGroup.models)
+		for (auto& modelGroup : materialGroup.models)
 		{
-			RenderModelGroup(modelGroup, shaderGroup.groupID);
+			RenderModelGroup(modelGroup, materialGroup.groupID);
 		}
 	}
 
@@ -86,7 +86,7 @@ void RenderHandler::RenderFrame()
 	shaderSettings.push_back({ShaderSettingType::Matrix4, vp, "vp"});
 	for (auto& stat : m_stationaryMissions)
 	{
-		Iris::DRAWCALL_DrawModelInstancedStationary(stat.model, stat.shader, shaderSettings);
+		Iris::DRAWCALL_DrawModelInstancedStationary(stat.model, stat.material, shaderSettings);
 	}
 
 	Iris::DRAWCALL_DrawImGui();
@@ -102,16 +102,16 @@ void RenderHandler::RegisterCamera(CameraComponent *camera)
 
 void RenderHandler::AddToRenderQueue(RenderMission& mission)
 {
-	if (mission.model == 0 || mission.shader == 0)
+	if (mission.model == 0 || mission.material == 0)
 		return;
 	m_renderQueue.push_back(mission);
 }
 
-void RenderHandler::RecordStationaryAdd(Model model, Shader shader, const Transform& transform)
+void RenderHandler::RecordStationaryAdd(Model model, Material material, const Transform& transform)
 {
 	for (auto& objects : m_stationaryAddQueue)
 	{
-		if (objects.model == model && objects.shader == shader)
+		if (objects.model == model && objects.material == material)
 		{
 			objects.instData.push_back({CalcModelMatrix(transform)});
 			return;
@@ -120,7 +120,7 @@ void RenderHandler::RecordStationaryAdd(Model model, Shader shader, const Transf
 
 	StationaryObjStaged obj;
 	obj.model = model;
-	obj.shader = shader;
+	obj.material = material;
 	obj.instData.push_back({CalcModelMatrix(transform)});
 	m_stationaryAddQueue.push_back(obj);
 }
@@ -129,7 +129,7 @@ void RenderHandler::PushStationaryData()
 {
 	for (auto& object : m_stationaryAddQueue)
 	{
-		Iris::AddStationaryObjects(object.model, object.shader, object.instData);
+		Iris::AddStationaryObjects(object.model, object.material, object.instData);
 	}
 	m_stationaryAddQueue.clear();
 }
@@ -179,16 +179,17 @@ void RenderHandler::RenderSingleMission(RenderMission &mission)
 	Mat4x4 mvp = CalcMVPMatrix(mission.transform);
 	ShaderSettings shaderSettings{};
 	shaderSettings.push_back({ShaderSettingType::Matrix4, mvp, "mvp"});
-	Iris::DRAWCALL_DrawModel(mission.model, mission.shader, shaderSettings);
+	Iris::DRAWCALL_DrawModel(mission.model, mission.material, shaderSettings);
 }
 
-void RenderHandler::RenderModelGroup(const ModelGroup &group, Shader shader)
+void RenderHandler::RenderModelGroup(const ModelGroup &group, Material material)
 {
-	wtl::vector<InstanceData> instances(group.models.size());
+	return;
+	wtl::vector<InstanceData> instances(group.missions.size());
 
-	for (int i = 0; i < group.models.size(); i++)
+	for (int i = 0; i < group.missions.size(); i++)
 	{
-		Mat4x4 model = CalcModelMatrix(group.models[i].transform);
+		Mat4x4 model = CalcModelMatrix(group.missions[i].transform);
 		instances[i] = {model};
 	}
 
@@ -197,7 +198,37 @@ void RenderHandler::RenderModelGroup(const ModelGroup &group, Shader shader)
 
 	ShaderSettings shaderSettings{};
 	shaderSettings.push_back({ShaderSettingType::Matrix4, vp, "vp"});
-	Iris::DRAWCALL_DrawModelInstanced(group.groupID, shader, shaderSettings, instances);
+	Iris::DRAWCALL_DrawModelInstanced(group.groupID, material, shaderSettings, instances);
+}
+
+void RenderHandler::SortStationary(RenderMission &mission)
+{
+	for (auto& objects : m_stationaryMissions)
+	{
+		if (objects.model == mission.model && objects.material == mission.material)
+			return;
+	}
+	m_stationaryMissions.push_back({mission.model, mission.material});
+}
+
+void RenderHandler::InsertModelIntoShaderGroup(RenderMission &mission, MaterialGroup &materialGroup)
+{
+	bool foundModel = false;
+	for (uint64 i = 0; i < materialGroup.models.size(); ++i)
+	{
+		if (materialGroup.models[i].groupID == mission.model)
+		{
+			foundModel = true;
+			materialGroup.models[i].missions.push_back(mission);
+		}
+	}
+	if (!foundModel)
+	{
+		ModelGroup group;
+		group.groupID = mission.model;
+		group.missions.push_back(mission);
+		materialGroup.models.push_back(group);
+	}
 }
 
 void RenderHandler::SortMissions()
@@ -212,7 +243,7 @@ void RenderHandler::SortMissions()
 		bool foundShader = false;
 		for (uint64 i = 0; i < m_sortedMissions.size(); ++i)
 		{
-			if (m_sortedMissions[i].groupID == mission.shader)
+			if (m_sortedMissions[i].groupID == mission.material)
 			{
 				foundShader = true;
 				InsertModelIntoShaderGroup(mission, m_sortedMissions[i]);
@@ -220,41 +251,11 @@ void RenderHandler::SortMissions()
 		}
 		if (!foundShader)
 		{
-			ShaderGroup group;
-			group.groupID = mission.shader;
+			MaterialGroup group;
+			group.groupID = mission.material;
 			InsertModelIntoShaderGroup(mission, group);
 			m_sortedMissions.push_back(group);
 		}
-	}
-}
-
-void RenderHandler::SortStationary(const RenderMission& mission)
-{
-	for (auto& objects : m_stationaryMissions)
-	{
-		if (objects.model == mission.model && objects.shader == mission.shader)
-			return;
-	}
-	m_stationaryMissions.push_back({mission.model, mission.shader});
-}
-
-void RenderHandler::InsertModelIntoShaderGroup(RenderMission &mission, ShaderGroup& shaderGroup)
-{
-	bool foundModel = false;
-	for (uint64 i = 0; i < shaderGroup.models.size(); ++i)
-	{
-		if (shaderGroup.models[i].groupID == mission.model)
-		{
-			foundModel = true;
-			shaderGroup.models[i].models.push_back(mission);
-		}
-	}
-	if (!foundModel)
-	{
-		ModelGroup group;
-		group.groupID = mission.model;
-		group.models.push_back(mission);
-		shaderGroup.models.push_back(group);
 	}
 }
 
@@ -264,7 +265,7 @@ void RenderHandler::CleanSortedMissions()
 	{
 		for (auto& modelGroup : shaderGroup.models)
 		{
-			modelGroup.models.clear();
+			modelGroup.missions.clear();
 		}
 		shaderGroup.models.clear();
 	}

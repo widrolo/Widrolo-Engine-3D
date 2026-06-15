@@ -7,7 +7,7 @@
 #include "ShaderSettings.h"
 #include "Engine/Math/Transform.h"
 #include "GPU/Model.h"
-#include "GPU/Shader.h"
+#include "GPU/Material.h"
 
 namespace WEngine
 {
@@ -23,9 +23,8 @@ namespace WEngine
 
 	struct RenderMission
 	{
-		Shader shader;
+		Material material;
 		Model model;
-		ShaderSettings shaderSettings;
 		Transform transform;
 		bool isStationary;
 	};

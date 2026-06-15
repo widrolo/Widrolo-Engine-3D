@@ -175,8 +175,8 @@ WEngine::Nullable<WEngine::Material> Iris::GetMaterial(const std::string &matNam
 WEngine::Nullable<WEngine::Shader> Iris::GetShader(const std::string &shaderName)
 {
     if (ctx.loadedShadersHandles.contains(shaderName))
-        return WEngine::Nullable<WEngine::Material>(ctx.loadedShadersHandles[shaderName]);
-    return WEngine::Nullable<WEngine::Material>();
+        return WEngine::Nullable<WEngine::Shader>(ctx.loadedShadersHandles[shaderName]);
+    return WEngine::Nullable<WEngine::Shader>();
 }
 
 WEngine::Nullable<WEngine::Shader> Iris::GetShader(WEngine::Material matQuery)
@@ -184,7 +184,7 @@ WEngine::Nullable<WEngine::Shader> Iris::GetShader(WEngine::Material matQuery)
     if (ctx.loadedMaterials.size() < matQuery)
         return WEngine::Nullable<WEngine::Shader>();
     Vulkan_Material mat = ctx.loadedMaterials[matQuery - 1];
-    return mat.materialShader;
+    return mat.materialShaderHandle;
 }
 
 WEngine::Nullable<WEngine::Material> Iris::ALLOC_CompileMaterial(const std::string& matName)
@@ -199,31 +199,10 @@ WEngine::Nullable<WEngine::Material> Iris::ALLOC_CompileMaterial(const std::stri
     }
 
 
-    WEngine::YamlAssetMission mission;
-    mission.name = "../Materials/" + matName;
-    WEngine::CoreSystems::GetAssetRepo()->GetAsset(mission);
+    WEngine::Material matHandle = CompileMaterial(ctx, matName);
 
-    WEngine::MaterialDefinition matDef;
-    matDef.Parse(mission.root);
-
-    if (!matDef.valid)
+    if (matHandle == 0)
         return WEngine::Nullable<WEngine::Material>();
-
-    auto shaderN = Iris::GetShader(matDef.shaderName);
-
-    if (!shaderN.HasValue())
-        return WEngine::Nullable<WEngine::Material>();
-
-
-    Vulkan_Material mat;
-    mat.materialShader = shaderN.GetValue();
-
-    ctx.loadedMaterials.push_back(mat);
-    WEngine::Material matHandle = ctx.loadedMaterials.size();
-    ctx.loadedMaterialHandles[matDef.name] = matHandle;
-
-    WEngine::WLog::SetConsoleSuccess();
-    WEngine::WLog::ConsoleLog(std::format("Material \"{}\" compiled", matName));
 
     return WEngine::Nullable<WEngine::Material>(matHandle);
 }
@@ -231,8 +210,8 @@ WEngine::Nullable<WEngine::Material> Iris::ALLOC_CompileMaterial(const std::stri
 WEngine::Nullable<WEngine::Model> Iris::GetModel(const std::string &modelName)
 {
     if (ctx.loadedModelHandles.contains(modelName))
-        return WEngine::Nullable<WEngine::Shader>(ctx.loadedModelHandles[modelName]);
-    return WEngine::Nullable<WEngine::Shader>();
+        return WEngine::Nullable<WEngine::Model>(ctx.loadedModelHandles[modelName]);
+    return WEngine::Nullable<WEngine::Model>();
 }
 
 WEngine::Nullable<WEngine::Model> Iris::ALLOC_CreateModel(const WEngine::ModelInfo &model)
@@ -292,14 +271,14 @@ void Iris::DRAWCALL_ClearFrame(WEngine::Color clearColor)
     vkCmdBeginRenderPass(ctx.cmdBufs[ctx.screen.currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings &settings)
+void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Material material, const WEngine::ShaderSettings &settings)
 {
-    Vulkan_Shader vkShader;
-    if (ctx.currentBoundShader != shader)
+    Vulkan_Material vkMat = ctx.loadedMaterials[material - 1];
+    Vulkan_Shader vkShader = ctx.loadedShaders[vkMat.materialShaderHandle - 1];
+    if (ctx.currentBoundShader != vkMat.materialShaderHandle)
     {
-        vkShader = ctx.loadedShaders[shader - 1];
         vkCmdBindPipeline(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
-        ctx.currentBoundShader = shader;
+        ctx.currentBoundShader = vkMat.materialShaderHandle;
     }
 
     WEngine::Mat4x4 mvp = std::get<WEngine::Mat4x4>(settings[0].option);
@@ -317,15 +296,15 @@ void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, cons
     stats.drawCallsThisFrame++;
 }
 
-void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader shader,
+void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Material material,
     const WEngine::ShaderSettings &settings, const wtl::vector<WEngine::InstanceData>& instanceMats)
 {
-    Vulkan_Shader vkShader;
-    if (ctx.currentBoundShader != shader)
+    Vulkan_Material vkMat = ctx.loadedMaterials[material - 1];
+    Vulkan_Shader vkShader = ctx.loadedShaders[vkMat.materialShaderHandle - 1];
+    if (ctx.currentBoundShader != vkMat.materialShaderHandle)
     {
-        vkShader = ctx.loadedShaders[shader - 1];
         vkCmdBindPipeline(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
-        ctx.currentBoundShader = shader;
+        ctx.currentBoundShader = vkMat.materialShaderHandle;
     }
 
 
@@ -357,19 +336,19 @@ void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader sha
     stats.drawCallsThisFrame++;
 }
 
-void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::Shader shader,
+void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::Material material,
     const WEngine::ShaderSettings &settings)
 {
-    auto alloc = ctx.statBuf.statBookkeep.FindNode(model, shader);
+    auto alloc = ctx.statBuf.statBookkeep.FindNode(model, material);
     if (alloc.first == 0 && alloc.second == 0)
         return;
 
-    Vulkan_Shader vkShader;
-    if (ctx.currentBoundShader != shader)
+    Vulkan_Material vkMat = ctx.loadedMaterials[material - 1];
+    Vulkan_Shader vkShader = ctx.loadedShaders[vkMat.materialShaderHandle - 1];
+    if (ctx.currentBoundShader != vkMat.materialShaderHandle)
     {
-        vkShader = ctx.loadedShaders[shader - 1];
         vkCmdBindPipeline(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
-        ctx.currentBoundShader = shader;
+        ctx.currentBoundShader = vkMat.materialShaderHandle;
     }
 
     Vulkan_Model& vkModel = ctx.loadedModels[model - 1];
@@ -466,13 +445,13 @@ wtl::vector<MemListDebugInfo> Iris::GetStatInstBufAllocInfo()
     return ctx.statBuf.statBookkeep.GetDebugInfo();
 }
 
-void Iris::AddStationaryObjects(WEngine::Model model, WEngine::Shader shader,
+void Iris::AddStationaryObjects(WEngine::Model model, WEngine::Material material,
     wtl::vector<WEngine::InstanceData> instanceMats)
 {
-    auto oldAlloc = ctx.statBuf.statBookkeep.FindNode(model, shader);
+    auto oldAlloc = ctx.statBuf.statBookkeep.FindNode(model, material);
 
     uint64 size = instanceMats.size() * sizeof(WEngine::InstanceData);
-    auto newAlloc = ctx.statBuf.statBookkeep.InsertData(model, shader, size);
+    auto newAlloc = ctx.statBuf.statBookkeep.InsertData(model, material, size);
 
     uint64 trueOffset = newAlloc.first / sizeof(WEngine::InstanceData);
 

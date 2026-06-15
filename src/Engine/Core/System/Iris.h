@@ -52,10 +52,10 @@ public:
 
     static void DRAWCALL_ClearFrame(WEngine::Color clearColor);
 
-    static void DRAWCALL_DrawModel(WEngine::Model model, WEngine::Shader shader, const WEngine::ShaderSettings& settings);
-    static void DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Shader shader,
+    static void DRAWCALL_DrawModel(WEngine::Model model, WEngine::Material material, const WEngine::ShaderSettings& settings);
+    static void DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Material material,
         const WEngine::ShaderSettings& settings, const wtl::vector<WEngine::InstanceData>& instanceMats);
-    static void DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::Shader shader,
+    static void DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::Material material,
         const WEngine::ShaderSettings &settings);
 
     static void DRAWCALL_ResetImGui();
@@ -70,6 +70,6 @@ public:
     static WEngine::Nullable<ImTextureID> FramebufferToImGui(WEngine::Framebuffer framebuffer);
     static wtl::vector<MemListDebugInfo> GetStatInstBufAllocInfo();
 
-    static void AddStationaryObjects(WEngine::Model model, WEngine::Shader shader,
+    static void AddStationaryObjects(WEngine::Model model, WEngine::Material material,
         wtl::vector<WEngine::InstanceData> instanceMats);
 };

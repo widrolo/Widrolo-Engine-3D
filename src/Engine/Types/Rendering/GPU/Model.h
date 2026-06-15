@@ -4,5 +4,11 @@
 
 namespace WEngine
 {
-    using Model = uint64;
+    struct Model
+    {
+        Model() : handle(0) {};
+        Model(uint64 handle) : handle(handle) {};
+        operator uint64() const { return handle; }
+        uint64 handle;
+    };
 }

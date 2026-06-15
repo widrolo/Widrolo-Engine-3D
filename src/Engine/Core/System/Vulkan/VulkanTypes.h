@@ -69,6 +69,7 @@ struct Vulkan_Queues
     VkQueue primaryDrawQueue = VK_NULL_HANDLE;
 };
 
+struct Vulkan_Shader;
 struct Vulkan_Material
 {
     // only albedo for now.
@@ -76,7 +77,8 @@ struct Vulkan_Material
     VkSampler albedoSampler;
 
     VkDescriptorSet materialDescriptorSet;
-    WEngine::Shader materialShader;
+    WEngine::Shader materialShaderHandle;
+    Vulkan_Shader* shader = nullptr;
 };
 
 struct Vulkan_Shader
