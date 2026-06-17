@@ -16,6 +16,7 @@
 #include "Engine/Types/DebugFlags.h"
 
 #include "InputHandler.h"
+#include "Engine/EngineDefines.h"
 #include "Engine/Types/CoreSystems.h"
 
 

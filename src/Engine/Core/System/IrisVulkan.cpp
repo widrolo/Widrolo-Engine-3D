@@ -283,6 +283,9 @@ void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Material material, 
 
     Vulkan_Model vkModel = ctx.loadedModels[model - 1];
     VkDeviceSize offset = 0;
+    if (!vkMat.hasTextures)
+        vkCmdBindDescriptorSets(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
+            0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offset);
     vkCmdBindIndexBuffer(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdPushConstants(ctx.cmdBufs[ctx.screen.currentFrame], vkShader.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
@@ -317,6 +320,9 @@ void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Material m
     vmaUnmapMemory(ctx.vcore.vmaAllocator, vkModel.instanceAllocation);
 
     std::array<VkDeviceSize, 2> offsets{0, sizeof(WEngine::InstanceData) * vkModel.activeInstances};
+    if (!vkMat.hasTextures)
+        vkCmdBindDescriptorSets(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
+            0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offsets[0]);
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 1, 1, &vkModel.instanceBuffer, &offsets[1]);
     vkCmdBindIndexBuffer(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -336,8 +342,8 @@ void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::
     if (alloc.first == 0 && alloc.second == 0)
         return;
 
-    Vulkan_Material vkMat = ctx.loadedMaterials[material - 1];
-    Vulkan_Shader vkShader = ctx.loadedShaders[vkMat.materialShaderHandle - 1];
+    Vulkan_Material& vkMat = ctx.loadedMaterials[material - 1];
+    Vulkan_Shader& vkShader = ctx.loadedShaders[vkMat.materialShaderHandle - 1];
     if (ctx.currentBoundShader != vkMat.materialShaderHandle)
     {
         vkCmdBindPipeline(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipeline);
@@ -349,6 +355,9 @@ void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::
     uint64 count = alloc.second / sizeof(WEngine::InstanceData);
 
     std::array<VkDeviceSize, 2> offsets{0, alloc.first};
+    if (vkMat.hasTextures)
+        vkCmdBindDescriptorSets(ctx.cmdBufs[ctx.screen.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
+            0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 0, 1, &vkModel.vertexBuffer, &offsets[0]);
     vkCmdBindVertexBuffers(ctx.cmdBufs[ctx.screen.currentFrame], 1, 1, &ctx.statBuf.statBuffer, &offsets[1]);
     vkCmdBindIndexBuffer(ctx.cmdBufs[ctx.screen.currentFrame], vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);

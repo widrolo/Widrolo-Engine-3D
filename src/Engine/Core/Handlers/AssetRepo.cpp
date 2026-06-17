@@ -19,6 +19,7 @@
 #include "Engine/Types/CoreSystems.h"
 #include "Engine/Types/Rendering/TextureInfo.h"
 #include "Engine/Types/Rendering/VertextData.h"
+#include "Engine/Util/TextureSwizzler.h"
 
 
 using namespace WEngine;
@@ -269,11 +270,11 @@ void AssetRepo::IrisAssetComms(IrisAssetCommunication &mission)
 {
 	switch (mission.commType)
 	{
-		case IrisAssetCommunicationType::GetTextures:
-			IrisCommsGetTex(mission);
+		case IrisAssetCommunicationType::GetMaterial:
+			IrisCommsGetMat(mission);
 			break;
-		case IrisAssetCommunicationType::RetireTextures:
-			IrisCommsRetTex(mission);
+		case IrisAssetCommunicationType::RetireMaterial:
+			IrisCommsRetMat(mission);
 			break;
 	}
 }
@@ -425,29 +426,21 @@ void AssetRepo::LoadSpirVFromSpv(SpirVAssetMission &mission)
 	file.close();
 }
 
-void AssetRepo::IrisCommsGetTex(IrisAssetCommunication &mission)
+void AssetRepo::IrisCommsGetMat(IrisAssetCommunication &mission)
 {
 	// This is only here because I don't trust myself.
-	mission.textureData.resize(mission.textureNames.size());
+	mission.textureData.resize(mission.matDef.texturesPackaging.size());
 
-	int32 i = 0;
-	for (const auto& request : mission.textureNames)
-	{
-		if (!m_textureRepo.contains(request))
-		{
-			TextureInfo info = LoadTexturePNG(m_dataPath + EngineSettings::texturePath + request);
-			m_textureRepo.try_emplace(request, info);
-		}
-
-		mission.textureData[i] = m_textureRepo.at(request).Get();
-		m_textureRepo.at(request).Add();
-		i++;
-	}
+#ifdef PACKAGE
+	IrisCommsGetMatPackage(mission);
+#else
+	IrisCommsGetMatDevel(mission);
+#endif
 }
 
-void AssetRepo::IrisCommsRetTex(IrisAssetCommunication &mission)
+void AssetRepo::IrisCommsRetMat(IrisAssetCommunication &mission)
 {
-	for (const auto& request : mission.textureNames)
+	for (const auto& request : mission.matDef.texturesPackaging)
 	{
 		// We can kinda guarantee that it exists. Proof is because i said so; q.e.d. :)
 		bool isUnused = m_textureRepo.at(request).Remove();
@@ -463,5 +456,65 @@ void AssetRepo::IrisCommsRetTex(IrisAssetCommunication &mission)
 
 			m_textureRepo.erase(request);
 		}
+	}
+}
+
+void AssetRepo::IrisCommsGetMatDevel(IrisAssetCommunication &mission)
+{
+	int32 i = 0;
+
+	wtl::vector<uint8> missing;
+
+	for (const auto& request : mission.matDef.texturesPackaging)
+	{
+		if (m_textureRepo.contains(request))
+		{
+			mission.textureData[i] = m_textureRepo.at(request).Get();
+			m_textureRepo.at(request).Add();
+		}
+		else
+		{
+			missing.push_back(i);
+		}
+		i++;
+	}
+
+	i = 0;
+	for (const auto& index : missing)
+	{
+		TextureSwizzler swizzler;
+		for (const auto& swizzle : mission.matDef.swizzles)
+		{
+			if (swizzle.packedTexTarget == index)
+			{
+				std::string develTex = mission.matDef.texturesDevel[swizzle.swizzle[i].develTexOrigin];
+
+				TextureInfo info = LoadTexturePNG(m_dataPath + EngineSettings::texturePath + develTex);
+				swizzler.AddSource(&info, swizzle.swizzle[i].channel, i);
+				i++;
+			}
+		}
+		swizzler.Swizzle();
+		TextureInfo info = swizzler.RetrieveResult();
+		m_textureRepo.try_emplace(mission.matDef.texturesPackaging[index], info);
+		mission.textureData[index] = info;
+		m_textureRepo.at(mission.matDef.texturesPackaging[index]).Add();
+	}
+}
+
+void AssetRepo::IrisCommsGetMatPackage(IrisAssetCommunication &mission)
+{
+	int32 i = 0;
+	for (const auto& request : mission.matDef.texturesPackaging)
+	{
+		if (!m_textureRepo.contains(request))
+		{
+			TextureInfo info = LoadTexturePNG(m_dataPath + EngineSettings::texturePath + request);
+			m_textureRepo.try_emplace(request, info);
+		}
+
+		mission.textureData[i] = m_textureRepo.at(request).Get();
+		m_textureRepo.at(request).Add();
+		i++;
 	}
 }

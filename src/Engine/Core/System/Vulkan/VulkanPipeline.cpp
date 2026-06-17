@@ -121,7 +121,7 @@ bool SetupImGuiDescriptorPool(VulkanContext& ctx)
 
 VkDescriptorPool CreateDescriptorPool(VulkanContext &ctx, const WEngine::ShaderDefinition& shaderDef)
 {
-    if (shaderDef.fragInfo.expectTextureCount == 0 || shaderDef.fragInfo.expectedParams.empty())
+    if (shaderDef.fragInfo.expectTextureCount == 0 && shaderDef.fragInfo.expectedParams.empty())
     {
         WEngine::WLog::SetConsoleInfo();
         WEngine::WLog::ConsoleLog(std::format("Shader \"{}\" needs no descriptor set.", shaderDef.name));

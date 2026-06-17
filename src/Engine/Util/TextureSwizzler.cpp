@@ -35,38 +35,16 @@ void TextureSwizzler::AddSource(const TextureInfo *texture, uint8 sourceChannel,
 
 bool TextureSwizzler::Swizzle()
 {
-    if (m_outTexture != nullptr)
-    {
-        WLog::SetConsoleWarning();
-        WLog::ConsoleLog("Repeat call of swizzler, beware of memory leak!");
-    }
 
-    m_outTexture = wNewArr(TextureInfo, 1);
-    if (m_outTexture == nullptr)
-        return false;
-
-    m_outTexture->data = nullptr;
-    m_outTexture->height = 0;
-    m_outTexture->width = 0;
-    m_outTexture->channels = 4;
 
     if (!ChannelCheck())
-    {
-        wFree(m_outTexture);
         return false;
-    }
 
     if (!SizeCheck())
-    {
-        wFree(m_outTexture);
         return false;
-    }
 
     if (!CreateTexture())
-    {
-        wFree(m_outTexture);
         return false;
-    }
 
     for (int i = 0; i < 4; i++)
         SwizzleChannel(i);
@@ -74,7 +52,7 @@ bool TextureSwizzler::Swizzle()
     return true;
 }
 
-TextureInfo* TextureSwizzler::RetrieveResult()
+TextureInfo TextureSwizzler::RetrieveResult()
 {
     return m_outTexture;
 }
@@ -97,12 +75,12 @@ bool TextureSwizzler::SizeCheck()
 {
     for (const auto& tex : m_source)
     {
-        if (m_outTexture->height == 0 || m_outTexture->width == 0)
+        if (m_outTexture.height == 0 || m_outTexture.width == 0)
         {
-            m_outTexture->height = tex.texture->height;
-            m_outTexture->width = tex.texture->width;
+            m_outTexture.height = tex.texture->height;
+            m_outTexture.width = tex.texture->width;
         }
-        if (m_outTexture->height != tex.texture->height || m_outTexture->width != tex.texture->width)
+        if (m_outTexture.height != tex.texture->height || m_outTexture.width != tex.texture->width)
         {
             WLog::SetConsoleError();
             WLog::ConsoleLog("Swizzle error, not all input is of same size!");
@@ -114,13 +92,13 @@ bool TextureSwizzler::SizeCheck()
 
 bool TextureSwizzler::CreateTexture()
 {
-    uint64 size = m_outTexture->height * m_outTexture->width * 4;
+    uint64 size = m_outTexture.height * m_outTexture.width * 4;
     uint8* textureData = wNewArr(uint8, size);
 
     if (textureData == nullptr)
         return false;
 
-    m_outTexture->data = textureData;
+    m_outTexture.data = textureData;
 
     return true;
 }
@@ -132,8 +110,8 @@ void TextureSwizzler::SwizzleChannel(uint8 channel)
     // So it turns out that images are stored as RGBA RGBA RGBA, not RRR...GGG...BBB...AAA...
     // No memcpy today :(
 
-    uint64 pixelCount = m_outTexture->height * m_outTexture->width;
+    uint64 pixelCount = m_outTexture.height * m_outTexture.width;
     auto source = m_source[channel];
     for (uint64 i = 0; i < pixelCount; i++)
-        m_outTexture->data[i * 4 + channel] = source.texture->data[i * 4 + source.channel];
+        m_outTexture.data[i * 4 + channel] = source.texture->data[i * 4 + source.channel];
 }

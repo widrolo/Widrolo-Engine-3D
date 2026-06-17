@@ -19,7 +19,7 @@ namespace WEngine
         void AddSource(const TextureInfo* texture, uint8 sourceChannel, uint8 targetChannel);
         bool Swizzle();
 
-        TextureInfo* RetrieveResult();
+        TextureInfo RetrieveResult();
 
     private:
         bool ChannelCheck();
@@ -30,7 +30,7 @@ namespace WEngine
 
     private:
         std::array<SourceInfo, 4> m_source;
-        TextureInfo* m_outTexture{}; // pointer so lifetime aint an issue
+        TextureInfo m_outTexture{};
     };
 }
 

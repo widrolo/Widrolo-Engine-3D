@@ -50,8 +50,11 @@ namespace WEngine
 
 		// ---------------------------------- [IRIS COMMS] ----------------------------------
 
-		void IrisCommsGetTex(IrisAssetCommunication& mission);
-		void IrisCommsRetTex(IrisAssetCommunication& mission);
+		void IrisCommsGetMat(IrisAssetCommunication& mission);
+		void IrisCommsRetMat(IrisAssetCommunication& mission);
+
+		void IrisCommsGetMatDevel(IrisAssetCommunication& mission);
+		void IrisCommsGetMatPackage(IrisAssetCommunication& mission);
 
 	};
 };

@@ -2,11 +2,11 @@
 
 #include <string>
 #include <Engine/Types/CommonTypes.h>
-#include <WGL.h>
 #include <yaml-cpp/yaml.h>
 #include <tinyxml2/tinyxml2.h>
 #include <Engine/Types/Audio.h>
 
+#include "Rendering/MaterialDefinition.h"
 #include "Rendering/ModelInfo.h"
 #include "Rendering/TextureInfo.h"
 
@@ -77,13 +77,13 @@ namespace WEngine
 
 	enum class IrisAssetCommunicationType : uint8
 	{
-		GetTextures,
-		RetireTextures
+		GetMaterial,
+		RetireMaterial
 	};
 	struct IrisAssetCommunication
 	{
 		IrisAssetCommunicationType commType;
-		wtl::vector<std::string> textureNames;
+		MaterialDefinition matDef;
 		wtl::vector<TextureInfo> textureData;
 	};
 }

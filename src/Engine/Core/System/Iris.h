@@ -72,4 +72,8 @@ public:
 
     static void AddStationaryObjects(WEngine::Model model, WEngine::Material material,
         wtl::vector<WEngine::InstanceData> instanceMats);
+
+    // --------------------- Asset Repo ----------------------
+
+    static void
 };

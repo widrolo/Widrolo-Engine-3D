@@ -26,7 +26,7 @@ struct GPUSettingsVulkan
     _GLOBAL_CEX_ bool enableValidation = false;
 #endif
     _GLOBAL_CEX_ InvalidResultAction invalidResultAction = InvalidResultAction::Abort;
-    _GLOBAL_CEX_ InvalidResultAction validationErrorAction = InvalidResultAction::Stall;
+    _GLOBAL_CEX_ InvalidResultAction validationErrorAction = InvalidResultAction::LetGo;
     _GLOBAL_CEX_ uint64 maxInstanceBufferSize = 4;
     _GLOBAL_CEX_ uint64 maxMaterialCount = 512;
 };

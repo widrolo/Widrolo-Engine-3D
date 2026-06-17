@@ -303,9 +303,15 @@ WEngine::Material CompileMaterial(VulkanContext &ctx, const std::string &matName
     if (!shaderN.HasValue())
         return 0;
 
+    Vulkan_Shader& shader = ctx.loadedShaders[shaderN.GetValue() - 1];
     Vulkan_Material mat;
     mat.materialShaderHandle = shaderN.GetValue();
 
+    if (!matDef.texturesPackaging.empty())
+    {
+        mat.materialDescriptorSet = CreateDescriptorSet(ctx, shader);
+        mat.hasTextures = true;
+    }
     ctx.loadedMaterials.push_back(mat);
     WEngine::Material matHandle = ctx.loadedMaterials.size();
     ctx.loadedMaterialHandles[matDef.name] = matHandle;

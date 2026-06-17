@@ -79,6 +79,8 @@ struct Vulkan_Material
     VkDescriptorSet materialDescriptorSet;
     WEngine::Shader materialShaderHandle;
     Vulkan_Shader* shader = nullptr;
+
+    bool hasTextures = false;
 };
 
 struct Vulkan_Shader

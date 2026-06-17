@@ -81,7 +81,7 @@ namespace WEngine
 
     public:
         bool Compile();
-        void AddSwizzleLine(const SwizzleRawLine line);
+        void AddSwizzleLine(SwizzleRawLine line);
         void AddDevelopmentTexture(const TextureIndex& tex);
         void AddPackagingTexture(const TextureIndex& tex);
 

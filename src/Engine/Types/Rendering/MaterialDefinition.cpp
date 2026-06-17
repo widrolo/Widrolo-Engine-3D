@@ -111,6 +111,8 @@ void MaterialDefinition::Parse(const YAML::Node &root)
 
         if (!compiler.Compile())
             return;
+
+        swizzles = compiler.GetSwizzles();
     }
 
     if (!fragInfo.expectedParams.empty())
