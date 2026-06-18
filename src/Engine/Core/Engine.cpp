@@ -25,6 +25,8 @@
 #include <Engine/Util/Log.h>
 #include <Engine/Types/CoreSystems.h>
 #include <Engine/Core/System/Memory.h>
+
+#include "System/Iris.h"
 using namespace WEngine;
 
 #ifdef WE_Windows
@@ -209,6 +211,8 @@ void Engine::Loop_Begin(std::chrono::steady_clock::time_point& last, StopWatch& 
 
 
 	m_physicsTickTimer += m_deltaTime;
+
+	Iris::SETTING_BeginNewPreFrame();
 
 
 	m_game->GameLoopBegin();

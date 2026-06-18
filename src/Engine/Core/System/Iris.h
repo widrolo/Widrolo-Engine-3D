@@ -32,6 +32,7 @@ class Iris
 public:
     static bool SETTING_InitGPUApi(SDL_Window* window);
     static void SETTING_ConfigureImGui(SDL_Window* window);
+    static void SETTING_BeginNewPreFrame();
     static void SETTING_BeginNewFrame();
     static void SETTING_SetViewportSize(WEngine::Vector2 size);
 

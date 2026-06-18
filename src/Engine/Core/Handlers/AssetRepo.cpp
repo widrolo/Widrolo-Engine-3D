@@ -492,7 +492,8 @@ void AssetRepo::IrisCommsGetMatDevel(IrisAssetCommunication &mission)
 				std::string develTex = mission.matDef.texturesDevel[swizzle.swizzle[i].develTexOrigin];
 
 				TextureInfo info = LoadTexturePNG(m_dataPath + EngineSettings::texturePath + develTex);
-				swizzler.AddSource(&info, swizzle.swizzle[i].channel, i);
+				for (uint64 j = 0; j < 4; j++)
+					swizzler.AddSource(info, swizzle.swizzle[index].channel, j);
 				i++;
 			}
 		}

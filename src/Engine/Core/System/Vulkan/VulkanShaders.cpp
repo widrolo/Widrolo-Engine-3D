@@ -303,6 +303,13 @@ WEngine::Material CompileMaterial(VulkanContext &ctx, const std::string &matName
     if (!shaderN.HasValue())
         return 0;
 
+    WEngine::IrisAssetCommunication comms{};
+    comms.commType = WEngine::IrisAssetCommunicationType::GetMaterial;
+    comms.matDef = matDef;
+
+    WEngine::CoreSystems::GetAssetRepo()->IrisAssetComms(comms);
+
+
     Vulkan_Shader& shader = ctx.loadedShaders[shaderN.GetValue() - 1];
     Vulkan_Material mat;
     mat.materialShaderHandle = shaderN.GetValue();
@@ -310,8 +317,35 @@ WEngine::Material CompileMaterial(VulkanContext &ctx, const std::string &matName
     if (!matDef.texturesPackaging.empty())
     {
         mat.materialDescriptorSet = CreateDescriptorSet(ctx, shader);
+
+        std::vector<VkWriteDescriptorSet> writeSets{};
+
+        for (uint32_t i = 0; i < matDef.texturesPackaging.size(); ++i)
+        {
+            Vulkan_Texture tex = ctx.loadedTextures[comms.texReferences[i] - 1];
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = tex.imageView;
+            imageInfo.sampler = tex.sampler;
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+
+            VkWriteDescriptorSet writeSet{};
+            writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writeSet.dstSet = mat.materialDescriptorSet;
+            writeSet.dstBinding = i;
+            writeSet.descriptorCount = 1;
+            writeSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            writeSet.pImageInfo = &imageInfo;
+
+
+            writeSets.push_back(writeSet);
+        }
+
+        vkUpdateDescriptorSets(ctx.vcore.gpuDevice, writeSets.size(), writeSets.data(), 0, nullptr);
+
         mat.hasTextures = true;
     }
+
     ctx.loadedMaterials.push_back(mat);
     WEngine::Material matHandle = ctx.loadedMaterials.size();
     ctx.loadedMaterialHandles[matDef.name] = matHandle;

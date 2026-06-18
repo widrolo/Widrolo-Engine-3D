@@ -252,7 +252,7 @@ void QueueTexture(VulkanContext &ctx, const Vulkan_Texture& tex, const WEngine::
 
     vkCmdPipelineBarrier(ctx.transferCommandBuffer,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
         0, 0, nullptr, 0, nullptr, 1, &postBarrier);
 
     ctx.stagingBuffers.push_back({staging, stagingAlloc});
@@ -264,8 +264,6 @@ void UploadTextures(VulkanContext &ctx)
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    //submitInfo.signalSemaphoreCount = 1;
-    //submitInfo.pSignalSemaphores = &ctx.transferSemaphore;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &ctx.transferCommandBuffer;
 

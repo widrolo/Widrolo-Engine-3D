@@ -29,6 +29,7 @@ struct VulkanContext
     std::unordered_map<std::string, WEngine::Model> loadedModelHandles{};
     wtl::vector<Vulkan_Material> loadedMaterials{};
     std::unordered_map<std::string, WEngine::Material> loadedMaterialHandles{};
+    wtl::vector<Vulkan_Texture> loadedTextures{};
 
     WEngine::Shader currentBoundShader = 999999999;
     std::vector<BufferCollection> bufferGraveyard{};

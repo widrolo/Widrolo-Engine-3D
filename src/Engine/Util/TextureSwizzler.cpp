@@ -7,7 +7,7 @@
 
 using namespace WEngine;
 
-void TextureSwizzler::AddSource(const TextureInfo *texture, uint8 sourceChannel, uint8 targetChannel)
+void TextureSwizzler::AddSource(TextureInfo texture, uint8 sourceChannel, uint8 targetChannel)
 {
     if (sourceChannel > 3 || targetChannel > 3)
     {
@@ -16,14 +16,7 @@ void TextureSwizzler::AddSource(const TextureInfo *texture, uint8 sourceChannel,
         return;
     }
 
-    if (texture == nullptr)
-    {
-        WLog::SetConsoleError();
-        WLog::ConsoleLog("Swizzle init error, null texture passed!");
-        return;
-    }
-
-    if (texture->data == nullptr)
+    if (texture.data == nullptr)
     {
         WLog::SetConsoleError();
         WLog::ConsoleLog("Swizzle init error, texture with null data passed!");
@@ -35,8 +28,6 @@ void TextureSwizzler::AddSource(const TextureInfo *texture, uint8 sourceChannel,
 
 bool TextureSwizzler::Swizzle()
 {
-
-
     if (!ChannelCheck())
         return false;
 
@@ -49,6 +40,7 @@ bool TextureSwizzler::Swizzle()
     for (int i = 0; i < 4; i++)
         SwizzleChannel(i);
 
+    m_outTexture.channels = 4;
     return true;
 }
 
@@ -61,7 +53,7 @@ bool TextureSwizzler::ChannelCheck()
 {
     for (const auto& tex : m_source)
     {
-        if (tex.texture == nullptr)
+        if (tex.texture.data == nullptr)
         {
             WLog::SetConsoleError();
             WLog::ConsoleLog("Swizzle error, missing channel!");
@@ -77,10 +69,10 @@ bool TextureSwizzler::SizeCheck()
     {
         if (m_outTexture.height == 0 || m_outTexture.width == 0)
         {
-            m_outTexture.height = tex.texture->height;
-            m_outTexture.width = tex.texture->width;
+            m_outTexture.height = tex.texture.height;
+            m_outTexture.width = tex.texture.width;
         }
-        if (m_outTexture.height != tex.texture->height || m_outTexture.width != tex.texture->width)
+        if (m_outTexture.height != tex.texture.height || m_outTexture.width != tex.texture.width)
         {
             WLog::SetConsoleError();
             WLog::ConsoleLog("Swizzle error, not all input is of same size!");
@@ -113,5 +105,5 @@ void TextureSwizzler::SwizzleChannel(uint8 channel)
     uint64 pixelCount = m_outTexture.height * m_outTexture.width;
     auto source = m_source[channel];
     for (uint64 i = 0; i < pixelCount; i++)
-        m_outTexture.data[i * 4 + channel] = source.texture->data[i * 4 + source.channel];
+        m_outTexture.data[i * 4 + channel] = source.texture.data[i * 4 + source.channel];
 }

@@ -11,12 +11,12 @@ namespace WEngine
     public:
         struct SourceInfo
         {
-            const TextureInfo* texture{};
+            TextureInfo texture{};
             // 0123 = rgba
             uint8 channel{};
         };
     public:
-        void AddSource(const TextureInfo* texture, uint8 sourceChannel, uint8 targetChannel);
+        void AddSource(TextureInfo texture, uint8 sourceChannel, uint8 targetChannel);
         bool Swizzle();
 
         TextureInfo RetrieveResult();

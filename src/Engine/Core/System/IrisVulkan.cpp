@@ -79,9 +79,6 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
     SetupSwapchainFramebuffers(ctx, stats);
     TryCompileAllShaders(ctx);
 
-    WEngine::WLog::ConsoleLog(std::format(
-        "Same queue? {}",
-        ctx.queues.primaryDrawQueue == ctx.queues.primaryTransferQueue));
 
     return true;
 }
@@ -110,11 +107,16 @@ void Iris::SETTING_ConfigureImGui(SDL_Window *window)
     ImGui_ImplVulkan_Init(&initInfo);
 }
 
+void Iris::SETTING_BeginNewPreFrame()
+{
+    BeginTextureUpload(ctx);
+}
+
 
 void Iris::SETTING_BeginNewFrame()
 {
-    if (!ctx.firstFrame)
-        UploadTextures(ctx);
+    UploadTextures(ctx);
+
     vkWaitForFences(ctx.vcore.gpuDevice, 1, &ctx.screen.endOfFrameFences[ctx.screen.currentFrame], VK_TRUE, UINT64_MAX);
 
     for (auto& buf : ctx.bufferGraveyard[ctx.screen.currentFrame])
@@ -424,7 +426,7 @@ void Iris::DRAWCALL_SwapBuffers(SDL_Window *window)
     stats.drawCallsLastFrame = stats.drawCallsThisFrame;
     stats.drawCallsThisFrame = 0;
 
-    BeginTextureUpload(ctx);
+
     ctx.firstFrame = false;
 }
 
@@ -489,9 +491,21 @@ void Iris::AddStationaryObjects(WEngine::Model model, WEngine::Material material
 
 void Iris::AssetIrisCommunication(WEngine::AssetIrisCommunication &mission)
 {
+    Vulkan_Texture tex;
+    WEngine::Texture texHandle;
     switch (mission.commType)
     {
         case WEngine::AssetIrisCommunicationType::StoreTexture:
+            WEngine::WLog::SetConsoleInfo();
+            WEngine::WLog::ConsoleLog("Got store texture comms mission.");
+
+            tex = CreateTexture(ctx, stats, mission.textureData);
+            QueueTexture(ctx, tex, mission.textureData);
+
+            ctx.loadedTextures.push_back(tex);
+            texHandle = ctx.loadedTextures.size();
+            mission.texReferenceOut = texHandle;
+
             break;
         case WEngine::AssetIrisCommunicationType::UnloadTexture:
             break;

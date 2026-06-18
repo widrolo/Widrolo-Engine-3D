@@ -83,7 +83,7 @@ struct EngineSettings
 	_GLOBAL_CONST_ std::string dataPath = "../../GameData/Data/";
 #endif
 	/** This sets the texture path. */
-	_GLOBAL_CONST_ std::string texturePath = "Texture/";
+	_GLOBAL_CONST_ std::string texturePath = "Textures/";
 	/** This sets the sector path. */
 	_GLOBAL_CONST_ std::string sectorPath = "Sectors/";
 	/** This sets the shader path. */
