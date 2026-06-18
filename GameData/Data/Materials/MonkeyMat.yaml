@@ -1,0 +1,14 @@
+material:
+    materialName: MonkeyMat
+    shader: TexturedUnlit
+
+    texturesDevel:
+        color: Monkey.png
+
+    texturesPackaging:
+        base: Monkey.png
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]

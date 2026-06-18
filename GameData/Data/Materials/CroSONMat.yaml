@@ -1,0 +1,14 @@
+material:
+    materialName: CroSONMat
+    shader: TexturedUnlit
+
+    texturesDevel:
+        color: CroSON.png
+
+    texturesPackaging:
+        base: CroSON.png
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]
