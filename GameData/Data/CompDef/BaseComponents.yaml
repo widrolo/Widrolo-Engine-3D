@@ -8,7 +8,7 @@
         Name: "RNG"
         Description: "Generates a random number."
     CameraComponent:
-        ID: 4
+        ID: 2
         Name: "Camera"
         Description: "Camera used for rendering."
         Settings:
@@ -23,11 +23,11 @@
                 Type: "Vector3"
                 Internal: offset
     InputComponent:
-        ID: 7
+        ID: 3
         Name: "Input"
         Description: "Used for input, every Entity spawns with this component by default."
     AudioComponent:
-        ID: 9
+        ID: 4
         Name: "Audio Player"
         Description: "Plays an audio file. Used for both sound effects and music."
         Settings:
@@ -47,7 +47,7 @@
                 Type: "Bool"
                 Internal: "playOnAwake"
     MeshRendererComponent:
-        ID: 14
+        ID: 5
         Name: "Mesh Renderer"
         Description: "Render a mesh with a given shader"
         Settings:
@@ -98,7 +98,12 @@
                 Name: "Vector2"
                 Description: ""
                 Type: "Vector2"
-                Internal: vtest
+                Internal: v2test
+            Vector3Test:
+                Name: "Vector3"
+                Description: ""
+                Type: "Vector3"
+                Internal: v3test
             ColorTest:
                 Name: "Color"
                 Description: ""

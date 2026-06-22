@@ -64,6 +64,9 @@ void AnyComponent::Init(uint16 ID, uint8 dataSize)
             case ComponentOptionType::Vector2:
                 m_data[i] = WEngine::Vector2(0.0f, 0.0f);
                 break;
+            case ComponentOptionType::Vector3:
+                m_data[i] = WEngine::Vector3(0.0f, 0.0f, 0.0f);
+                break;
             case ComponentOptionType::Color:
                 m_data[i] = WEngine::Color(255, 255, 255, 255);
                 break;
@@ -173,16 +176,7 @@ void AnyComponent::TryDrawGameGraphics()
 
 void AnyComponent::TryDrawDebugGraphics()
 {
-    switch (m_ID)
-    {
-        case 10: // CircleAreaComponent
-            GFX_Dbg_CircleArea();
-            break;
-        case 11: // RectAreaComponent
-            GFX_Dbg_RectArea();
-            break;
-        default: break;
-    }
+
 }
 
 void AnyComponent::DrawOnSelected()
@@ -190,66 +184,3 @@ void AnyComponent::DrawOnSelected()
 
 }
 
-void AnyComponent::GFX_Dbg_CircleArea()
-{
-    float32 radius;
-    WEngine::Vector2 offset;
-
-    auto radiusNullable = FindDataByName("areaRadius");
-    auto offsetNullable = FindDataByName("offset");
-
-    if (radiusNullable.HasValue())
-        radius = std::get<float32>(radiusNullable.GetValue());
-    else
-        radius = 0.0f;
-
-    if (offsetNullable.HasValue())
-        offset = std::get<WEngine::Vector2>(offsetNullable.GetValue());
-    else
-        offset = WEngine::Vector2::Zero;
-
-    simulatableObject.SetAreaCircle(radius);
-    simulatableObject.SetAreaOffset(offset);
-    simulatableObject.SetOwner(entity);
-    //simulatableObject.SetPosition(entity->transform.position);
-    simulatableObject.SetFreezeState(true);
-    auto lines = WEngine::PhysicsVisualizer::GetCircleVisual(simulatableObject);
-
-    WEngine::RenderVisualizationMission mission{};
-    mission.lines = lines;
-    mission.color = WEngine::Color::Green;
-
-    //WEngine::CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
-}
-
-void AnyComponent::GFX_Dbg_RectArea()
-{
-    WEngine::Vector2 size;
-    WEngine::Vector2 offset;
-
-    auto sizeNullable = FindDataByName("areaSize");
-    auto offsetNullable = FindDataByName("offset");
-
-    if (sizeNullable.HasValue())
-        size = std::get<WEngine::Vector2>(sizeNullable.GetValue());
-    else
-        size = WEngine::Vector2::Zero;
-
-    if (offsetNullable.HasValue())
-        offset = std::get<WEngine::Vector2>(offsetNullable.GetValue());
-    else
-        offset = WEngine::Vector2::Zero;
-
-    simulatableObject.SetAreaRect(size);
-    simulatableObject.SetAreaOffset(offset);
-    simulatableObject.SetOwner(entity);
-    //simulatableObject.SetPosition(entity->transform.position);
-    simulatableObject.SetFreezeState(true);
-    auto lines = WEngine::PhysicsVisualizer::GetRectVisual(simulatableObject);
-
-    WEngine::RenderVisualizationMission mission{};
-    mission.lines = lines;
-    mission.color = WEngine::Color::Green;
-
-    //WEngine::CoreSystems::GetRenderHandler()->AddToVisualizationQueue(mission);
-}

@@ -118,7 +118,7 @@ void Entity::EntityDestroy()
 
 void Entity::InitBaseComponents()
 {
-	ComponentArgs args{ 7, YAML::Node() };
+	ComponentArgs args{ 3, YAML::Node() };
 
 	input = dynamic_cast<InputComponent*>(ComponentFactory::CreateComponent(args, this));
 }

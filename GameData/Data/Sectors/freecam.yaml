@@ -6,7 +6,7 @@ entities:
     size: [1, 1, 1]
     components:
       c0:
-        component-type: 4
+        component-type: 2
         backColor: [135, 206, 235, 255]
         offset: [0, 0, 0]
       c1:

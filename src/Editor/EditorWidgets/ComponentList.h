@@ -20,6 +20,7 @@ namespace WEditor
         std::array<float32, 3> m_entitySize{};
     private:
         void ShowComponentsInEntity();
+        void ComponentDropdown();
     };
 }
 

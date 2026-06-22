@@ -35,7 +35,8 @@ void ComponentSettings::ShowComponent()
     ImGui::Text("%s", EditorSystems::GetCompSettingsRepo()->GetSettingDesc(comp->m_ID).c_str());
 
     int iter = 0;
-    for (auto option : EditorSystems::GetCompSettingsRepo()->GetInternalOptions(comp->m_ID))
+	auto& options = EditorSystems::GetCompSettingsRepo()->GetInternalOptions(comp->m_ID);
+    for (auto option : options)
     {
         ShowOption(option, iter);
         iter++;

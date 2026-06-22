@@ -14,10 +14,6 @@ set(TINYXML2_PATH   "${CMAKE_SOURCE_DIR}/libs/tinyxml2-11.0.0")
 
 # thank god for CLion
 add_executable(Widrolo_Engine_3D
-        src/Engine/Components/Physics/DynamicBody.cpp
-        src/Engine/Components/Physics/DynamicBody.h
-        src/Engine/Components/Physics/StaticBody.cpp
-        src/Engine/Components/Physics/StaticBody.h
         src/Engine/Components/Rendering/CameraComponent.cpp
         src/Engine/Components/Rendering/CameraComponent.h
         src/Engine/Components/AudioComponent.cpp
@@ -187,14 +183,6 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Core/Physics/SimulatableObject.h
         src/Engine/Core/Physics/SimulatableObject.cpp
         src/Engine/Core/Physics/PhysicsArea.h
-        src/Engine/Components/Physics/CircleAreaComponent.cpp
-        src/Engine/Components/Physics/CircleAreaComponent.h
-        src/Engine/Components/Physics/RectAreaComponent.cpp
-        src/Engine/Components/Physics/RectAreaComponent.h
-        src/Engine/Components/Physics/BoundaryAreaComponent.cpp
-        src/Engine/Components/Physics/BoundaryAreaComponent.h
-        src/Engine/Components/Physics/CylinderAreaComponent.cpp
-        src/Engine/Components/Physics/CylinderAreaComponent.h
         src/Engine/Types/Physics/OverlapResult.h
         src/Engine/WTL/map.h
         src/Engine/Core/Physics/PhysicsVisualizer.cpp

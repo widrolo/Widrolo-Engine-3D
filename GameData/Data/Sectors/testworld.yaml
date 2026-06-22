@@ -6,7 +6,7 @@ entities:
     size: [10, 1, 10]
     components:
       c0:
-        component-type: 14
+        component-type: 5
         meshName: Plane
         materialName: ProtoMat
         instance: false
@@ -17,7 +17,13 @@ entities:
     size: [1, 1, 1]
     components:
       c0:
-        component-type: 14
+        component-type: 5
         meshName: Cube
         materialName: ProtoMat
         instance: false
+  e2:
+    name: New Entity
+    position: [0, 0, 0]
+    rotation: [0, 0, 0]
+    size: [0, 0, 0]
+    components: ~

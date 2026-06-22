@@ -23,6 +23,7 @@ namespace WEditor
         static std::string GetSettingName(uint64 ID);
         static std::string GetSettingDesc(uint64 ID);
         static const wtl::vector<ComponentOption> GetInternalOptions(uint64 ID);
+        static std::array<ComponentSettingDefinition, MAX_COMPONENTS>& GetAllComponentSettings();
 
     private:
         ComponentOptionType StringToCompOptType(std::string type);

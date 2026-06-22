@@ -86,6 +86,11 @@ const wtl::vector<ComponentOption> CompSettingsRepo::GetInternalOptions(uint64 I
     return m_settingDefs[ID].options;
 }
 
+std::array<ComponentSettingDefinition, CompSettingsRepo::MAX_COMPONENTS>& CompSettingsRepo::GetAllComponentSettings()
+{
+    return m_settingDefs;
+}
+
 ComponentOptionType CompSettingsRepo::StringToCompOptType(std::string type)
 {
     const std::unordered_map<std::string, ComponentOptionType> lookup = {

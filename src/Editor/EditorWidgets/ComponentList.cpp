@@ -75,18 +75,11 @@ void ComponentList::RenderInternal()
 
 	ImGui::SeparatorText("Component Settings");
 
-	static int newCompID = 0;
+
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20.f, 10.f));
-	ImGui::InputInt("##1", &newCompID);
-	ImGui::SameLine();
-	if (ImGui::Button("Create"))
-	{
-		AnyComponent* any = new AnyComponent(entity);
-		int capacity = EditorSystems::GetCompSettingsRepo()->GetSettingCapacity(newCompID);
-		any->Init(newCompID, capacity);
-		entity->m_components.push_back(any);
-		EditorState::SelectedSector->m_changedInEditor = true;
-	}
+
+	ComponentDropdown();
+
 
 	if (ImGui::Button("Remove Selected"))
 	{
@@ -142,4 +135,62 @@ void ComponentList::ShowComponentsInEntity()
 	}
 
 	ImGui::PopStyleVar();
+}
+
+void ComponentList::ComponentDropdown()
+{
+	auto entity = EditorState::SelectedEntity;
+	static int newCompID = 0;
+
+	const auto& comps = CompSettingsRepo::GetAllComponentSettings();
+	std::string preview = comps[newCompID].componentName;
+	if (ImGui::BeginCombo(" ", preview.c_str(), 0))
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+
+		static ImGuiTextFilter filter;
+		if (ImGui::IsWindowAppearing())
+		{
+			ImGui::SetKeyboardFocusHere();
+			filter.Clear();
+		}
+		ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F);
+		filter.Draw("##Filter", -FLT_MIN);
+
+		ImGui::PopStyleVar();
+
+		ImGui::SeparatorText("Engine Components");
+		for (uint64 i = 0; i < 1023; ++i)
+		{
+			// while breaking would be more efficient, sometimes components get deprecated or similar causing gaps.
+			if (comps[i].componentName.empty())
+				continue;
+			if (filter.PassFilter(comps[i].componentName.c_str()))
+				if (ImGui::Selectable(comps[i].componentName.c_str(), false))
+					newCompID = i;
+		}
+
+		ImGui::SeparatorText("Game Components");
+		for (uint64 i = 1024; i < comps.size(); ++i)
+		{
+			if (comps[i].componentName.empty())
+				continue;
+			if (filter.PassFilter(comps[i].componentName.c_str()))
+				if (ImGui::Selectable(comps[i].componentName.c_str(), false))
+					newCompID = i;
+		}
+
+		ImGui::EndCombo();
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("Create"))
+	{
+		AnyComponent* any = new AnyComponent(entity);
+		int capacity = EditorSystems::GetCompSettingsRepo()->GetSettingCapacity(newCompID);
+		any->Init(newCompID, capacity);
+		entity->m_components.push_back(any);
+		EditorState::SelectedSector->m_changedInEditor = true;
+	}
 }

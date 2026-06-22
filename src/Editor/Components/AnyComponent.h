@@ -36,14 +36,10 @@ namespace WEditor
 
     private:
         bool m_isInitializedDraw = false;
-        WEngine::SimulatableObject simulatableObject;
 
         void TryDrawGameGraphics();
         void TryDrawDebugGraphics();
         void DrawOnSelected();
-
-        void GFX_Dbg_CircleArea();
-        void GFX_Dbg_RectArea();
 
         COMP_HASH(0xf22524fc1c003f87)
     };
