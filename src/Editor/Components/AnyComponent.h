@@ -11,7 +11,7 @@
 
 namespace WEditor
 {
-    using OptionData = std::variant<int32, float32, bool, std::string, WEngine::Vector2, WEngine::Color>;
+    using OptionData = std::variant<int32, float32, bool, std::string, WEngine::Vector2, WEngine::Vector3, WEngine::Color>;
 
     class AnyComponent : public WEngine::Component
     {

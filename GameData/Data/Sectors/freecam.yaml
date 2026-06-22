@@ -1,10 +1,13 @@
 entities:
   e0:
     name: camera
-    position: [10, -10, 10]
+    position: [0, 0, 2]
+    rotation: [0, 0, 0]
     size: [1, 1, 1]
     components:
       c0:
         component-type: 4
+        backColor: [135, 206, 235, 255]
+        offset: [0, 0, 0]
       c1:
         component-type: 1024

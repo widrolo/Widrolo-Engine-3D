@@ -25,12 +25,12 @@ void Viewport::Setup()
 void Viewport::RenderInternal()
 {
     // due to docking and resolutions, we need to do this
-    //ImVec2 size = ImGui::GetContentRegionAvail();
-//
-    //viewportCam->Tick(0.0f);
-//
-    //WEngine::Framebuffer fb = WEngine::CoreSystems::GetRenderHandler()->GetGameFramebuffer();
-    //auto textureNullable = GPU::FramebufferToImGui(fb);
+    ImVec2 size = ImGui::GetContentRegionAvail();
+
+    viewportCam->Tick(0.0f);
+
+    WEngine::Framebuffer fb = WEngine::CoreSystems::GetRenderHandler()->EditorGetViewportFramebuffer();
+    auto textureNullable = Iris::FramebufferToImGui(fb);
 //
     //if (textureNullable.HasValue())
     //{

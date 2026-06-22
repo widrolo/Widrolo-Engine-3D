@@ -31,7 +31,6 @@ class Iris
 {
 public:
     static bool SETTING_InitGPUApi(SDL_Window* window);
-    static void SETTING_ConfigureImGui(SDL_Window* window);
     static void SETTING_BeginNewPreFrame();
     static void SETTING_BeginNewFrame();
     static void SETTING_SetViewportSize(WEngine::Vector2 size);
@@ -60,8 +59,6 @@ public:
     static void DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::Material material,
         const WEngine::Mat4x4& vp);
 
-    static void DRAWCALL_ResetImGui();
-    static void DRAWCALL_DrawImGui();
 
     static void DRAWCALL_DrawToDisplay(SDL_Window* window);
 
@@ -75,13 +72,20 @@ public:
 
     // ------------------------ Memory -----------------------
 
+
     static uint64 GetVramUsage();
     static uint32 GetDrawCallCountLastFrame();
-    static WEngine::Nullable<ImTextureID> FramebufferToImGui(WEngine::Framebuffer framebuffer);
     static wtl::vector<MemListDebugInfo> GetStatInstBufAllocInfo();
 
     static void AddStationaryObjects(WEngine::Model model, WEngine::Material material,
         wtl::vector<WEngine::InstanceData> instanceMats);
+
+    // ------------------------- ImGui -----------------------
+
+    static void SETTING_ConfigureImGui(SDL_Window* window);
+    static void DRAWCALL_ResetImGui();
+    static void DRAWCALL_DrawImGui();
+    static WEngine::Nullable<ImTextureID> FramebufferToImGui(WEngine::Framebuffer framebuffer);
 
     // --------------------- Asset Repo ----------------------
 

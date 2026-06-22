@@ -95,6 +95,7 @@ ComponentOptionType CompSettingsRepo::StringToCompOptType(std::string type)
         {"Bool",    ComponentOptionType::Bool},
         {"String",  ComponentOptionType::String},
         {"Vector2", ComponentOptionType::Vector2},
+        {"Vector3", ComponentOptionType::Vector3},
         {"Color",   ComponentOptionType::Color}
     };
 

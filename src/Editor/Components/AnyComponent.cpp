@@ -87,6 +87,7 @@ void AnyComponent::ApplySpawnData(WEngine::ComponentArgs args)
     WEngine::Nullable<bool> resBool{};
     WEngine::Nullable<std::string> resString{};
     WEngine::Nullable<WEngine::Vector2> resVector{};
+    WEngine::Nullable<WEngine::Vector3> resVector3{};
     WEngine::Nullable<WEngine::Color> resColor{};
 
 
@@ -120,6 +121,11 @@ void AnyComponent::ApplySpawnData(WEngine::ComponentArgs args)
                 resVector = args.GetVector2FromParams(options[i].optionInternal);
                 if (resVector.HasValue())
                     m_data[i] = resVector.GetValue();
+                break;
+            case ComponentOptionType::Vector3:
+                resVector3 = args.GetVector3FromParams(options[i].optionInternal);
+                if (resVector3.HasValue())
+                    m_data[i] = resVector3.GetValue();
                 break;
             case ComponentOptionType::Color:
                 resColor = args.GetColorFromParams(options[i].optionInternal);

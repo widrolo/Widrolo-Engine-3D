@@ -20,7 +20,7 @@
             Offset:
                 Name: "Offset"
                 Description: "Offsets the camera."
-                Type: "Vector2"
+                Type: "Vector3"
                 Internal: offset
     InputComponent:
         ID: 7

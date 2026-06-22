@@ -4,8 +4,6 @@
 #include <Engine/Core/System/Memory.h>
 #include <Engine/Util/Log.h>
 
-#include "PerfTester.h"
-
 
 Game::Game()
 {
@@ -25,19 +23,7 @@ void Game::PreGameLoop()
 
 void Game::GameLoopBegin()
 {
-    static bool first = true;
 
-    if (!first)
-        return;
-
-    for (auto& sec : WEngine::Sector::m_sectors)
-    {
-        if (sec->m_name == "testworld")
-            PerfTester tester{sec};
-
-    }
-
-    first = false;
 }
 
 void Game::GameLoopTickEarly()

@@ -56,10 +56,12 @@ void ComponentSettings::ShowOption(const ComponentOption& option, uint8 optionNu
 	static bool boolIn = false;
 	static const char* textIn;
 	static float f2In[2] = {0, 0};
+	static float f3In[3] = {0, 0, 0};
 	static float f4In[4] = {0, 0, 0, 0};
 
 	std::string stringIn;
     WEngine::Vector2 vecIn;
+    WEngine::Vector3 vec3In;
     WEngine::Color colorIn;
 
 	bool changed;
@@ -96,6 +98,17 @@ void ComponentSettings::ShowOption(const ComponentOption& option, uint8 optionNu
 		vecIn.x = f2In[0];
 		vecIn.y = f2In[1];
 		comp->SetData(optionNumber, vecIn);
+		break;
+	case ComponentOptionType::Vector3:
+		vec3In = std::get<WEngine::Vector3>(comp->GetData(optionNumber));
+		f3In[0] = vec3In.x;
+		f3In[1] = vec3In.y;
+		f3In[2] = vec3In.z;
+		changed = ImGui::DragFloat3(option.optionName.c_str(), f3In, 0.01f);
+		vec3In.x = f3In[0];
+		vec3In.y = f3In[1];
+		vec3In.z = f3In[2];
+		comp->SetData(optionNumber, vec3In);
 		break;
 	case ComponentOptionType::Color:
 		colorIn = std::get<WEngine::Color>(comp->GetData(optionNumber));

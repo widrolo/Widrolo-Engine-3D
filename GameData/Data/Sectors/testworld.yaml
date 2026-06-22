@@ -1,2 +1,23 @@
 entities:
-  
+  e0:
+    name: Ground
+    position: [0, 0, 0]
+    rotation: [0, 0, 0]
+    size: [10, 1, 10]
+    components:
+      c0:
+        component-type: 14
+        meshName: Plane
+        materialName: ProtoMat
+        instance: false
+  e1:
+    name: Cube
+    position: [0, -1, 0.400000006]
+    rotation: [0, 0, 0]
+    size: [1, 1, 1]
+    components:
+      c0:
+        component-type: 14
+        meshName: Cube
+        materialName: ProtoMat
+        instance: false

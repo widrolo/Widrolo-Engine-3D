@@ -13,6 +13,7 @@ namespace WEditor
         Bool,
         String,
         Vector2,
+        Vector3,
         Color,
     };
 

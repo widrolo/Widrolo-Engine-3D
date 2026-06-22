@@ -148,13 +148,23 @@ YAML::Node SectorList::GetEntityInfoYaml(WEngine::Entity *e)
     YAML::Node posNode;
     posNode.push_back(e->transform.position.x);
     posNode.push_back(e->transform.position.y);
+    posNode.push_back(e->transform.position.z);
     posNode.SetStyle(YAML::EmitterStyle::Flow);
 
     root["position"] = posNode;
 
+    YAML::Node rotNode;
+    rotNode.push_back(e->transform.rotation.x);
+    rotNode.push_back(e->transform.rotation.y);
+    rotNode.push_back(e->transform.rotation.z);
+    rotNode.SetStyle(YAML::EmitterStyle::Flow);
+
+    root["rotation"] = rotNode;
+
     YAML::Node sizeNode;
     sizeNode.push_back(e->transform.size.x);
     sizeNode.push_back(e->transform.size.y);
+    sizeNode.push_back(e->transform.size.z);
     sizeNode.SetStyle(YAML::EmitterStyle::Flow);
     root["size"] = sizeNode;
 
@@ -181,9 +191,6 @@ YAML::Node SectorList::GetComponentInfoYaml(WEngine::Component *comp)
 
     auto options = EditorSystems::GetCompSettingsRepo()->GetInternalOptions(any->m_ID);
 
-    WEngine::Vector2 vec;
-    WEngine::Color col;
-
     for (int i = 0; i < options.size(); i++)
     {
         auto option = options[i];
@@ -204,7 +211,7 @@ YAML::Node SectorList::GetComponentInfoYaml(WEngine::Component *comp)
                 break;
             case ComponentOptionType::Vector2:
             {
-                vec = std::get<WEngine::Vector2>(any->GetData(i));
+                WEngine::Vector2 vec = std::get<WEngine::Vector2>(any->GetData(i));
 
                 YAML::Node v;
                 v.push_back(vec.x);
@@ -214,10 +221,23 @@ YAML::Node SectorList::GetComponentInfoYaml(WEngine::Component *comp)
                 root[option.optionInternal] = YAML::Clone(v);
                 break;
             }
+            case ComponentOptionType::Vector3:
+            {
+                WEngine::Vector3 vec = std::get<WEngine::Vector3>(any->GetData(i));
+
+                YAML::Node v;
+                v.push_back(vec.x);
+                v.push_back(vec.y);
+                v.push_back(vec.z);
+                v.SetStyle(YAML::EmitterStyle::Flow);
+
+                root[option.optionInternal] = YAML::Clone(v);
+                break;
+            }
 
             case ComponentOptionType::Color:
             {
-                col = std::get<WEngine::Color>(any->GetData(i));
+                WEngine::Color col = std::get<WEngine::Color>(any->GetData(i));
 
                 YAML::Node c;
                 c.push_back((uint32)col.red);

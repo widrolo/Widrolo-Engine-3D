@@ -68,6 +68,7 @@ namespace WEngine
 
 	public:
 		void EnableEditorMode(const Vector2& viewportResolution);
+		Framebuffer EditorGetViewportFramebuffer();
 
 		void BeginFrame();
 		void RenderFrame();

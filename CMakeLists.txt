@@ -289,8 +289,6 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Components/Rendering/MeshRendererComponent.cpp
         src/Engine/Components/Rendering/MeshRendererComponent.h
         src/Engine/gl/gltf/tiny_gltf_v3.c
-        src/Game/Core/PerfTester.cpp
-        src/Game/Core/PerfTester.h
         src/Engine/Types/Rendering/InstanceData.h
         src/Engine/Types/Rendering/Iris/InstThreadedList.cpp
         src/Engine/Types/Rendering/Iris/InstThreadedList.h

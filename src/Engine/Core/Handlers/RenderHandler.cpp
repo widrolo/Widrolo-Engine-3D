@@ -65,6 +65,11 @@ void RenderHandler::EnableEditorMode(const Vector2& viewportResolution)
 		);
 }
 
+Framebuffer RenderHandler::EditorGetViewportFramebuffer()
+{
+	return m_viewportFb;
+}
+
 void RenderHandler::BeginFrame()
 {
 	Iris::SETTING_BeginNewFrame();
@@ -75,7 +80,7 @@ void RenderHandler::BeginFrame()
 		Iris::SETTING_SelectFramebufferScreenForRender();
 
 	Iris::DRAWCALL_ResetImGui();
-	Iris::DRAWCALL_ClearFrame(Color{30, 30, 30, 255});
+	Iris::DRAWCALL_ClearFrame(m_camera->GetBackColor());
 	if (m_isEditor)
 		Iris::SETTING_SetViewportSize(m_viewportResolution);
 	else
@@ -120,7 +125,7 @@ void RenderHandler::RenderFrame()
 	{
 		Iris::SETTING_FinishFramebufferRender();
 		Iris::SETTING_SelectFramebufferScreenForRender();
-		Iris::DRAWCALL_ClearFrame(Color{30, 30, 30, 255});
+		Iris::DRAWCALL_ClearFrame(m_camera->GetBackColor());
 		Iris::DRAWCALL_DrawImGui();
 		Iris::SETTING_FinishFramebufferRender();
 	}

@@ -15,8 +15,9 @@ namespace WEditor
         void RenderInternal() override;
     private:
         const char* m_entityName;
-        float m_entityPos[2] = { 0.0f, 0.0f };
-        float m_entitySize[2] = { 0.0f, 0.0f };
+        std::array<float32, 3> m_entityPos{};
+        std::array<float32, 3> m_entityRot{};
+        std::array<float32, 3> m_entitySize{};
     private:
         void ShowComponentsInEntity();
     };
