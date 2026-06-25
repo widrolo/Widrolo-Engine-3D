@@ -4,7 +4,7 @@
 
 using namespace WEngine;
 
-const Transform Transform::Zero = { Vector3::Zero, Vector3::Zero, Vector3::Zero };
+const Transform Transform::Zero = { Vector3::Zero, Vector3::Zero, Vector3::One };
 
 Vector3 Transform::Forward()
 {

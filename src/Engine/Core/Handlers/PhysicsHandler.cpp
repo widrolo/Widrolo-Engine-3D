@@ -1,46 +1,69 @@
 #include "PhysicsHandler.h"
 
-#include <ranges>
 #include <Engine/EngineDefines.h>
 
 #include <Engine/Util/Log.h>
 #include <Engine/Types/CoreSystems.h>
 #include <Engine/Core/Handlers/RenderHandler.h>
-#include <Engine/Core/Physics/SimulatableObject.h>
-#include <Engine/Core/Physics/PhysicsSolver.h>
+
+#include <Jolt/Jolt.h>
+
+#include <Jolt/Core/Factory.h>
+#include <Jolt/RegisterTypes.h>
+#include "Jolt/Core/JobSystemThreadPool.h"
+#include "Jolt/Core/TempAllocator.h"
+#include "Jolt/Physics/PhysicsSettings.h"
 
 #include "Editor/Types/EditorState.h"
 
 using namespace WEngine;
 
+static void TraceImpl(const char *inFMT, ...)
+{
+	// Format the message
+	va_list list;
+	va_start(list, inFMT);
+	char buffer[1024];
+	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
+
+	// Print to the TTY
+	WLog::ConsoleLog(buffer);
+}
+
+static bool AssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, uint inLine)
+{
+	// since we get jolt specific files, we canot use out own logging system for now.
+	std::cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << std::endl;
+
+	// Breakpoint
+	return true;
+};
+
 PhysicsHandler::PhysicsHandler()
 {
-	if constexpr (!EngineSettings::physicsEnabled)
+	if constexpr (!PhysicsSettings::physicsEnabled)
 		return;
 	Setup();
+
+	JPH::RegisterDefaultAllocator();
+	JPH::Trace = TraceImpl;
+	JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;)
+
+	JPH::Factory::sInstance = WAllocator::Construct<JPH::Factory>();
+	JPH::RegisterTypes();
+	JPH::TempAllocatorImpl tempAlloc(10 * MB);
+
+	JPH::JobSystemThreadPool jobSys(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+
+	//m_physicsSystem.Init(PhysicsSettings::maxBodies, PhysicsSettings::numBodyMutexes, PhysicsSettings::maxBodyPairs,
+	//	PhysicsSettings::maxContactConstraints)
 }
 
 void PhysicsHandler::Tick()
 {
-	if constexpr (!EngineSettings::physicsEnabled)
+	if constexpr (!PhysicsSettings::physicsEnabled)
 		return;
-
-	for (int i = 0; i < m_objects.size(); ++i)
-	{
-		auto& sim = m_objects[i];
-		if (sim == nullptr) // FIXME: fix erasing the element
-			continue;
-		PhysicsSolver::ApplyForces(*sim);
-		for (int j = i; j < m_objects.size(); ++j)
-		{
-			auto& otherSim = m_objects[j];
-			if (otherSim == nullptr)
-				continue;
-			if (otherSim == sim)
-				continue;
-			PhysicsSolver::TestOverlap(*sim, *otherSim, true);
-		}
-	}
 
 }
 
@@ -48,86 +71,45 @@ uint64 PhysicsHandler::MakeSimulatableObject()
 {
 	if (WEditor::EditorState::EditorMode)
 		return 0;
-	if constexpr (!EngineSettings::physicsEnabled)
+	if constexpr (!PhysicsSettings::physicsEnabled)
 		return 0;
 
-	auto obj = WAllocator::Construct<SimulatableObject>();
-	m_objects[obj->GetID()] = obj;
-	return obj->GetID();
 }
 
 Nullable<SimulatableObject*> PhysicsHandler::GetSimulatableObject(uint64 id)
 {
 	if (WEditor::EditorState::EditorMode)
 		return Nullable<SimulatableObject*>();
-	if constexpr (!EngineSettings::physicsEnabled)
+	if constexpr (!PhysicsSettings::physicsEnabled)
 		return Nullable<SimulatableObject*>();
 
-	const auto obj = m_objects[id];
-
-	if (obj == nullptr)
-		return Nullable<SimulatableObject*>();
-	return Nullable<SimulatableObject*>(obj);
 }
 
 void PhysicsHandler::DeleteSimulatableObject(uint64 id)
 {
-	if constexpr (!EngineSettings::physicsEnabled)
+	if constexpr (!PhysicsSettings::physicsEnabled)
 		return;
 
-	auto it = m_objects.find(id);
-	if (it == m_objects.end())
-		return;
-
-	if (it->second == nullptr)
-	{
-		m_objects.erase(it);
-		return;
-	}
-
-	WAllocator::Destruct<SimulatableObject>(it->second);
-	m_objects.erase(it);
-	return;
 }
 
 wtl::vector<OverlapResult> PhysicsHandler::CheckOverlapping(uint64 id)
 {
-	if constexpr (!EngineSettings::physicsEnabled)
+	if constexpr (!PhysicsSettings::physicsEnabled)
 		return wtl::vector<OverlapResult>();
 
-	const auto& obj = m_objects[id];
-
-	if (obj == nullptr)
-		return wtl::vector<OverlapResult>();
-
-	wtl::vector<OverlapResult> results;
-
-	for (const auto& obj2 : m_objects)
-	{
-		if (obj2.second == nullptr)
-			continue;
-		if (obj2.second == obj)
-			continue;
-
-		auto res = PhysicsSolver::TestOverlap(*obj, *obj2.second);
-		if (res.isOverlapping)
-			results.push_back(res);
-	}
-	return results;
 }
 
 
 void PhysicsHandler::Setup()
 {
-	if constexpr (!EngineSettings::physicsEnabled)
+	if constexpr (!PhysicsSettings::physicsEnabled)
 		return;
 }
 
 
 void PhysicsHandler::Visualize()
 {
-	if constexpr (!EngineSettings::physicsVisualize)
+	if constexpr (!PhysicsSettings::physicsVisualize)
 		return;
-
 
 }

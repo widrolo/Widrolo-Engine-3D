@@ -5,7 +5,6 @@
 #include <Engine/Math/Vector.h>
 #include <Engine/Types/Rendering/Color.h>
 
-#include "Engine/Core/Physics/SimulatableObject.h"
 #include "Engine/Types/Nullable.h"
 
 

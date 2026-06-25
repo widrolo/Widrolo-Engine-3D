@@ -97,6 +97,24 @@ struct EngineSettings
 	/** This sets the Behaviour Tree path. */
 	_GLOBAL_CONST_ std::string meshPath = "Meshes/";
 
+
+
+	/**
+	 *	When deleting the parent of a UI element, the children will not get deleted.
+	 *	I have no idea why this should ever be true though, but the option if there!
+	 */
+	_GLOBAL_CEX_ bool uiPromoteChildrenOnDelete = false;
+
+	/**
+	 *	When enabled, the Steam store will be booted alongside the handlers. For this,
+	 *	a SteamworksSDK must be placed in the "libs" folder. Please do not manually set
+	 *	this, but rather the STEAM macro.
+	 */
+	_GLOBAL_CEX_ bool steamStore = STEAM;
+};
+
+struct PhysicsSettings
+{
 	/**
 	 *	This sets the tick rate for the physics engine. The lower the tick rate (and
 	 *	therefore higher update rate), the higher the accuracy of game physics, but also
@@ -111,18 +129,11 @@ struct EngineSettings
 	/** Enables physics. */
 	_GLOBAL_CEX_ bool physicsEnabled = true;
 
-	/**
-	 *	When deleting the parent of a UI element, the children will not get deleted.
-	 *	I have no idea why this should ever be true though, but the option if there!
-	 */
-	_GLOBAL_CEX_ bool uiPromoteChildrenOnDelete = false;
+	_GLOBAL_CEX_ uint32 maxBodies = 10000;
+	_GLOBAL_CEX_ uint32 numBodyMutexes = 0;
+	_GLOBAL_CEX_ uint32 maxBodyPairs = 10000;
+	_GLOBAL_CEX_ uint32 maxContactConstraints = 10000;
 
-	/**
-	 *	When enabled, the Steam store will be booted alongside the handlers. For this,
-	 *	a SteamworksSDK must be placed in the "libs" folder. Please do not manually set
-	 *	this, but rather the STEAM macro.
-	 */
-	_GLOBAL_CEX_ bool steamStore = STEAM;
 };
 
 #ifndef GPU_BACKEND

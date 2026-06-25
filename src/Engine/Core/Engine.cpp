@@ -245,15 +245,15 @@ void Engine::Loop_Physics()
 
 	m_game->GameLoopPhysicsEarly();
 	// this can only happen on boot, and is a bug
-	if (m_physicsTickTimer / EngineSettings::physicsTickRate >= 100)
+	if (m_physicsTickTimer / PhysicsSettings::physicsTickRate >= 100)
 	{
 		m_physicsTickTimer = 0.0f;
 		goto skipPhysics;
 	}
-	while (m_physicsTickTimer > EngineSettings::physicsTickRate)
+	while (m_physicsTickTimer > PhysicsSettings::physicsTickRate)
 	{
-		m_physicsTickTimer -= EngineSettings::physicsTickRate;
-		m_rootSector->PhysicsTick(EngineSettings::physicsTickRate * CoreSystems::GetTimeScale());
+		m_physicsTickTimer -= PhysicsSettings::physicsTickRate;
+		m_rootSector->PhysicsTick(PhysicsSettings::physicsTickRate * CoreSystems::GetTimeScale());
 		CoreSystems::physicsHandler->Tick();
 		m_physicsTickCounterLastFrame++;
 	}
@@ -284,7 +284,7 @@ void Engine::Loop_Draw()
 
 	m_game->GameLoopDrawEarly();
 	m_rootSector->Draw();
-	if constexpr (EngineSettings::physicsEnabled)
+	if constexpr (PhysicsSettings::physicsEnabled)
 	{
 		CoreSystems::physicsHandler->Visualize();
 	}

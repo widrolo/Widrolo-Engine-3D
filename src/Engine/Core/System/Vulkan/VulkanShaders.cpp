@@ -47,7 +47,7 @@ VkPipelineVertexInputStateCreateInfo CreatePipeline_VertexDefinition()
 {
     // it remains like this for now, but consider making this changeable pretty please
     const uint8 bindings = 2;
-    const uint8 attributes = 8;
+    const uint8 attributes = 9;
 
     auto bindDesc = wNewArr(VkVertexInputBindingDescription, bindings);
     bindDesc[0].binding = 0;
@@ -57,8 +57,9 @@ VkPipelineVertexInputStateCreateInfo CreatePipeline_VertexDefinition()
     bindDesc[1].stride = sizeof(WEngine::InstanceData);
     bindDesc[1].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
-    // [0] = Position (Vector3)   |   [1] = Color (Vector3)   |   [2] = Color UV (Vector2)   |   [3] = Shadow UV (Vector2)
-    // [4-7] = Model (Mat4x4)     |
+    // [0] = Position (Vector3)   |   [1] = Color (Vector3)   | [2] = Normals (Vector 3)
+    // [3] = Color UV (Vector2)   |   [4] = Shadow UV (Vector2)
+    // [5-7] = Model (Mat4x4)     |
     auto attributeDescriptions = wNewArr(VkVertexInputAttributeDescription, attributes);
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
@@ -71,16 +72,20 @@ VkPipelineVertexInputStateCreateInfo CreatePipeline_VertexDefinition()
     attributeDescriptions[2].binding = 0;
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT; // Khronos had a meth party while making this one
-    attributeDescriptions[2].offset = offsetof(WEngine::VertexData, uv0Coord);
+    attributeDescriptions[2].offset = offsetof(WEngine::VertexData, normal);
     attributeDescriptions[3].binding = 0;
     attributeDescriptions[3].location = 3;
     attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT; // Khronos had a meth party while making this one
-    attributeDescriptions[3].offset = offsetof(WEngine::VertexData, uv1Coord);
+    attributeDescriptions[3].offset = offsetof(WEngine::VertexData, uv0Coord);
+    attributeDescriptions[4].binding = 0;
+    attributeDescriptions[4].location = 4;
+    attributeDescriptions[4].format = VK_FORMAT_R32G32_SFLOAT; // Khronos had a meth party while making this one
+    attributeDescriptions[4].offset = offsetof(WEngine::VertexData, uv1Coord);
 
-    attributeDescriptions[4] = {4, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 0};
-    attributeDescriptions[5] = {5, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 4};
-    attributeDescriptions[6] = {6, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 8};
-    attributeDescriptions[7] = {7, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 12};
+    attributeDescriptions[5] = {5, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 0};
+    attributeDescriptions[6] = {6, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 4};
+    attributeDescriptions[7] = {7, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 8};
+    attributeDescriptions[8] = {8, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(float) * 12};
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

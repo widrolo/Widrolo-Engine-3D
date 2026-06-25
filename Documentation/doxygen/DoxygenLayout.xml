@@ -10,7 +10,19 @@
     </tab>
     <tab type="usergroup" visible="yes" title="Getting Started">
         <tab type="user" url="@ref introduction2" title="Introduction"/>
-        <tab type="user" url="@ref scripting" title="Scripting"/>
+        <tab type="usergroup" visible="yes" title="Architecture">
+            <tab type="usergroup" visible="yes" url="@ref core" title="Engine Core">
+                <tab type="usergroup" visible="yes" url="@ref systems" title="Systems">
+                    <tab type="user" url="@ref memory" title="Memory"/>
+                    <tab type="user" url="@ref iris" title="Iris"/>
+                    <tab type="user" url="@ref os" title="OS"/>
+                    <tab type="user" url="@ref thread" title="Thread Scheduler"/>
+                </tab>
+            </tab>
+        </tab>
+        <tab type="usergroup" visible="yes" url="@ref scripting" title="Scripting">
+            <tab type="user" url="@ref components" title="Components"/>
+        </tab>
     </tab>
     <tab type="usergroup" visible="yes" title="Manual">
     </tab>

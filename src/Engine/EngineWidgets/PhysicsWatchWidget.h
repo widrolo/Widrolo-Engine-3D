@@ -18,8 +18,6 @@ namespace WEngine
         void RenderInternal() override;
 
     private:
-        void PrintCircleArea(const SimulatableObject* obj);
-        void PrintRectArea(const SimulatableObject* obj);
     };
 
 }

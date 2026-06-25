@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 project(Widrolo_Engine_3D)
+include(FetchContent)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Packaging" CACHE STRING "" FORCE)
 set(CMAKE_CXX_STANDARD 23)
@@ -178,15 +179,8 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Core/System/ThreadScheduler.h
         src/Engine/Types/Jobs/Job.h
         src/Engine/Types/Jobs/JobLengthEstimation.h
-        src/Engine/Core/Physics/PhysicsSolver.cpp
-        src/Engine/Core/Physics/PhysicsSolver.h
-        src/Engine/Core/Physics/SimulatableObject.h
-        src/Engine/Core/Physics/SimulatableObject.cpp
-        src/Engine/Core/Physics/PhysicsArea.h
         src/Engine/Types/Physics/OverlapResult.h
         src/Engine/WTL/map.h
-        src/Engine/Core/Physics/PhysicsVisualizer.cpp
-        src/Engine/Core/Physics/PhysicsVisualizer.h
         src/Editor/EditorDefines.h
         src/Editor/Core/Editor.cpp
         src/Editor/Core/Editor.h
@@ -313,7 +307,17 @@ add_executable(Widrolo_Engine_3D
         src/Game/Types/GameSystems.h
         src/Engine/Core/System/Vulkan/VulkanCommands.cpp
         src/Engine/Core/System/Vulkan/VulkanCommands.h
+        src/Engine/Core/Physics/JoltImpl.cpp
+        src/Engine/Core/Physics/JoltImpl.h
 )
+
+FetchContent_Declare(
+        JoltPhysics
+        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+        GIT_TAG "v5.5.0"
+        SOURCE_SUBDIR "Build"
+)
+FetchContent_MakeAvailable(JoltPhysics)
 
 set_target_properties(Widrolo_Engine_3D PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin/${CMAKE_SYSTEM_NAME}-x64"
@@ -357,6 +361,8 @@ target_link_libraries(Widrolo_Engine_3D PRIVATE
         GPUOpen::VulkanMemoryAllocator
 )
 
+target_include_directories(Widrolo_Engine_3D PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
+
 if(WIN32)
     message(STATUS Detected Windows)
     target_compile_definitions(Widrolo_Engine_3D PRIVATE WE_Windows)
@@ -393,6 +399,7 @@ else() # really should be elseif(linux), but it doesnt work...
             pthread
             vulkan
             TracyClient
+            Jolt
     )
 endif()
 

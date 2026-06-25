@@ -9,7 +9,6 @@
 #include "Editor/Types/EditorSystems.h"
 #include "Engine/Core/Handlers/AssetRepo.h"
 #include "Engine/Core/Handlers/RenderHandler.h"
-#include "Engine/Core/Physics/PhysicsVisualizer.h"
 #include "Engine/Math/Shapes/Shapes2D.h"
 #include "Engine/Types/AssetMission.h"
 #include "Engine/Types/CoreSystems.h"

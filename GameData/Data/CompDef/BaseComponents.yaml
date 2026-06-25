@@ -116,4 +116,14 @@
         ID: 1024
         Name: "Freecam"
         Description: "Movement for a free cam."
+    Sample Component:
+        ID: 1025
+        Name: "Sample Component"
+        Description: "This component only exists for the tutorial."
+        Settings:
+            NumTest:
+                Name: "Int Input"
+                Description: "A basic input for integers."
+                Type: "Number"
+                Internal: intInput
     
