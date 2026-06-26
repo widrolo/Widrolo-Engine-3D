@@ -1,0 +1,16 @@
+shader:
+    isCompute: false
+    shaderName: BasicPBR
+    abundance: 3
+
+    vertexCode: basic
+    fragmentCode: pbr
+
+    fragmentInfo:
+        expectTextureCount: 2
+        colorTextures: [base]
+        pbrTextures: [pbr]
+
+        expectChannelNames: [color, normal]
+
+        expectParams: ~

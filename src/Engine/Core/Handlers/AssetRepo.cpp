@@ -305,6 +305,8 @@ TextureInfo AssetRepo::LoadTexturePNG(const std::string& path)
 	}
 	uint64 size = info.width * info.height * 4;
 	WAllocator::ReportExternalAllocation(size);
+	WLog::SetConsoleSuccess();
+	WLog::ConsoleLog(std::format("Loaded texture {}", path));
 	return info;
 }
 

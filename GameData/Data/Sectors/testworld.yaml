@@ -8,7 +8,7 @@ entities:
       c0:
         component-type: 5
         meshName: Plane
-        materialName: ProtoMat
+        materialName: DirtGroundMat
         instance: false
   e1:
     name: Cube
@@ -18,6 +18,6 @@ entities:
     components:
       c0:
         component-type: 5
-        meshName: Cube
-        materialName: ProtoMat
+        meshName: Monkey
+        materialName: MonkeyMat
         instance: false

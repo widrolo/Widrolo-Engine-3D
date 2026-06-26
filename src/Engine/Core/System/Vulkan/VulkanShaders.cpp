@@ -329,16 +329,16 @@ WEngine::Material CompileMaterial(VulkanContext &ctx, const std::string &matName
     {
         mat.materialDescriptorSet = CreateDescriptorSet(ctx, shader);
 
-        std::vector<VkWriteDescriptorSet> writeSets{};
+        wtl::vector<VkWriteDescriptorSet> writeSets{};
+        wtl::vector<VkDescriptorImageInfo> imageInfos(matDef.texturesPackaging.size());
 
         for (uint32_t i = 0; i < matDef.texturesPackaging.size(); ++i)
         {
             Vulkan_Texture tex = ctx.loadedTextures[comms.texReferences[i] - 1];
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = tex.imageView;
-            imageInfo.sampler = tex.sampler;
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+            imageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfos[i].imageView = tex.imageView;
+            imageInfos[i].sampler = tex.sampler;
+            imageInfos[i].imageLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
 
             VkWriteDescriptorSet writeSet{};
             writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -346,7 +346,7 @@ WEngine::Material CompileMaterial(VulkanContext &ctx, const std::string &matName
             writeSet.dstBinding = i;
             writeSet.descriptorCount = 1;
             writeSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            writeSet.pImageInfo = &imageInfo;
+            writeSet.pImageInfo = &imageInfos[i];
 
 
             writeSets.push_back(writeSet);
