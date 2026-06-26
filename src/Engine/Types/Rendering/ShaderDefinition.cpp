@@ -48,6 +48,9 @@ void ShaderDefinition::Parse(const YAML::Node &root)
         return;
     }
 
+    if (shader["depthTest"])
+        depthTest = shader["depthTest"].as<bool>();
+
     const YAML::Node fragInfoNode = shader["fragmentInfo"];
 
     // some checks to see if the crucial stuff is present. We don't check for texture presence yet, as it may take zero.

@@ -1,5 +1,7 @@
 #pragma once
 #include "Engine/WTL/vector.h"
+#include <Engine/Types/Rendering/VertextData.h>
+#include <string>
 
 namespace WEngine
 {

@@ -46,6 +46,12 @@ namespace WEngine
 			Material material;
 		};
 
+		struct SkyboxInfo
+		{
+			Model skyModel;
+			Material skyMaterial;
+		};
+
 		Vector2 m_windowResolution;
 		SDL_DisplayMode* m_displayMode = nullptr;
 		SDL_Window* m_window = nullptr;
@@ -66,6 +72,8 @@ namespace WEngine
 		Framebuffer m_viewportFb{};
 		Vector2 m_viewportResolution{};
 
+		SkyboxInfo m_skyboxInfo;
+
 	public:
 		void EnableEditorMode(const Vector2& viewportResolution);
 		Framebuffer EditorGetViewportFramebuffer();
@@ -80,6 +88,9 @@ namespace WEngine
 		void RecordStationaryAdd(Model model, Material material, const Transform& transform);
 		void PushStationaryData();
 	private:
+		void PrepareSkybox();
+		void RenderSkybox();
+
 		Mat4x4 CalcModelMatrix(const Transform& transform);
 		Mat4x4 CalcMVPMatrix(const Transform& transform);
 

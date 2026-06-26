@@ -1,0 +1,19 @@
+shader:
+    isCompute: false
+    shaderName: Sky
+
+    depthTest: false
+
+    abundance: 0
+
+    vertexCode: basic
+    fragmentCode: sky
+
+    fragmentInfo:
+        expectTextureCount: 0
+        colorTextures: []
+        pbrTextures: []
+
+        expectChannelNames: []
+
+        expectParams: ~

@@ -17,6 +17,7 @@ namespace WEngine
         std::string vertexCodeName;
         std::string fragmentCodeName;
         uint8 abundance = 0;
+        bool depthTest = true;
 
         struct FragmentInfo
         {

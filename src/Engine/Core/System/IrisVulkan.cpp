@@ -340,7 +340,7 @@ void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Material material, 
 
     Vulkan_Model vkModel = ctx.loadedModels[model - 1];
     VkDeviceSize offset = 0;
-    if (!vkMat.hasTextures)
+    if (vkMat.hasTextures)
         vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
             0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(GetFbCmdBuff(ctx), 0, 1, &vkModel.vertexBuffer, &offset);
@@ -383,7 +383,7 @@ void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Material m
     vmaUnmapMemory(ctx.vcore.vmaAllocator, vkModel.instanceAllocation);
 
     std::array<VkDeviceSize, 2> offsets{0, sizeof(WEngine::InstanceData) * vkModel.activeInstances};
-    if (!vkMat.hasTextures)
+    if (vkMat.hasTextures)
         vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
             0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(GetFbCmdBuff(ctx), 0, 1, &vkModel.vertexBuffer, &offsets[0]);

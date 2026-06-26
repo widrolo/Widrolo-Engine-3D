@@ -40,7 +40,9 @@ RenderHandler::RenderHandler()
 		1000.0f
 		);
 
-	Iris::SETTING_SetSunDir(Vector3::One);
+	// A nice looking default sky direction
+	Iris::SETTING_SetSunDir({0.58f, -0.13f, -0.31f});
+	PrepareSkybox();
 }
 
 void RenderHandler::EnableEditorMode(const Vector2& viewportResolution)
@@ -109,6 +111,7 @@ void RenderHandler::BeginFrame()
 void RenderHandler::RenderFrame()
 {
 	Iris::SETTING_SetCamPos(m_camera->GetPosition());
+	RenderSkybox();
 	SortMissions();
 
 	for (auto& materialGroup : m_sortedMissions)
@@ -180,6 +183,38 @@ void RenderHandler::PushStationaryData()
 		Iris::AddStationaryObjects(object.model, object.material, object.instData);
 
 	m_stationaryAddQueue.clear();
+}
+
+void RenderHandler::PrepareSkybox()
+{
+	MeshAssetMission mission;
+	mission.name = "Skysphere";
+	CoreSystems::GetAssetRepo()->GetAsset(mission);
+
+	auto modelN = Iris::ALLOC_CreateModel(mission.model);
+	if (modelN.HasValue())
+		m_skyboxInfo.skyModel = modelN.GetValue();
+
+	auto matN = Iris::ALLOC_CompileMaterial("Skybox");
+	if (matN.HasValue())
+		m_skyboxInfo.skyMaterial = matN.GetValue();
+}
+
+void RenderHandler::RenderSkybox()
+{
+	Transform skyboxTransform = Transform::Zero;
+	skyboxTransform.position = m_camera->GetPosition();
+	skyboxTransform.position.y = 0.0f;
+
+	Mat4x4 vp = Glm4x4ToMat4x4(m_projection * m_viewMatrix);
+
+	auto model = CalcModelMatrix(skyboxTransform);
+
+	InstanceData instanceData{model};
+
+	wtl::vector<InstanceData> modelStorage{instanceData};
+
+	Iris::DRAWCALL_DrawModelInstanced(m_skyboxInfo.skyModel, m_skyboxInfo.skyMaterial, vp, modelStorage);
 }
 
 Mat4x4 RenderHandler::CalcModelMatrix(const Transform &transform)
