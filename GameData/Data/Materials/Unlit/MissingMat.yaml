@@ -1,0 +1,14 @@
+material:
+    materialName: MissingMat
+    shader: TexturedUnlit
+
+    texturesDevel:
+        color: Missing.png
+
+    texturesPackaging:
+        base: Missing.png
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]

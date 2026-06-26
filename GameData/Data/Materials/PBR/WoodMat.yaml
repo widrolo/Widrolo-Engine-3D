@@ -1,0 +1,17 @@
+material:
+    materialName: WoodMat
+    shader: BasicPBR
+
+    texturesDevel:
+        color: Wood/Wood_c.png
+        normal: Wood/Wood_n.png
+
+    texturesPackaging:
+        base: Wood.png
+        pbr: Wood.pbr
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]
+        pbr.rgba: [normal.rgba]

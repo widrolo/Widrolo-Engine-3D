@@ -35,6 +35,7 @@ public:
     static void SETTING_BeginNewFrame();
     static void SETTING_SetViewportSize(WEngine::Vector2 size);
     static void SETTING_SetSunDir(const WEngine::Vector3& dir);
+    static void SETTING_SetCamPos(const WEngine::Vector3& pos);
 
 
     // ----------------------- Shaders -----------------------

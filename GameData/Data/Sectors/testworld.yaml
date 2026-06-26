@@ -8,10 +8,10 @@ entities:
       c0:
         component-type: 5
         meshName: Plane
-        materialName: DirtGroundMat
+        materialName: PBR/DirtGroundMat
         instance: false
   e1:
-    name: Cube
+    name: Monkey
     position: [0, 1, 0.400000006]
     rotation: [0, 0, 0]
     size: [1, 1, 1]
@@ -19,5 +19,5 @@ entities:
       c0:
         component-type: 5
         meshName: Monkey
-        materialName: MonkeyMat
+        materialName: PBR/ConcreteMat
         instance: false

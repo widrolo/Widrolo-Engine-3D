@@ -1,0 +1,18 @@
+material:
+    materialName: DirtGroundMat
+    shader: BasicPBR
+
+    texturesDevel:
+        color: DirtGround/DirtGround_c.png
+        normal: DirtGround/DirtGround_n.png
+        roughness: DirtGround/DirtGround_r.png
+
+    texturesPackaging:
+        base: DirtGround.png
+        pbr: DirtGround.pbr
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]
+        pbr.rgba: [normal.rgb, roughness.r]

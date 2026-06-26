@@ -152,6 +152,11 @@ void Iris::SETTING_SetSunDir(const WEngine::Vector3 &dir)
     ctx.sunDir = dir;
 }
 
+void Iris::SETTING_SetCamPos(const WEngine::Vector3 &pos)
+{
+    ctx.camPos = pos;
+}
+
 WEngine::Nullable<WEngine::ShaderDefinition> Iris::GetShaderDef(const std::string &shaderName)
 {
     if (!ctx.loadedShadersHandles.contains(shaderName))

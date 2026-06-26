@@ -38,6 +38,7 @@ struct VulkanContext
     bool isCommandRecording = false;
 
     WEngine::Vector3 sunDir{};
+    WEngine::Vector3 camPos{};
 };
 
 #endif

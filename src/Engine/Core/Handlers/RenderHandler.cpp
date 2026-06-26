@@ -39,6 +39,8 @@ RenderHandler::RenderHandler()
 		0.01f,
 		1000.0f
 		);
+
+	Iris::SETTING_SetSunDir(Vector3::One);
 }
 
 void RenderHandler::EnableEditorMode(const Vector2& viewportResolution)
@@ -106,6 +108,7 @@ void RenderHandler::BeginFrame()
 
 void RenderHandler::RenderFrame()
 {
+	Iris::SETTING_SetCamPos(m_camera->GetPosition());
 	SortMissions();
 
 	for (auto& materialGroup : m_sortedMissions)

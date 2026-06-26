@@ -503,11 +503,22 @@ void AssetRepo::IrisCommsGetMatDevel(IrisAssetCommunication &mission)
 		{
 			if (swizzle.packedTexTarget == index)
 			{
-				std::string develTex = mission.matDef.texturesDevel[swizzle.swizzle[i].develTexOrigin];
-
-				TextureInfo info = LoadTexturePNG(m_dataPath + EngineSettings::texturePath + develTex);
+				std::unordered_map<std::string, TextureInfo> infoCache;
 				for (uint64 j = 0; j < 4; j++)
+				{
+					std::string develTex = mission.matDef.texturesDevel[swizzle.swizzle[j].develTexOrigin];
+
+					TextureInfo info;
+
+					if (infoCache.contains(develTex))
+						info = infoCache[develTex];
+					else
+					{
+						info= LoadTexturePNG(m_dataPath + EngineSettings::texturePath + develTex);
+						infoCache[develTex] = info;
+					}
 					swizzler.AddSource(info, swizzle.swizzle[j].channel, j);
+				}
 				i++;
 			}
 		}

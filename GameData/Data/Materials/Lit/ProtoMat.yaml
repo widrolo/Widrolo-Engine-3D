@@ -1,0 +1,14 @@
+material:
+    materialName: ProtoMat
+    shader: BasicLit
+
+    texturesDevel:
+        color: ProtoTexture.png
+
+    texturesPackaging:
+        base: ProtoTexture.png
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]

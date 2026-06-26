@@ -11,6 +11,6 @@ shader:
         colorTextures: [base]
         pbrTextures: [pbr]
 
-        expectChannelNames: [color, normal]
+        expectChannelNames: [color, normal, roughness]
 
         expectParams: ~

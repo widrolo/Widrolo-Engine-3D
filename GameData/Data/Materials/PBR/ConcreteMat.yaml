@@ -1,0 +1,18 @@
+material:
+    materialName: ConcreteMat
+    shader: BasicPBR
+
+    texturesDevel:
+        color: Concrete/Concrete_c.png
+        normal: Concrete/Concrete_n.png
+        roughness: Concrete/Concrete_r.png
+
+    texturesPackaging:
+        base: Concrete.png
+        pbr: Concrete.pbr
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]
+        pbr.rgba: [normal.rgb, roughness.r]

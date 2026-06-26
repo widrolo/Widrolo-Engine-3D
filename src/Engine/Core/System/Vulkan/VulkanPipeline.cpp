@@ -19,10 +19,15 @@ VkPipelineLayout CreatePipelineLayout(VulkanContext& ctx, VkDescriptorSetLayout 
     pushConstants[0].offset = 0;
     pushConstants[0].size = sizeof(WEngine::Mat4x4);
 
-    // sun
+    struct FragmentConstants
+    {
+        alignas(16) WEngine::Vector3 sunDir;
+        alignas(16) WEngine::Vector3 camPos;
+    };
+
     pushConstants[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstants[1].offset = sizeof(WEngine::Mat4x4);
-    pushConstants[1].size = sizeof(WEngine::Vector3);
+    pushConstants[1].size = sizeof(FragmentConstants);
 
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
