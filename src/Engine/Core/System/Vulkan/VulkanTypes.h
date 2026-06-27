@@ -11,6 +11,7 @@
 #include <Engine/WTL/vector.h>
 #include <Engine/Types/Rendering/Iris/InstThreadedList.h>
 
+#include "Engine/Types/Rendering/LightingInfo.h"
 #include "Engine/Types/Rendering/ShaderDefinition.h"
 #include "Engine/Types/Rendering/GPU/Material.h"
 
@@ -133,6 +134,24 @@ struct Vulkan_RenderTarget
     wtl::vector<VkSemaphore> renderFinishedSems;
     wtl::vector<VkFence> endOfFrameFences;
     wtl::vector<VkCommandBuffer> cmdBuffs{};
+};
+
+struct RawLighting
+{
+    alignas(16) WEngine::Vector3 sunDir;
+    alignas(16) WEngine::Vector3 sunColor;
+    alignas(16) WEngine::Vector3 camPos;
+};
+
+struct Vulkan_Lighting
+{
+    WEngine::LightingInfo lightingInfo;
+    VkBuffer lightBuffer;
+    VmaAllocation lightAllocation;
+    VmaAllocationInfo lightAllocInfo;
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorPool descriptorPool;
+    VkDescriptorSet descriptorSet;
 };
 
 using BufferCollection = wtl::vector<std::pair<VkBuffer, VmaAllocation>>;

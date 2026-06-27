@@ -309,6 +309,7 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Core/System/Vulkan/VulkanCommands.h
         src/Engine/Core/Physics/JoltImpl.cpp
         src/Engine/Core/Physics/JoltImpl.h
+        src/Engine/Types/Rendering/LightingInfo.h
 )
 
 FetchContent_Declare(

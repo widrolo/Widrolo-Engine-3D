@@ -1,7 +1,10 @@
 #include "RenderWatchWidget.h"
 
 #include "Engine/EngineDefines.h"
+#include "Engine/Core/Handlers/RenderHandler.h"
 #include "Engine/Core/System/Iris.h"
+#include "Engine/Types/CoreSystems.h"
+#include <Engine/Types/Rendering/LightingInfo.h>
 
 using namespace WEngine;
 
@@ -17,13 +20,24 @@ void RenderWatchWidget::RenderInternal()
     ImGui::Separator();
 
     float32* sunDir;
-    Vector3 sunDirV = Iris::GetSunDir();
+    float32 sunCol[4];
+    auto sunDirV = CoreSystems::GetRenderHandler()->GetSkylight();
 
-    sunDir = (float32*)&sunDirV;
+    sunDir = (float32*)&sunDirV.direction;
+    sunCol[0] = sunDirV.lightColor.red / 255.0f;
+    sunCol[1] = sunDirV.lightColor.green / 255.0f;
+    sunCol[2] = sunDirV.lightColor.blue / 255.0f;
+    sunCol[3] = sunDirV.lightColor.alpha / 255.0f;
 
     ImGui::DragFloat3("Sun Direction", sunDir, 0.001f);
+    ImGui::ColorEdit4("Sun Color", sunCol);
 
-    Iris::SETTING_SetSunDir(sunDirV);
+    sunDirV.lightColor.red = sunCol[0] * 255.0f;
+    sunDirV.lightColor.green = sunCol[1] * 255.0f;
+    sunDirV.lightColor.blue = sunCol[2] * 255.0f;
+    sunDirV.lightColor.alpha = sunCol[3] * 255.0f;
+
+    CoreSystems::GetRenderHandler()->SetSkylight(sunDirV);
 
     auto statInstBuf = Iris::GetStatInstBufAllocInfo();
 

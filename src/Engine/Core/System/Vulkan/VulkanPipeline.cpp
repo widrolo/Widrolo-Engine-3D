@@ -12,34 +12,25 @@
 
 VkPipelineLayout CreatePipelineLayout(VulkanContext& ctx, VkDescriptorSetLayout descLayout)
 {
-    std::array<VkPushConstantRange, 2> pushConstants;
+    std::array<VkPushConstantRange, 1> pushConstants;
 
     // mvp / vp
     pushConstants[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     pushConstants[0].offset = 0;
     pushConstants[0].size = sizeof(WEngine::Mat4x4);
 
-    struct FragmentConstants
-    {
-        alignas(16) WEngine::Vector3 sunDir;
-        alignas(16) WEngine::Vector3 camPos;
-    };
-
-    pushConstants[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstants[1].offset = sizeof(WEngine::Mat4x4);
-    pushConstants[1].size = sizeof(FragmentConstants);
-
-
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.pushConstantRangeCount = pushConstants.size();
     pipelineLayoutInfo.pPushConstantRanges = pushConstants.data();
 
+    wtl::vector<VkDescriptorSetLayout> descriptorSetLayouts = { ctx.lighting.descriptorSetLayout };
+
     if (descLayout != VK_NULL_HANDLE)
-    {
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pSetLayouts = &descLayout;
-    }
+        descriptorSetLayouts.push_back(descLayout);
+
+    pipelineLayoutInfo.setLayoutCount = descriptorSetLayouts.size();
+    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 
     VkPipelineLayout layout;
 
@@ -151,15 +142,17 @@ VkDescriptorPool CreateDescriptorPool(VulkanContext &ctx, const WEngine::ShaderD
         case 3: maxSets = 2048; break;
     }
 
-    VkDescriptorPoolSize poolSize{};
-    poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize.descriptorCount = shaderDef.fragInfo.expectTextureCount * maxSets;
+    // [0] = Textures
+    std::array<VkDescriptorPoolSize, 1> poolSizes;
+
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[0].descriptorCount = shaderDef.fragInfo.expectTextureCount * maxSets;
 
     VkDescriptorPoolCreateInfo descInfo{};
     descInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     descInfo.maxSets = maxSets;
-    descInfo.poolSizeCount = 1;
-    descInfo.pPoolSizes = &poolSize;
+    descInfo.poolSizeCount = poolSizes.size();
+    descInfo.pPoolSizes = poolSizes.data();
 
     VkDescriptorPool descriptorPool{};
 
@@ -174,6 +167,75 @@ VkDescriptorPool CreateDescriptorPool(VulkanContext &ctx, const WEngine::ShaderD
     return descriptorPool;
 }
 
+bool SetupLightingDescriptors(VulkanContext &ctx)
+{
+    VkDescriptorSetLayoutBinding binding{};
+    binding.binding = 0;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    binding.descriptorCount = 1;
+    binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &binding;
+
+    auto res = vkCreateDescriptorSetLayout(ctx.vcore.gpuDevice, &layoutInfo, ctx.vcore.allocator, &ctx.lighting.descriptorSetLayout);
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to create lighting descriptor set layout");
+        return false;
+    }
+
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.maxSets = 1;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+
+    res = vkCreateDescriptorPool(ctx.vcore.gpuDevice, &poolInfo, ctx.vcore.allocator, &ctx.lighting.descriptorPool);
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to create lighting descriptor pool");
+        return false;
+    }
+
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = ctx.lighting.descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &ctx.lighting.descriptorSetLayout;
+
+    res = vkAllocateDescriptorSets(ctx.vcore.gpuDevice, &allocInfo, &ctx.lighting.descriptorSet);
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to allocate lighting descriptor set");
+        return false;
+    }
+
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = ctx.lighting.lightBuffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(RawLighting);
+
+    VkWriteDescriptorSet write{};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstSet = ctx.lighting.descriptorSet;
+    write.dstBinding = 0;
+    write.descriptorCount = 1;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    write.pBufferInfo = &bufferInfo;
+
+    vkUpdateDescriptorSets(ctx.vcore.gpuDevice, 1, &write, 0, nullptr);
+    return true;
+}
 
 
 #endif

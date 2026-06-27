@@ -5,6 +5,7 @@
 
 #include "Engine/Math/Vector.h"
 #include "Engine/Types/Rendering/InstanceData.h"
+#include "Engine/Types/Rendering/LightingInfo.h"
 #include "Engine/Types/Rendering/RenderMission.h"
 #include "Engine/Types/Rendering/GPU/Framebuffer.h"
 #include "Engine/Types/Rendering/GPU/Material.h"
@@ -73,6 +74,7 @@ namespace WEngine
 		Vector2 m_viewportResolution{};
 
 		SkyboxInfo m_skyboxInfo;
+		LightingInfo m_lighting;
 
 	public:
 		void EnableEditorMode(const Vector2& viewportResolution);
@@ -87,6 +89,9 @@ namespace WEngine
 
 		void RecordStationaryAdd(Model model, Material material, const Transform& transform);
 		void PushStationaryData();
+
+		void SetSkylight(const Sunlight& light);
+		[[nodiscard]] const Sunlight& GetSkylight() const;
 	private:
 		void PrepareSkybox();
 		void RenderSkybox();

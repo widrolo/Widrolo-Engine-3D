@@ -3,6 +3,7 @@
 #if GPU_BACKEND == GPU_VULKAN
 
 #include "VulkanTypes.h"
+#include "Engine/Types/Rendering/LightingInfo.h"
 #include "Engine/Types/Rendering/GPU/Material.h"
 
 struct VulkanContext
@@ -37,8 +38,7 @@ struct VulkanContext
     bool firstFrame = true;
     bool isCommandRecording = false;
 
-    WEngine::Vector3 sunDir{};
-    WEngine::Vector3 camPos{};
+    Vulkan_Lighting lighting{};
 };
 
 #endif

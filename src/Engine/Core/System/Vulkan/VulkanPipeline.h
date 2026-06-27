@@ -11,5 +11,6 @@ VkDescriptorSetLayout CreateDescriptorSetLayout(VulkanContext& ctx, const WEngin
 VkDescriptorSet CreateDescriptorSet(VulkanContext& ctx, const Vulkan_Shader& shader);
 bool SetupImGuiDescriptorPool(VulkanContext& ctx);
 VkDescriptorPool CreateDescriptorPool(VulkanContext& ctx, const WEngine::ShaderDefinition& shaderDef);
+bool SetupLightingDescriptors(VulkanContext& ctx);
 
 #endif

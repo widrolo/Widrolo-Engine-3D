@@ -5,6 +5,7 @@
 
 #include <vulkan/vulkan.h>
 #include "VulkanContext.h"
+#include "VulkanStatistics.h"
 #include "Engine/Types/AssetMission.h"
 #include "Engine/Types/Rendering/MaterialDefinition.h"
 #include "Engine/Types/Rendering/ShaderDefinition.h"
@@ -21,5 +22,7 @@ void SaturateDescriptorSet(VulkanContext& ctx, Vulkan_Material& material);
 
 void TryCompileAllShaders(VulkanContext& ctx);
 WEngine::Material CompileMaterial(VulkanContext& ctx, const std::string& matName);
+
+void UpdateLighting(VulkanContext& ctx);
 
 #endif

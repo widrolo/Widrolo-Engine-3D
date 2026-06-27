@@ -175,18 +175,6 @@ void PopulatePushConstants(const VulkanContext &ctx, const Vulkan_Shader &shader
 {
     vkCmdPushConstants(GetFbCmdBuff(ctx), shader.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(WEngine::Mat4x4), &mvp);
-
-    struct FragmentConstants
-    {
-        alignas(16) WEngine::Vector3 sunDir;
-        alignas(16) WEngine::Vector3 camPos;
-    } frag;
-
-    frag.sunDir = ctx.sunDir;
-    frag.camPos = ctx.camPos;
-
-    vkCmdPushConstants(GetFbCmdBuff(ctx), shader.pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(WEngine::Mat4x4),
-        sizeof(FragmentConstants), &frag);
 }
 
 #endif

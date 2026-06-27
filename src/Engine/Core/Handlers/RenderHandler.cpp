@@ -41,7 +41,12 @@ RenderHandler::RenderHandler()
 		);
 
 	// A nice looking default sky direction
-	Iris::SETTING_SetSunDir({0.58f, -0.13f, -0.31f});
+	m_lighting.sun.direction = {0.58f, -0.13f, -0.31f};
+	m_lighting.sun.lightColor = Color::White;
+	m_lighting.cameraPos = Vector3::Zero;
+
+	Iris::SETTING_SetLighting(m_lighting);
+
 	PrepareSkybox();
 }
 
@@ -110,7 +115,8 @@ void RenderHandler::BeginFrame()
 
 void RenderHandler::RenderFrame()
 {
-	Iris::SETTING_SetCamPos(m_camera->GetPosition());
+	m_lighting.cameraPos = m_camera->GetPosition();
+	Iris::SETTING_SetLighting(m_lighting);
 	RenderSkybox();
 	SortMissions();
 
@@ -183,6 +189,16 @@ void RenderHandler::PushStationaryData()
 		Iris::AddStationaryObjects(object.model, object.material, object.instData);
 
 	m_stationaryAddQueue.clear();
+}
+
+void RenderHandler::SetSkylight(const Sunlight &light)
+{
+	m_lighting.sun = light;
+}
+
+const Sunlight& RenderHandler::GetSkylight() const
+{
+	return m_lighting.sun;
 }
 
 void RenderHandler::PrepareSkybox()

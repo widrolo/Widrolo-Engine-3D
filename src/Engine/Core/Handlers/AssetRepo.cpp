@@ -448,7 +448,8 @@ void AssetRepo::IrisCommsGetMat(IrisAssetCommunication &mission)
 	mission.texReferences.resize(mission.matDef.texturesPackaging.size());
 
 #ifdef PACKAGE
-	IrisCommsGetMatPackage(mission);
+	//IrisCommsGetMatPackage(mission);
+	IrisCommsGetMatDevel(mission);
 #else
 	IrisCommsGetMatDevel(mission);
 #endif

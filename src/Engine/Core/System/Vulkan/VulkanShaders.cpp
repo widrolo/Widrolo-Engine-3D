@@ -370,4 +370,17 @@ WEngine::Material CompileMaterial(VulkanContext &ctx, const std::string &matName
     return matHandle;
 }
 
+void UpdateLighting(VulkanContext &ctx)
+{
+    RawLighting raw{};
+    raw.sunDir = ctx.lighting.lightingInfo.sun.direction;
+
+    WEngine::Color sunCol = ctx.lighting.lightingInfo.sun.lightColor;
+    raw.sunColor = {sunCol.red / 255.0f, sunCol.green / 255.0f, sunCol.blue / 255.0f};
+
+    raw.camPos = ctx.lighting.lightingInfo.cameraPos;
+
+    memcpy(ctx.lighting.lightAllocInfo.pMappedData, &raw, sizeof(RawLighting));
+}
+
 #endif

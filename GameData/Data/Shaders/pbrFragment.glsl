@@ -4,26 +4,27 @@ layout(location = 1) in vec2 inUV0;
 layout(location = 3) in vec3 inNormal;
 layout(location = 4) in vec3 inFragPos;
 
-layout(push_constant) uniform PushConstants {
-    layout(offset = 64) vec3 sunDir;
+layout(set = 0, binding = 0) uniform RawLighting
+{
+    vec3 sunDir;
+    vec3 sunCol;
     vec3 camPos;
 } world;
 
-layout(binding = 0) uniform sampler2D tex;
+layout(set = 1, binding = 0) uniform sampler2D tex;
 
 // r = norm.x | g = norm.y | b = norm.z | a = roughness
-layout(binding = 1) uniform sampler2D pbr;
+layout(set = 1, binding = 1) uniform sampler2D pbr;
 
 layout(location = 0) out vec4 outColor;
 
 const float ambientLight = 0.1;
 const float specularStrength = 0.5;
-const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 
 vec3 CalcDiffuse(vec3 normal, vec3 lightDir)
 {
     float diff = max(dot(normal, lightDir), 0.0);
-    return diff * lightColor;
+    return diff * world.sunCol;
 }
 
 vec3 CalcSpecular(vec3 normal, vec3 lightDir, float rough)
@@ -31,7 +32,7 @@ vec3 CalcSpecular(vec3 normal, vec3 lightDir, float rough)
     vec3 viewDir = normalize(world.camPos - inFragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    return specularStrength * spec * lightColor * (1 - rough);
+    return specularStrength * spec * world.sunCol * (1 - rough);
 }
 
 vec3 CalcWorldNormal(vec3 N, vec3 tangentNormal)

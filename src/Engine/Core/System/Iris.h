@@ -10,6 +10,7 @@
 #include "../../Types/Rendering/GPU/Framebuffer.h"
 #include "Engine/imgui/imgui.h"
 #include "Engine/Types/Rendering/InstanceData.h"
+#include "Engine/Types/Rendering/LightingInfo.h"
 #include "Engine/Types/Rendering/LineInfo.h"
 #include "Engine/Types/Rendering/GPU/Line.h"
 #include "Engine/Types/Rendering/ModelInfo.h"
@@ -34,8 +35,7 @@ public:
     static void SETTING_BeginNewPreFrame();
     static void SETTING_BeginNewFrame();
     static void SETTING_SetViewportSize(WEngine::Vector2 size);
-    static void SETTING_SetSunDir(const WEngine::Vector3& dir);
-    static void SETTING_SetCamPos(const WEngine::Vector3& pos);
+    static void SETTING_SetLighting(const WEngine::LightingInfo& light);
 
 
     // ----------------------- Shaders -----------------------
@@ -92,8 +92,4 @@ public:
     // --------------------- Asset Repo ----------------------
 
     static void AssetIrisCommunication(WEngine::AssetIrisCommunication& mission);
-
-    // ------------------------ Etc. -------------------------
-
-    static WEngine::Vector3 GetSunDir();
 };

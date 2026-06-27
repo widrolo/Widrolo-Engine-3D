@@ -8,6 +8,7 @@
 #include "Engine/Core/System/GPUSettings.h"
 #include "Engine/Types/Rendering/InstanceData.h"
 #include "Engine/Util/Log.h"
+#include <Engine/Types/Rendering/LightingInfo.h>
 
 bool SetupStationaryInstanceBuffer(VulkanContext& ctx, VulkanStatistics& stat)
 {
@@ -38,8 +39,37 @@ bool SetupStationaryInstanceBuffer(VulkanContext& ctx, VulkanStatistics& stat)
     return true;
 }
 
+bool SetupLightingBuffer(VulkanContext &ctx, VulkanStatistics &stat)
+{
+    VkDeviceSize lightingBufferSize = sizeof(RawLighting);
+
+    VkBufferCreateInfo bufferCreateInfo{};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.size = lightingBufferSize;
+    bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    allocationCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+
+    auto res = vmaCreateBuffer(ctx.vcore.vmaAllocator, &bufferCreateInfo, &allocationCreateInfo, &ctx.lighting.lightBuffer,
+        &ctx.lighting.lightAllocation, &ctx.lighting.lightAllocInfo);
+
+    stat.vramUsage += ctx.lighting.lightAllocInfo.size;
+
+    if (!ParseVkResult(res))
+    {
+        WEngine::WLog::SetConsoleError();
+        WEngine::WLog::ConsoleLog("Failed to allocate lighting buffer");
+        return false;
+    }
+    return true;
+}
+
 std::pair<VkBuffer, VmaAllocation> CreateVertexBuffer(VulkanContext& ctx, VulkanStatistics& stat,
-    const wtl::vector<WEngine::VertexData>& vertData)
+                                                      const wtl::vector<WEngine::VertexData>& vertData)
 {
     VkBuffer vertBuf;
     VmaAllocation vertAlloc;

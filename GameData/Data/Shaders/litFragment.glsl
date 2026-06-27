@@ -3,11 +3,14 @@
 layout(location = 1) in vec2 inUV0;
 layout(location = 3) in vec3 inNormal;
 
-layout(push_constant) uniform PushConstants {
-    layout(offset = 64) vec3 dir;
-} sun;
+layout(set = 0, binding = 0) uniform RawLighting
+{
+    vec3 sunDir;
+    vec3 sunCol;
+    vec3 camPos;
+} world;
 
-layout(binding = 0) uniform sampler2D tex;
+layout(set = 1, binding = 0) uniform sampler2D tex;
 
 layout(location = 0) out vec4 outColor;
 
@@ -19,9 +22,9 @@ void main()
     vec2 realUV = inUV0;
 
     vec3 norm = normalize(inNormal);
-    vec3 lighDir = normalize(sun.dir);
+    vec3 lighDir = normalize(world.sunDir);
     float diff = max(dot(norm, lighDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    vec3 diffuse = diff * world.sunCol;
     
 
     outColor = texture(tex, realUV) * vec4(ambientLight + diffuse, 1.0);

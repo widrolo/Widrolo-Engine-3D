@@ -82,10 +82,15 @@ public:
         return mObjectToBroadPhase[inLayer];
     }
 
+#if PACKAGE
+#else
+
     const char *GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
     {
         return "Whatever, the docs dont speak of this.";
     }
+#endif
+
 
 private:
     JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];

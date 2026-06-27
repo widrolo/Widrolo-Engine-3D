@@ -68,6 +68,10 @@ bool Iris::SETTING_InitGPUApi(SDL_Window *window)
         return false;
     if (!SetupStationaryInstanceBuffer(ctx, stats))
         return false;
+    if (!SetupLightingBuffer(ctx, stats))
+        return false;
+    if (!SetupLightingDescriptors(ctx))
+        return false;
     if (!SetupTransferCommandBuffer(ctx))
         return false;
 
@@ -147,14 +151,10 @@ void Iris::SETTING_SetViewportSize(WEngine::Vector2 size)
     vkCmdSetScissor(GetFbCmdBuff(ctx), 0, 1, &scissor);
 }
 
-void Iris::SETTING_SetSunDir(const WEngine::Vector3 &dir)
+void Iris::SETTING_SetLighting(const WEngine::LightingInfo &light)
 {
-    ctx.sunDir = dir;
-}
-
-void Iris::SETTING_SetCamPos(const WEngine::Vector3 &pos)
-{
-    ctx.camPos = pos;
+    ctx.lighting.lightingInfo = light;
+    UpdateLighting(ctx);
 }
 
 WEngine::Nullable<WEngine::ShaderDefinition> Iris::GetShaderDef(const std::string &shaderName)
@@ -338,11 +338,14 @@ void Iris::DRAWCALL_DrawModel(WEngine::Model model, WEngine::Material material, 
         ctx.currentBoundShader = vkMat.materialShaderHandle;
     }
 
+    vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
+        0, 1, &ctx.lighting.descriptorSet, 0, nullptr);
+
     Vulkan_Model vkModel = ctx.loadedModels[model - 1];
     VkDeviceSize offset = 0;
     if (vkMat.hasTextures)
         vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
-            0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
+            1, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(GetFbCmdBuff(ctx), 0, 1, &vkModel.vertexBuffer, &offset);
     vkCmdBindIndexBuffer(GetFbCmdBuff(ctx), vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     PopulatePushConstants(ctx, vkShader, mvp);
@@ -382,10 +385,13 @@ void Iris::DRAWCALL_DrawModelInstanced(WEngine::Model model, WEngine::Material m
 
     vmaUnmapMemory(ctx.vcore.vmaAllocator, vkModel.instanceAllocation);
 
+    vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
+        0, 1, &ctx.lighting.descriptorSet, 0, nullptr);
+
     std::array<VkDeviceSize, 2> offsets{0, sizeof(WEngine::InstanceData) * vkModel.activeInstances};
     if (vkMat.hasTextures)
         vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
-            0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
+            1, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(GetFbCmdBuff(ctx), 0, 1, &vkModel.vertexBuffer, &offsets[0]);
     vkCmdBindVertexBuffers(GetFbCmdBuff(ctx), 1, 1, &vkModel.instanceBuffer, &offsets[1]);
     vkCmdBindIndexBuffer(GetFbCmdBuff(ctx), vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -419,6 +425,9 @@ void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::
         ctx.currentBoundShader = vkMat.materialShaderHandle;
     }
 
+    vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
+        0, 1, &ctx.lighting.descriptorSet, 0, nullptr);
+
     Vulkan_Model& vkModel = ctx.loadedModels[model - 1];
 
     uint64 count = alloc.second / sizeof(WEngine::InstanceData);
@@ -426,7 +435,7 @@ void Iris::DRAWCALL_DrawModelInstancedStationary(WEngine::Model model, WEngine::
     std::array<VkDeviceSize, 2> offsets{0, alloc.first};
     if (vkMat.hasTextures)
         vkCmdBindDescriptorSets(GetFbCmdBuff(ctx), VK_PIPELINE_BIND_POINT_GRAPHICS, vkShader.pipelineLayout,
-            0, 1, &vkMat.materialDescriptorSet, 0, nullptr);
+            1, 1, &vkMat.materialDescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(GetFbCmdBuff(ctx), 0, 1, &vkModel.vertexBuffer, &offsets[0]);
     vkCmdBindVertexBuffers(GetFbCmdBuff(ctx), 1, 1, &ctx.statBuf.statBuffer, &offsets[1]);
     vkCmdBindIndexBuffer(GetFbCmdBuff(ctx), vkModel.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -688,10 +697,4 @@ void Iris::AssetIrisCommunication(WEngine::AssetIrisCommunication &mission)
             break;
     }
 }
-
-WEngine::Vector3 Iris::GetSunDir()
-{
-    return ctx.sunDir;
-}
-
 #endif
