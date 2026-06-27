@@ -1,9 +1,11 @@
 #include "TextureSwizzler.h"
 
 #include <cstring>
+#include <set>
 
 #include "Log.h"
 #include "Engine/Core/System/Memory.h"
+#include "Engine/WTL/vector.h"
 
 using namespace WEngine;
 
@@ -26,7 +28,7 @@ void TextureSwizzler::AddSource(TextureInfo texture, uint8 sourceChannel, uint8 
     m_source[targetChannel] = {texture, sourceChannel};
 }
 
-bool TextureSwizzler::Swizzle()
+bool TextureSwizzler::Swizzle(bool deleteSource)
 {
     if (!ChannelCheck())
         return false;
@@ -41,6 +43,10 @@ bool TextureSwizzler::Swizzle()
         SwizzleChannel(i);
 
     m_outTexture.channels = 4;
+
+    if (deleteSource)
+        DeleteSourceTextures();
+
     return true;
 }
 
@@ -106,4 +112,33 @@ void TextureSwizzler::SwizzleChannel(uint8 channel)
     auto source = m_source[channel];
     for (uint64 i = 0; i < pixelCount; i++)
         m_outTexture.data[i * 4 + channel] = source.texture.data[i * 4 + source.channel];
+}
+
+void TextureSwizzler::DeleteSourceTextures()
+{
+    wtl::vector<TextureInfo*> individualSources;
+
+    for (auto & src : m_source)
+    {
+        bool found = false;
+        for (const auto& tex : individualSources)
+        {
+            if (tex->data == src.texture.data)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            individualSources.push_back(&src.texture);
+    }
+
+    uint32 size = m_outTexture.height * m_outTexture.width * m_outTexture.channels;
+
+    for (auto& tex : individualSources)
+    {
+        // since it was allocated by STB image, its not within our control so we need to call delete instead of wFree.
+        delete tex->data;
+        WAllocator::ReportExternalFree(size);
+    }
 }

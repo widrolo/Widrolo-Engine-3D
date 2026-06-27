@@ -17,7 +17,7 @@ namespace WEngine
         };
     public:
         void AddSource(TextureInfo texture, uint8 sourceChannel, uint8 targetChannel);
-        bool Swizzle();
+        bool Swizzle(bool deleteSource);
 
         TextureInfo RetrieveResult();
 
@@ -27,6 +27,8 @@ namespace WEngine
         bool CreateTexture();
 
         void SwizzleChannel(uint8 channel);
+
+        void DeleteSourceTextures();
 
     private:
         std::array<SourceInfo, 4> m_source;

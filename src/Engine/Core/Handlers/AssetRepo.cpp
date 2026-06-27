@@ -517,13 +517,18 @@ void AssetRepo::IrisCommsGetMatDevel(IrisAssetCommunication &mission)
 				i++;
 			}
 		}
-		swizzler.Swizzle();
+		swizzler.Swizzle(true);
 		TextureInfo info = swizzler.RetrieveResult();
 
 		AssetIrisCommunication comms{};
 		comms.commType = AssetIrisCommunicationType::StoreTexture;
 		comms.textureData = info;
 		Iris::AssetIrisCommunication(comms);
+
+		// since it was allocated by STB image, its not within our control so we need to call delete instead of wFree.
+		delete info.data;
+		uint32 size = info.height * info.width * info.channels;
+		WAllocator::ReportExternalFree(size);
 
 		m_textureRepo.try_emplace(mission.matDef.texturesPackaging[index], comms.texReferenceOut);
 		mission.texReferences[index] = comms.texReferenceOut;
@@ -544,6 +549,11 @@ void AssetRepo::IrisCommsGetMatPackage(IrisAssetCommunication &mission)
 			comms.commType = AssetIrisCommunicationType::StoreTexture;
 			comms.textureData = info;
 			Iris::AssetIrisCommunication(comms);
+
+			// since it was allocated by STB image, its not within our control so we need to call delete instead of wFree.
+			delete info.data;
+			uint32 size = info.height * info.width * info.channels;
+			WAllocator::ReportExternalFree(size);
 
 			m_textureRepo.try_emplace(request, comms.texReferenceOut);
 		}
