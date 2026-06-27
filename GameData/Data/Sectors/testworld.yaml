@@ -12,12 +12,34 @@ entities:
         instance: false
   e1:
     name: Monkey
-    position: [0, 1, 0.400000006]
-    rotation: [0, 0, 0]
+    position: [0, 0.5, -2]
+    rotation: [-35, 0, 0]
     size: [1, 1, 1]
     components:
       c0:
         component-type: 5
         meshName: Monkey
         materialName: PBR/ConcreteMat
+        instance: false
+  e2:
+    name: Bread
+    position: [0.400000006, 2, -0.5]
+    rotation: [90, 0, 27.6000004]
+    size: [10, 10, 10]
+    components:
+      c0:
+        component-type: 5
+        meshName: Bread
+        materialName: PBR/BreadMat
+        instance: false
+  e3:
+    name: Cube
+    position: [0, 1, 0]
+    rotation: [0, 0, 0]
+    size: [1, 1, 1]
+    components:
+      c0:
+        component-type: 5
+        meshName: Cube
+        materialName: PBR/WoodMat
         instance: false

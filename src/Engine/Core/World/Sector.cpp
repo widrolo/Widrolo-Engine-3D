@@ -222,6 +222,8 @@ void Sector::LoadArgsFromFile(const std::string& sectorName)
 
 			const YAML::Node& pos = data["position"];
 			arg.transform.position = { pos[0].as<float32>(), pos[1].as<float32>(), pos[2].as<float32>() };
+			const YAML::Node& rot = data["rotation"];
+			arg.transform.rotation = { rot[0].as<float32>(), rot[1].as<float32>(), rot[2].as<float32>() };
 			const YAML::Node& size = data["size"];
 			arg.transform.size = { size[0].as<float32>(), size[1].as<float32>(), size[2].as<float32>() };
 

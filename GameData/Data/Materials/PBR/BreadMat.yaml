@@ -1,0 +1,17 @@
+material:
+    materialName: BreadMat
+    shader: BasicPBR
+
+    texturesDevel:
+        color: Bread/Bread_c.png
+        normal: Bread/Bread_n.png
+
+    texturesPackaging:
+        base: Bread.png
+        pbr: Bread.pbr
+
+    disableStrictCheck: true
+
+    develTransform:
+        base.rgba: [color.rgba]
+        pbr.rgba: [normal.rgba]

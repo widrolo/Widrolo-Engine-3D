@@ -215,15 +215,9 @@ void AssetRepo::GetAsset<MeshAssetMission>(MeshAssetMission& mission)
             }
             else
             {
-
-
                 for (size_t i = 0; i < vertCount; i++)
                 {
-                	// just for testing around now.
-                	float32 r = CoreSystems::GetRNGHandler()->GetRandomFloat(0.0f, 1.0f);
-                	float32 g = CoreSystems::GetRNGHandler()->GetRandomFloat(0.0f, 1.0f);
-                	float32 b = CoreSystems::GetRNGHandler()->GetRandomFloat(0.0f, 1.0f);
-                    out.vertices[vertStart + i].vertColor = { r, g, b };
+                    out.vertices[vertStart + i].vertColor = { 1.0 , 1.0 , 1.0 };
                 }
             }
 

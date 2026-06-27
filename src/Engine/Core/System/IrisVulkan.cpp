@@ -122,13 +122,16 @@ void Iris::SETTING_BeginNewFrame()
 {
     UploadTextures(ctx);
 
-    vkWaitForFences(ctx.vcore.gpuDevice, 1, &ctx.displayTarget.endOfFrameFences[ctx.screen.currentFrame], VK_TRUE, UINT64_MAX);
+    ctx.currentRenderTarget = &ctx.displayTarget;
+
+
+    vkWaitForFences(ctx.vcore.gpuDevice, 1, &GetFbEndOfFrameFence(ctx), VK_TRUE, UINT64_MAX);
 
     for (auto& buf : ctx.bufferGraveyard[ctx.screen.currentFrame])
         vmaDestroyBuffer(ctx.vcore.vmaAllocator, buf.first, buf.second);
     ctx.bufferGraveyard[ctx.screen.currentFrame].clear();
 
-    vkResetFences(ctx.vcore.gpuDevice, 1, &ctx.displayTarget.endOfFrameFences[ctx.screen.currentFrame]);
+    //vkResetFences(ctx.vcore.gpuDevice, 1, &GetFbEndOfFrameFence(ctx));
     vkAcquireNextImageKHR(ctx.vcore.gpuDevice, ctx.screen.swapchain, max_uint64,
         ctx.displayTarget.imageAvailableSems[ctx.screen.currentFrame], VK_NULL_HANDLE, &ctx.screen.swapchainCurrentImage);
 
@@ -471,7 +474,7 @@ void Iris::DRAWCALL_DrawToDisplay(SDL_Window *window)
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &ctx.displayTarget.renderFinishedSems[ctx.screen.currentFrame];
+    presentInfo.pWaitSemaphores = &GetFbRenderFinishedSem(ctx);
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &ctx.screen.swapchain;
     presentInfo.pImageIndices = &ctx.screen.swapchainCurrentImage;
@@ -541,6 +544,7 @@ void Iris::SETTING_SelectFramebufferScreenForRender()
 
     ctx.currentRenderTarget = &ctx.displayTarget;
 
+    vkResetFences(ctx.vcore.gpuDevice, 1, &GetFbEndOfFrameFence(ctx));
     vkResetCommandBuffer(GetFbCmdBuff(ctx), 0);
 
     VkCommandBufferBeginInfo beginInfo{};

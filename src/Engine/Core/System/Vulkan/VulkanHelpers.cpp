@@ -143,32 +143,32 @@ WEngine::Vector2 & GetFbResolution(const VulkanContext &ctx)
 
 VkCommandBuffer& GetFbCmdBuff(const VulkanContext &ctx)
 {
-    return ctx.currentRenderTarget->cmdBuffs[ctx.screen.currentFrame];
+    return ctx.currentRenderTarget->cmdBuffs[ctx.screen.swapchainCurrentImage];
 }
 
 VkImage& GetFbImage(const VulkanContext &ctx)
 {
-    return ctx.currentRenderTarget->targetImages[ctx.screen.currentFrame];
+    return ctx.currentRenderTarget->targetImages[ctx.screen.swapchainCurrentImage];
 }
 
 VkImageView& GetFbImageView(const VulkanContext &ctx)
 {
-    return ctx.currentRenderTarget->targetImageViews[ctx.screen.currentFrame];
+    return ctx.currentRenderTarget->targetImageViews[ctx.screen.swapchainCurrentImage];
 }
 
 VkSemaphore& GetFbImageAvailSem(const VulkanContext &ctx)
 {
-    return ctx.currentRenderTarget->imageAvailableSems[ctx.screen.currentFrame];
+    return ctx.currentRenderTarget->imageAvailableSems[ctx.screen.swapchainCurrentImage];
 }
 
 VkSemaphore& GetFbRenderFinishedSem(const VulkanContext &ctx)
 {
-    return ctx.currentRenderTarget->renderFinishedSems[ctx.screen.currentFrame];
+    return ctx.currentRenderTarget->renderFinishedSems[ctx.screen.swapchainCurrentImage];
 }
 
 VkFence& GetFbEndOfFrameFence(const VulkanContext &ctx)
 {
-    return ctx.currentRenderTarget->endOfFrameFences[ctx.screen.currentFrame];
+    return ctx.currentRenderTarget->endOfFrameFences[ctx.screen.swapchainCurrentImage];
 }
 
 void PopulatePushConstants(const VulkanContext &ctx, const Vulkan_Shader &shader, const WEngine::Mat4x4 &mvp)
