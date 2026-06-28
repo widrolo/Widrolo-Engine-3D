@@ -91,7 +91,12 @@ namespace WEngine
 		void PushStationaryData();
 
 		void SetSkylight(const Sunlight& light);
-		[[nodiscard]] const Sunlight& GetSkylight() const;
+		void SetAmbientLight(const AmbientLight& light);
+		void SetLightTime(float32 time);
+		[[nodiscard]] const Sunlight& GetSunlight() const;
+		[[nodiscard]] const AmbientLight& GetAmbientLight() const;
+		[[nodiscard]] float32 GetLightTime() const;
+
 	private:
 		void PrepareSkybox();
 		void RenderSkybox();

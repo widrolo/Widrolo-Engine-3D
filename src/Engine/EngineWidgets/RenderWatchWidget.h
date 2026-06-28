@@ -19,5 +19,9 @@ namespace WEngine
     private:
         std::string GetHeader() const;
         std::string StatInstInfoToString(const MemListDebugInfo& info) const;
+
+        void ShowSunlightSettings();
+        void ShowAmbientSettings();
+        void ShowTimeSettings();
     };
 }

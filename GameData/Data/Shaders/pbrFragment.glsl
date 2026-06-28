@@ -8,6 +8,8 @@ layout(set = 0, binding = 0) uniform RawLighting
 {
     vec3 sunDir;
     vec3 sunCol;
+    float ambIntensity;
+	vec3 ambCol;
     vec3 camPos;
 } world;
 
@@ -64,7 +66,6 @@ void main()
     vec3 diffuse = CalcDiffuse(normal, lightDir);
     vec3 specular = CalcSpecular(normal, lightDir, rough);
 
-    vec3 pbrResult = ambientLight + diffuse + specular;
+    vec3 pbrResult = world.ambIntensity + diffuse + specular;
     outColor = texture(tex, inUV0) * vec4(pbrResult, 1.0);
-    //outColor = vec4(normal, 1.0);
 }

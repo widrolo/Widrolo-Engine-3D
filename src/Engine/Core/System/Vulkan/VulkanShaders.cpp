@@ -374,9 +374,13 @@ void UpdateLighting(VulkanContext &ctx)
 {
     RawLighting raw{};
     raw.sunDir = ctx.lighting.lightingInfo.sun.direction;
+    raw.ambientIntensity = ctx.lighting.lightingInfo.ambient.intensity;
+    raw.timeOfDay = ctx.lighting.lightingInfo.timeOfDay;
 
     WEngine::Color sunCol = ctx.lighting.lightingInfo.sun.lightColor;
+    WEngine::Color ambCol = ctx.lighting.lightingInfo.ambient.ambientColor;
     raw.sunColor = {sunCol.red / 255.0f, sunCol.green / 255.0f, sunCol.blue / 255.0f};
+    raw.ambientColor = {ambCol.red / 255.0f, ambCol.green / 255.0f, ambCol.blue / 255.0f};
 
     raw.camPos = ctx.lighting.lightingInfo.cameraPos;
 

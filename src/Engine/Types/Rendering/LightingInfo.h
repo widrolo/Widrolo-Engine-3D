@@ -11,12 +11,20 @@ namespace WEngine
         Color lightColor;
     };
 
+    struct AmbientLight
+    {
+        float32 intensity;
+        Color ambientColor;
+    };
+
     /**
      * The lighting struct sent to the GPU
      */
     struct LightingInfo
     {
         Sunlight sun;
+        AmbientLight ambient;
         Vector3 cameraPos;
+        float32 timeOfDay;
     };
 }

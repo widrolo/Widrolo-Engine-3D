@@ -7,6 +7,8 @@ layout(set = 0, binding = 0) uniform RawLighting
 {
     vec3 sunDir;
     vec3 sunCol;
+    float ambIntensity;
+	vec3 ambCol;
     vec3 camPos;
 } world;
 
@@ -27,5 +29,5 @@ void main()
     vec3 diffuse = diff * world.sunCol;
     
 
-    outColor = texture(tex, realUV) * vec4(ambientLight + diffuse, 1.0);
+    outColor = texture(tex, realUV) * vec4(world.ambIntensity + diffuse, 1.0);
 }

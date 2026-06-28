@@ -140,7 +140,10 @@ struct RawLighting
 {
     alignas(16) WEngine::Vector3 sunDir;
     alignas(16) WEngine::Vector3 sunColor;
+    alignas(4) float32 ambientIntensity;
+    alignas(16) WEngine::Vector3 ambientColor;
     alignas(16) WEngine::Vector3 camPos;
+    alignas(4) float32 timeOfDay;
 };
 
 struct Vulkan_Lighting

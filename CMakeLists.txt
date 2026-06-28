@@ -310,6 +310,14 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Core/Physics/JoltImpl.cpp
         src/Engine/Core/Physics/JoltImpl.h
         src/Engine/Types/Rendering/LightingInfo.h
+        src/Engine/Core/Handlers/TimeSystem.cpp
+        src/Engine/Core/Handlers/TimeSystem.h
+        src/Engine/Types/Time/Date.h
+        src/Engine/Types/Time/Month.h
+        src/Engine/Types/Time/Time.h
+        src/Engine/Types/Time/Day.h
+        src/Engine/Types/Time/Time.cpp
+        src/Engine/Types/Time/Date.cpp
 )
 
 FetchContent_Declare(

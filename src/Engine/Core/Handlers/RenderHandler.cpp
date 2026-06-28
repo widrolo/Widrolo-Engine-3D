@@ -43,6 +43,8 @@ RenderHandler::RenderHandler()
 	// A nice looking default sky direction
 	m_lighting.sun.direction = {0.58f, -0.13f, -0.31f};
 	m_lighting.sun.lightColor = Color::White;
+	m_lighting.ambient.intensity = 0.1f;
+	m_lighting.ambient.ambientColor = Color::White;
 	m_lighting.cameraPos = Vector3::Zero;
 
 	Iris::SETTING_SetLighting(m_lighting);
@@ -196,9 +198,29 @@ void RenderHandler::SetSkylight(const Sunlight &light)
 	m_lighting.sun = light;
 }
 
-const Sunlight& RenderHandler::GetSkylight() const
+void RenderHandler::SetAmbientLight(const AmbientLight &light)
+{
+	m_lighting.ambient = light;
+}
+
+void RenderHandler::SetLightTime(float32 time)
+{
+	m_lighting.timeOfDay = time;
+}
+
+const Sunlight& RenderHandler::GetSunlight() const
 {
 	return m_lighting.sun;
+}
+
+const AmbientLight& RenderHandler::GetAmbientLight() const
+{
+	return m_lighting.ambient;
+}
+
+float32 RenderHandler::GetLightTime() const
+{
+	return m_lighting.timeOfDay;
 }
 
 void RenderHandler::PrepareSkybox()
