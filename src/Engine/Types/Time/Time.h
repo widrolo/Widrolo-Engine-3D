@@ -37,9 +37,9 @@ namespace WEngine
          */
         uint32 AddSeconds(uint32 seconds);
 
-        [[nodiscard]] uint32 GetHours();
-        [[nodiscard]] uint32 GetMinutes();
-        [[nodiscard]] uint32 GetSeconds();
+        [[nodiscard]] uint32 GetHours() const;
+        [[nodiscard]] uint32 GetMinutes() const;
+        [[nodiscard]] uint32 GetSeconds() const;
 
     private:
         uint32 m_hour;

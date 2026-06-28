@@ -9,7 +9,7 @@
 
 #include <Engine/Math/Vector.h>
 
-#include "Time.h"
+#include "Timer.h"
 
 using namespace WEngine;
 
@@ -40,7 +40,7 @@ void WLog::SetConsoleSuccess()
 
 void WLog::PrintInfo(const std::source_location& location)
 {
-    TimePoint time = Time::GetLocalTime();
+    TimePoint time = Timer::GetLocalTime();
 
     // Convert const char* to std::string
     std::string filePath(location.file_name());

@@ -16,6 +16,7 @@
 #include <Engine/Core/System/Memory.h>
 
 #include "Engine/EngineWidgets/RenderWatchWidget.h"
+#include "Engine/EngineWidgets/TimeWatchWidget.h"
 #include "Engine/Util/Log.h"
 using namespace WEngine;
 
@@ -41,6 +42,7 @@ void WidgetHandler::InitSystemWidgets()
     m_systemWidgets[(uint16)SysWidgetTypes::PhysicsWatch]   = WAllocator::Construct<PhysicsWatchWidget>();
     m_systemWidgets[(uint16)SysWidgetTypes::DebugFlags]     = WAllocator::Construct<DebugFlagsWidget>();
     m_systemWidgets[(uint16)SysWidgetTypes::RenderWatch]    = WAllocator::Construct<RenderWatchWidget>();
+    m_systemWidgets[(uint16)SysWidgetTypes::TimeWatch]      = WAllocator::Construct<TimeWatchWidget>();
 
 
     for (uint16 i = 0; i < (uint16)SysWidgetTypes::SysWidget_Count; i++)

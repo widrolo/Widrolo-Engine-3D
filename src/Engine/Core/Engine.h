@@ -6,7 +6,7 @@
 #include <Engine/Types/CommonTypes.h>
 #include <chrono>
 
-#include "Engine/Util/Time.h"
+#include "Engine/Util/Timer.h"
 
 class Game;
 namespace WEngine
@@ -33,12 +33,12 @@ namespace WEngine
 		_GLOBAL_ uint64 m_uptime; // in seconds
 
 		// profiler
-		_GLOBAL_ float m_frameBegin;
-		_GLOBAL_ float m_widgetDraw;
-		_GLOBAL_ float m_sectorLoad;
-		_GLOBAL_ float m_entityTick;
-		_GLOBAL_ float m_physicsTick;
-		_GLOBAL_ float m_draw;
+		_GLOBAL_ float32 m_frameBegin;
+		_GLOBAL_ float32 m_widgetDraw;
+		_GLOBAL_ float32 m_sectorLoad;
+		_GLOBAL_ float32 m_entityTick;
+		_GLOBAL_ float32 m_physicsTick;
+		_GLOBAL_ float32 m_draw;
 
 		CmdLineArgs m_cla = {};
 

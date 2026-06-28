@@ -87,7 +87,7 @@ void RenderWatchWidget::ShowSunlightSettings()
     sunDirV.lightColor.blue = sunCol[2] * 255.0f;
     sunDirV.lightColor.alpha = sunCol[3] * 255.0f;
 
-    CoreSystems::GetRenderHandler()->SetSkylight(sunDirV);
+    CoreSystems::GetRenderHandler()->SetSunlight(sunDirV);
 }
 
 void RenderWatchWidget::ShowAmbientSettings()

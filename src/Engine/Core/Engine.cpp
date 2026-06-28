@@ -14,6 +14,7 @@
 #include <Engine/Core/Handlers/AudioHandler.h>
 #include <Engine/Core/Handlers/WidgetHandler.h>
 #include <Engine/Core/Handlers/JobHandler.h>
+#include <Engine/Core/Handlers/TimeHandler.h>
 
 #include <Engine/Stores/Steam/SteamStore.h>
 
@@ -21,7 +22,7 @@
 #include <Game/GameDefines.h>
 
 #include <Engine/Core/World/Sector.h>
-#include <Engine/Util/Time.h>
+#include <Engine/Util/Timer.h>
 #include <Engine/Util/Log.h>
 #include <Engine/Types/CoreSystems.h>
 #include <Engine/Core/System/Memory.h>
@@ -119,6 +120,7 @@ void Engine::InitHandlers()
 	StartHandlerSingle<AudioHandler>(&CoreSystems::audioHandler, "Audio Handler");
 	StartHandlerSingle<WidgetHandler>(&CoreSystems::widgetHandler, "Widget Handler");
 	StartHandlerSingle<JobHandler>(&CoreSystems::jobHandler, "Job Handler");
+	StartHandlerSingle<TimeHandler>(&CoreSystems::timeHandler, "Time Handler");
 
 	Iris::SETTING_BeginNewPreFrame();
 	m_rootSector = new Sector("root");
@@ -216,6 +218,10 @@ void Engine::Loop_Begin(std::chrono::steady_clock::time_point& last, StopWatch& 
 	if (!Iris::IsFirstFrame())
 		Iris::SETTING_BeginNewPreFrame();
 
+	if (m_deltaTime < 20.0f)
+		CoreSystems::timeHandler->Update(m_deltaTime * CoreSystems::GetTimeScale());
+	else
+		CoreSystems::timeHandler->Update(0.0f);
 
 	m_game->GameLoopBegin();
 	m_frameBegin = timings.GetTime<TimeUnit::Microseconds>();

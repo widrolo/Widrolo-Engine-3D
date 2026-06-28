@@ -1,10 +1,10 @@
-#include "Time.h"
+#include "Timer.h"
 
 #include <ctime>
 
 using namespace WEngine;
 
-TimePoint Time::GetLocalTime()
+TimePoint Timer::GetLocalTime()
 {
     auto now = std::chrono::system_clock::now();
     auto chronoTime = std::chrono::system_clock::to_time_t(now);

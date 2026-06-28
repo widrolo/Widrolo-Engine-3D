@@ -43,17 +43,17 @@ uint32 Time::AddSeconds(uint32 seconds)
     return AddMinutes(extraMinutes);
 }
 
-uint32 Time::GetHours()
+uint32 Time::GetHours() const
 {
     return m_hour;
 }
 
-uint32 Time::GetMinutes()
+uint32 Time::GetMinutes() const
 {
     return m_minutes;
 }
 
-uint32 Time::GetSeconds()
+uint32 Time::GetSeconds() const
 {
     return m_seconds;
 }

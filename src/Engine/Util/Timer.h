@@ -137,7 +137,7 @@ namespace WEngine
     /**
      * A utility class for working with time-related functions.
      */
-    class Time
+    class Timer
     {
     public:
         /**

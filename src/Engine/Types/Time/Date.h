@@ -11,6 +11,8 @@ namespace WEngine
     {
     public:
         Date() : m_year(realisticBaseYear), m_month(0), m_day(0) {}
+        Date(uint32 year, uint32 month, uint32 day) : m_year(year), m_month(month), m_day(day) {}
+        Date(uint32 year, Month month, Day day) : m_year(year), m_month((uint8)month), m_day((uint8)day) {}
 
     public:
         void SetYear(uint32 year);
@@ -18,6 +20,17 @@ namespace WEngine
         void SetMonth(Month month);
         void SetDay(uint32 day);
         void SetDay(Day day);
+
+        void AddYears(uint32 years);
+        void AddMonths(uint32 months);
+        void AddDays(uint32 days);
+
+        uint32 DaysInMonth(uint32 month);
+        uint32 DaysInMonth(Month month);
+
+        [[nodiscard]] uint32 GetYear() const;
+        [[nodiscard]] uint32 GetMonth() const;
+        [[nodiscard]] uint32 GetDay() const;
 
     private:
         uint32 m_year;

@@ -19,6 +19,7 @@ namespace WEngine
         PhysicsWatch,
         DebugFlags,
         RenderWatch,
+        TimeWatch,
 
         SysWidget_Count
     };

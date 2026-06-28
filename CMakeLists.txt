@@ -123,8 +123,8 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Math/Matrices/MatrixMath.cpp
         src/Engine/Math/Functions/Trigonometry.cpp
         src/Engine/Math/Functions/Power.cpp
-        src/Engine/Util/Time.cpp
-        src/Engine/Util/Time.h
+        src/Engine/Util/Timer.cpp
+        src/Engine/Util/Timer.h
         src/Engine/Types/Input/InputDevice.h
         src/Engine/EngineWidgets/PeripheralWidget.cpp
         src/Engine/EngineWidgets/PeripheralWidget.h
@@ -310,14 +310,16 @@ add_executable(Widrolo_Engine_3D
         src/Engine/Core/Physics/JoltImpl.cpp
         src/Engine/Core/Physics/JoltImpl.h
         src/Engine/Types/Rendering/LightingInfo.h
-        src/Engine/Core/Handlers/TimeSystem.cpp
-        src/Engine/Core/Handlers/TimeSystem.h
+        src/Engine/Core/Handlers/TimeHandler.cpp
+        src/Engine/Core/Handlers/TimeHandler.h
         src/Engine/Types/Time/Date.h
         src/Engine/Types/Time/Month.h
         src/Engine/Types/Time/Time.h
         src/Engine/Types/Time/Day.h
         src/Engine/Types/Time/Time.cpp
         src/Engine/Types/Time/Date.cpp
+        src/Engine/EngineWidgets/TimeWatchWidget.cpp
+        src/Engine/EngineWidgets/TimeWatchWidget.h
 )
 
 FetchContent_Declare(

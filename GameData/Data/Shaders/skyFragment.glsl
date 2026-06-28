@@ -51,7 +51,7 @@ void main()
 	float bias = -yPos / radius + 0.5;
 	float biasVoid = CalcVoidBias(timeFac);
 
-	vec3 topColor = realSky * world.sunCol * bias;
+	vec3 topColor = realSky * bias;
 	topColor.x = max(min(topColor.x, realSky.x), 0.0);
 	topColor.y = max(min(topColor.y, realSky.y), 0.0);
 	topColor.z = max(min(topColor.z, realSky.z), 0.0);

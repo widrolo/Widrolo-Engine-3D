@@ -7,6 +7,9 @@
 #include <Engine/Types/Version.h>
 #include <Engine/Math/Vector.h>
 
+#include "Types/Time/Day.h"
+#include "Types/Time/Month.h"
+
 #define STEAM 0 // setting this to 0 completely disables Steam code, good for changing store fronts
 
 #define GPU_OPENGL 1 // this should ideally be deprecated soon in favour of Vulkan
@@ -134,6 +137,17 @@ struct PhysicsSettings
 	_GLOBAL_CEX_ uint32 maxBodyPairs = 10000;
 	_GLOBAL_CEX_ uint32 maxContactConstraints = 10000;
 
+};
+
+struct TimeSettings
+{
+	_GLOBAL_CEX_ uint32 startYear = 2026;
+	_GLOBAL_CEX_ WEngine::Month startMonth = WEngine::Month::January;
+	_GLOBAL_CEX_ WEngine::Day startDay = WEngine::Day::Sunday;
+	_GLOBAL_CEX_ uint32 startHour = 12;
+	_GLOBAL_CEX_ uint32 startMinute = 0;
+	_GLOBAL_CEX_ uint32 startSecond = 0;
+	_GLOBAL_CEX_ uint32 gameSecondPerRealSecond = 600 * 10;
 };
 
 #ifndef GPU_BACKEND

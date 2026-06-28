@@ -9,6 +9,7 @@ namespace WEngine
     {
         Vector3 direction;
         Color lightColor;
+        float32 lightFactor;
     };
 
     struct AmbientLight

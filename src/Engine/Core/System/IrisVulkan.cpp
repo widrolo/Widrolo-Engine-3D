@@ -157,6 +157,10 @@ void Iris::SETTING_SetViewportSize(WEngine::Vector2 size)
 void Iris::SETTING_SetLighting(const WEngine::LightingInfo &light)
 {
     ctx.lighting.lightingInfo = light;
+    ctx.lighting.lightingInfo.sun.lightColor.red *= light.sun.lightFactor;
+    ctx.lighting.lightingInfo.sun.lightColor.green *= light.sun.lightFactor;
+    ctx.lighting.lightingInfo.sun.lightColor.blue *= light.sun.lightFactor;
+    ctx.lighting.lightingInfo.sun.lightColor.alpha *= light.sun.lightFactor;
     UpdateLighting(ctx);
 }
 

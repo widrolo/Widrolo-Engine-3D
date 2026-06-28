@@ -90,9 +90,10 @@ namespace WEngine
 		void RecordStationaryAdd(Model model, Material material, const Transform& transform);
 		void PushStationaryData();
 
-		void SetSkylight(const Sunlight& light);
+		void SetSunlight(const Sunlight& light);
 		void SetAmbientLight(const AmbientLight& light);
 		void SetLightTime(float32 time);
+		void SetSunlightColorFactor(float32 factor);
 		[[nodiscard]] const Sunlight& GetSunlight() const;
 		[[nodiscard]] const AmbientLight& GetAmbientLight() const;
 		[[nodiscard]] float32 GetLightTime() const;

@@ -193,7 +193,7 @@ void RenderHandler::PushStationaryData()
 	m_stationaryAddQueue.clear();
 }
 
-void RenderHandler::SetSkylight(const Sunlight &light)
+void RenderHandler::SetSunlight(const Sunlight &light)
 {
 	m_lighting.sun = light;
 }
@@ -206,6 +206,11 @@ void RenderHandler::SetAmbientLight(const AmbientLight &light)
 void RenderHandler::SetLightTime(float32 time)
 {
 	m_lighting.timeOfDay = time;
+}
+
+void RenderHandler::SetSunlightColorFactor(float32 factor)
+{
+	m_lighting.sun.lightFactor = factor;
 }
 
 const Sunlight& RenderHandler::GetSunlight() const
