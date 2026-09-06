@@ -4,6 +4,10 @@
 #include "Engine/Core/Handlers/RenderHandler.h"
 #include "Engine/Core/System/Haptic.h"
 #include "Engine/Util/TimeAnalysis.h"
+#include "Engine/Types/Audio/Echo/Handles.h"
+#include "Engine/Core/System/Echo.h"
+
+Echo::AudioBusHandle bus;
 
 Freecam::Freecam()
 {
@@ -14,6 +18,10 @@ Freecam::Freecam()
     m_trans.position.x = -8;
     m_trans.position.y = 3;
     m_trans.position.z = -6;
+
+    Echo::BusDesc busDesc{};
+    busDesc.name = "Freecam";
+    bus = Echo::CreateBus(busDesc);
 }
 
 void Freecam::Tick(float32 dt)

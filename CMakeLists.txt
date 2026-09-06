@@ -375,6 +375,7 @@ add_executable(Afterlife_Engine
         src/Engine/Core/System/Echo/MA/Helpers/Callback.cpp
         src/Engine/Core/System/Echo/MA/Helpers/Callback.h
         src/Engine/Core/System/Echo/MA/EchoGlobals.h
+        src/Engine/Core/System/Echo/MA/Helpers/Types.h
 )
 
 target_include_directories(Afterlife_Engine PRIVATE

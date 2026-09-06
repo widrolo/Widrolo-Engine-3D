@@ -34,3 +34,10 @@ input:
                 button: LB
             keyboard:
                 key: lcontrol
+        playSound:
+            name: playSound
+            inputType: Action
+            controller:
+                button: north
+            keyboard:
+                key: enter

@@ -32,10 +32,10 @@ namespace Echo
     VirtualAudioHandle SwapAudio(VirtualAudioHandle audio, AudioSoundHandle sound);
     VirtualAudioHandle SwapAudio(VirtualAudioHandle audio, AudioStreamHandle stream);
 
-    void ConnectAudio(VirtualAudioHandle audio, AudioBusHandle bus);
+    void ConnectAudio(VirtualAudioHandle audio, AudioBusHandle busHandle);
     void SetAudioLoop(VirtualAudioHandle audio, bool loop);
-    void SetAudioVolume(VirtualAudioHandle audio, bool volume);
-    void SetAudioPitch(VirtualAudioHandle audio, bool pitch);
+    void SetAudioVolume(VirtualAudioHandle audio, float32 volume);
+    void SetAudioPitch(VirtualAudioHandle audio, float32 pitch);
 
     // --------------------------------------- Playback ----------------------------------------
     void Play(VirtualAudioHandle audio);
