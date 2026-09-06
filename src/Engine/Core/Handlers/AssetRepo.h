@@ -56,6 +56,7 @@ namespace WEngine
 		 */
 		void TickTextureUpload();
 		void RegisterAllTextures();
+		void PreloadSounds();
 		/**
 		 * Gets the asset specified by the mission parameter.
 		 * @tparam T The type of asset mission to handle (e.g., SpriteAssetMission, ShaderAssetMission, etc.).

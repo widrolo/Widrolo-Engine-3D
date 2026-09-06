@@ -7,11 +7,9 @@
 #include <sstream>
 #include <algorithm>
 
-#include <Engine/gl/include/stb_image.h>
-#define TINYGLTF_IMPLEMENTATION
+#include <stb_image.h>
 #include <chrono>
 #include <filesystem>
-#include <Engine/gl/gltf/tiny_gltf_v3.h>
 #include <yaml-cpp/yaml.h>
 #include <tinyxml2.h>
 
@@ -487,6 +485,11 @@ void AssetRepo::RegisterAllTextures()
 
 	for (const auto& tex : m_textures)
 		CoreSystems::GetRenderHandler()->RegisterTexture(tex.second);
+}
+
+void AssetRepo::PreloadSounds()
+{
+	
 }
 
 const wtl::vector<AssetRef>& AssetRepo::GetAllAssetsInDir(const std::string &dirName)

@@ -7,6 +7,7 @@
 
 void EchoMiniAudioCallback(ma_device *dev, void *output, const void *input, uint32 frame_count)
 {
+    return;
     // just for testing
     static uint32 phase = 0;
 

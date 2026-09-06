@@ -68,6 +68,38 @@ namespace Echo
         return loadedBusses.size();
     }
 
+    bool IsSoundLoaded(AudioSoundHandle handle)
+    {
+        if (handle == 0 || handle > loadedSounds.size())
+            return false;
+        auto& snd = loadedSounds[handle - 1];
+        return snd.isLoaded;
+    }
+
+    bool IsSoundLoaded(const std::string& name)
+    {
+        if (!loadedSoundNames.contains(name))
+            return false;
+        auto& snd = loadedSounds[loadedSoundNames[name] - 1];
+        return snd.isLoaded;
+    }
+
+    bool IsStreamLoaded(AudioStreamHandle handle)
+    {
+        if (handle == 0 || handle > loadedStreams.size())
+            return false;
+        auto& stm = loadedStreams[handle - 1];
+        return stm.isLoaded;
+    }
+
+    bool IsStreamLoaded(const std::string& name)
+    {
+        if (!loadedStreamNames.contains(name))
+            return false;
+        auto& stm = loadedStreams[loadedStreamNames[name] - 1];
+        return stm.isLoaded;
+    }
+
     void DeleteSound(AudioSoundHandle sound)
     {
         if (sound == 0 || sound > loadedSounds.size())

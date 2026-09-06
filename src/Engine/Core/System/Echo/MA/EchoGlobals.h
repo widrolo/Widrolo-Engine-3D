@@ -12,5 +12,6 @@ inline wtl::vector<AudioBus> loadedBusses;
 inline AudioBus masterBus;
 
 inline std::unordered_map<std::string, sizeT> loadedSoundNames;
+inline std::unordered_map<std::string, sizeT> loadedStreamNames;
 
 inline wtl::vector<VirtualAudio> virtualAudio;

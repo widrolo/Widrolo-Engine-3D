@@ -17,6 +17,11 @@ namespace Echo
     AudioStreamHandle CreateStream(const StreamDesc& desc);
     AudioBusHandle CreateBus(const BusDesc& desc); // Handle 0 is master bus
 
+    bool IsSoundLoaded(AudioSoundHandle handle);
+    bool IsSoundLoaded(const std::string& name);
+    bool IsStreamLoaded(AudioStreamHandle handle);
+    bool IsStreamLoaded(const std::string& name);
+
     // ------- Deletion --------
     // note that Echo remembers sounds by name; even if deleted, the handle will
     // work later if a sound is loaded under the same name.

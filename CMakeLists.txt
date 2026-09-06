@@ -35,8 +35,7 @@ add_executable(Afterlife_Engine
         src/Engine/Core/World/Sector.h
         src/Engine/gl/include/glad/glad.h
         src/Engine/gl/include/KHR/khrplatform.h
-        src/Engine/gl/include/stb_image.cpp
-        src/Engine/gl/include/stb_image.h
+        libs/stb/include/stb_image.h
         src/Engine/gl/src/glad.c
         src/Engine/EngineWidgets/StatisticsWidgets.cpp
         src/Engine/EngineWidgets/StatisticsWidgets.h
@@ -376,6 +375,8 @@ add_executable(Afterlife_Engine
         src/Engine/Core/System/Echo/MA/Helpers/Callback.h
         src/Engine/Core/System/Echo/MA/EchoGlobals.h
         src/Engine/Core/System/Echo/MA/Helpers/Types.h
+        libs/stb/Impl.cpp
+        libs/stb/include/stb_vorbis.h
 )
 
 target_include_directories(Afterlife_Engine PRIVATE

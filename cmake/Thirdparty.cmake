@@ -6,6 +6,7 @@ include(cmake/libs/LibBox3D.cmake)
 include(cmake/libs/LibGLM.cmake)
 include(cmake/libs/LibTinyXML.cmake)
 include(cmake/libs/LibYAML.cmake)
+include(cmake/libs/LibSTB.cmake)
 
 # ------------- BACKEND ------------
 include(cmake/libs/LibSDL.cmake)
