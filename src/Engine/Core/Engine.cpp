@@ -19,6 +19,7 @@
 #include <Engine/Core/Handlers/SectorHandler.h>
 
 #include <Engine/Stores/Steam/SteamStore.h>
+#include <Engine/imgui/imgui.h>
 
 #include <Engine/EngineDefines.h>
 #include <Game/GameDefines.h>
@@ -90,6 +91,13 @@ void Engine::StartGame()
 
 	InitHandlers();
 	InitSteam();
+
+	if (CoreSystems::steamStore != nullptr && CoreSystems::steamStore->IsSteamDeck())
+	{
+		WLog::SetConsoleInfo();
+		WLog::ConsoleLog("Running on a Steam Deck, enabling ImGui DPI scaling.");
+		ImGui::GetIO().ConfigDpiScaleFonts = true;
+	}
 
 	float64 time = bootTime.GetTime<TimeUnit::Seconds>();
 	WLog::SetConsoleInfo();

@@ -36,8 +36,8 @@ namespace WEngine
 		~SteamStore();
 
 	public:
-		bool m_initSuccess;				///< Indicates whether the Steam API initialization was successful.
-		bool m_usingSteam;				///< Indicates whether Steam integration is enabled or not.
+		bool m_initSuccess = false;	///< Indicates whether the Steam API initialization was successful.
+		bool m_usingSteam = false;		///< Indicates whether Steam integration is enabled or not.
 		uint64 m_steamID64;				///< The 64-bit Steam ID of the user.
 		std::string m_steamWebAPIKey;	///< The Web API key for Steam.
 
@@ -66,5 +66,10 @@ namespace WEngine
 		 * @param overlay The type of overlay window to open (see OverlayWindows enum).
 		 */
 		void OpenOverlay(OverlayWindows overlay);
+		/**
+		 * Checks whether the game is currently running on a Steam Deck.
+		 * @return True if running on a Steam Deck, false otherwise (or if Steam is disabled).
+		 */
+		bool IsSteamDeck();
 	};
 }

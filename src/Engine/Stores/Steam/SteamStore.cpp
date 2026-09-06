@@ -1,5 +1,6 @@
 #include "SteamStore.h"
 
+#include <cstdlib>
 #include <filesystem>
 #include <Engine/Util/Log.h>
 
@@ -25,20 +26,20 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
 SteamStore::SteamStore() 
 {
 #if STEAM
+	// maybe hack, maybe not, who knows?
+	if (SteamAPI_RestartAppIfNecessary(STEAMAPPID))
+	{
+		WLog::SetConsoleWarning();
+		WLog::ConsoleLog("Steam is relaunching the game, killing this process...");
+		std::exit(0);
+	}
+
 	if (!SteamAPI_Init())
 	{
 		WLog::SetConsoleError();
 		WLog::ConsoleLog("Steam API Init failed!");
 		return;
 	}
-
-	//std::string dataPath = CoreSystems::GetAssetRepo()->GetDataPath();
-	//std::string inputFile = dataPath + "Input/game_actions_4188300.vdf";
-	//inputFile = std::filesystem::canonical(inputFile).string();
-//
-	//WLog::ConsoleLog(inputFile);
-	//SteamInput()->SetInputActionManifestFilePath(inputFile.c_str());
-	//SteamInput()->Init(true);
 
 	m_initSuccess = true;
 	
@@ -102,6 +103,15 @@ void SteamStore::OpenOverlay(OverlayWindows overlay)
 	TimeSample sample("SteamStore::OpenOverlay");
 #if STEAM
 	SteamFriends()->ActivateGameOverlay(overlayWindowsStr[overlay]);
+#endif // STEAM
+}
+
+bool SteamStore::IsSteamDeck()
+{
+#if STEAM
+	return m_initSuccess && SteamUtils() != nullptr && SteamUtils()->IsSteamRunningOnSteamDeck();
+#else
+	return false;
 #endif // STEAM
 }
 

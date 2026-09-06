@@ -19,13 +19,13 @@ If you need a guide here, then i pray for you.
 Copy: "Steakworks SDK XXX/public/steam"
 To: "Afterlife-Engine/libs/Steamworks-SDK/include"
 
-Copy: "Steakworks SDK XXX/redistributable_bin/win64"
+Copy: "Steakworks SDK XXX/redistributable_bin/{platform}"
 To: "Afterlife-Engine/libs/Steamworks-SDK/lib"
-Here you only need to copy over steam_api64.lib
+Here you only need to copy over steam_api64.lib or libsteam_api.so
 
 If any errors occur then it shouldn't be hard to fix. If its not a linker/file not found error, and your version is far away from the version i use (1.59), then contact me.
 
-Lastly, in premake5.lua you need to uncomment "-- links ("steam_api64")"
+Lastly, in cmake/defines/Steam.cmake you need to enable Steam.
 
 4. Get the Steam Web API Key
 
@@ -43,4 +43,6 @@ While it allows you to do that, dont ship the game like that. First of all, the 
 
 6. App ID
 
-If you go about shipping the game, then change (in your build folder) steam_appid.txt content to your app id. By default the engine uses id 480 which is Spacewar (yes the game that you use for piracy).
+Set your App ID in "cmake/defines/Steam.cmake" via STEAMAPPID (480/Spacewar by default). SteamStore passes it to SteamAPI_RestartAppIfNecessary: if the game isn't launched through the Steam client, the client relaunches it via steam://run/<appid>, so the App ID is always set up properly and no steam_appid.txt file is needed anywhere.
+
+One exception: SteamAPI_RestartAppIfNecessary relaunches the build that is installed in your Steam library, not the binary you just compiled. If you need to run a fresh build straight from the IDE/debugger (and it's not installed in your library yet), drop a temporary steam_appid.txt with your App ID into the working directory - it bypasses the relaunch check. Just don't ship it.

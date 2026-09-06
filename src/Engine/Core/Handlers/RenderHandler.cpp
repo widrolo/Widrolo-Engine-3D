@@ -362,7 +362,18 @@ namespace WEngine
 
 		if (m_displayMode != nullptr)
 		{
-			m_windowResolution = EngineSettings::resolution;
+			if (Engine::GetCla().customResolution)
+			{
+				m_windowResolution.x = (float32)Engine::GetCla().width;
+				m_windowResolution.y = (float32)Engine::GetCla().height;
+			}
+			else
+			{
+				// Fullscreen game: adopt the display's native resolution. Keeps ImGui, input and
+				// rendering 1:1 with the panel, otherwise UI ends up tiny (e.g. Steam Deck).
+				m_windowResolution.x = (float32)m_displayMode->w;
+				m_windowResolution.y = (float32)m_displayMode->h;
+			}
 		}
 		else
 		{
@@ -371,6 +382,10 @@ namespace WEngine
 			m_windowResolution.x = 800;
 			m_windowResolution.y = 600;
 		}
+
+		// The screen-space passes, the depth target and the swapchain accounting all read
+		// EngineSettings::resolution, so keep it in sync with the actual window resolution.
+		EngineSettings::resolution = m_windowResolution;
 
 		SDL_PropertiesID props = SDL_CreateProperties();
 		SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, EngineSettings::engineName.c_str());
